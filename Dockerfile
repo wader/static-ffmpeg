@@ -72,6 +72,33 @@ RUN \
   cmake -G "Unix Makefiles" -DENABLE_SHARED=OFF -DENABLE_AGGRESSIVE_CHECKS=ON ../../source && \
   make -j4 install
 
+RUN \
+  WEBP_VERSION=1.0.0 && \
+  wget -O - https://github.com/webmproject/libwebp/archive/v$WEBP_VERSION.tar.gz | tar xz && \
+  cd libwebp-$WEBP_VERSION && \
+  ./autogen.sh && \
+  CFLAGS="-fno-strict-overflow -fstack-protector-all -fPIE" LDFLAGS="-Wl,-z,relro -Wl,-z,now -fPIE -pie" \
+  ./configure --enable-static --disable-shared && \
+  make -j4 install
+
+RUN \
+  WAVPACK_VERSION=5.1.0 && \
+  wget -O - https://github.com/dbry/WavPack/archive/$WAVPACK_VERSION.tar.gz | tar xz && \
+  cd WavPack-$WAVPACK_VERSION && \
+  ./autogen.sh && \
+  CFLAGS="-fno-strict-overflow -fstack-protector-all -fPIE" LDFLAGS="-Wl,-z,relro -Wl,-z,now -fPIE -pie" \
+  ./configure --enable-static --disable-shared && \
+  make -j4 install
+
+RUN \
+  SPEEX_VERSION=1.2.0 && \
+  wget -O - https://github.com/xiph/speex/archive/Speex-$SPEEX_VERSION.tar.gz | tar xz && \
+  cd speex-Speex-$SPEEX_VERSION && \
+  ./autogen.sh && \
+  CFLAGS="-fno-strict-overflow -fstack-protector-all -fPIE" LDFLAGS="-Wl,-z,relro -Wl,-z,now -fPIE -pie" \
+  ./configure --enable-static --disable-shared && \
+  make -j4 install
+
 # note that this will produce a "static" PIE binary with no dynamic lib deps
 ENV FFMPEG_VERSION=3.4.2
 RUN \
@@ -86,6 +113,7 @@ RUN \
   --enable-gpl \
   --enable-nonfree \
   --enable-openssl \
+  --enable-iconv \
   --disable-ffserver \
   --disable-doc \
   --disable-ffplay \
@@ -97,6 +125,9 @@ RUN \
   --enable-libvpx \
   --enable-libx264 \
   --enable-libx265 \
+  --enable-libwebp \
+  --enable-libwavpack \
+  --enable-libspeex \
   && \
   make -j4 install
 
