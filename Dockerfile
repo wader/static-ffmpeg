@@ -11,96 +11,98 @@ RUN apk add --no-cache \
   cmake \
   git \
   yasm \
+  jq \
   zlib-dev \
   openssl-dev \
   lame-dev \
   libogg-dev \
   libvpx-dev
 
-# some -dev alpine packages lack .a files in 3.6 (some fixed in edge)
-RUN \
-  FDK_AAC_VERSION=0.1.5 && \
-  wget -O - https://github.com/mstorsjo/fdk-aac/archive/v$FDK_AAC_VERSION.tar.gz | tar xz && \
-  cd fdk-aac-$FDK_AAC_VERSION && \
-  ./autogen.sh && \
-  ./configure --enable-static && \
-  make -j4 install
-
-RUN \
-  VORBIS_VERSION=1.3.5 && \
-  wget -O - https://downloads.xiph.org/releases/vorbis/libvorbis-$VORBIS_VERSION.tar.gz | tar xz && \
-  cd libvorbis-$VORBIS_VERSION && \
-  CFLAGS="-fno-strict-overflow -fstack-protector-all -fPIE" LDFLAGS="-Wl,-z,relro -Wl,-z,now -fPIE -pie" \
-  ./configure --enable-static && \
-  make -j4 install
-
-RUN \
-  OPUS_VERSION=1.2.1 && \
-  wget -O - https://archive.mozilla.org/pub/opus/opus-$OPUS_VERSION.tar.gz | tar xz && \
-  cd opus-$OPUS_VERSION && \
-  CFLAGS="-fno-strict-overflow -fstack-protector-all -fPIE" LDFLAGS="-Wl,-z,relro -Wl,-z,now -fPIE -pie" \
-  ./configure --enable-static && \
-  make -j4 install
-
-# require libogg to build
-RUN \
-  THEORA_VERSION=1.1.1 && \
-  wget -O - https://downloads.xiph.org/releases/theora/libtheora-$THEORA_VERSION.tar.bz2 | tar xj && \
-  cd libtheora-$THEORA_VERSION && \
-  CFLAGS="-fno-strict-overflow -fstack-protector-all -fPIE" LDFLAGS="-Wl,-z,relro -Wl,-z,now -fPIE -pie" \
-  ./configure --enable-pic --enable-static && \
-  make -j4 install
-
+ARG FFMPEG_VERSION=3.4.2
+ARG FDK_AAC_VERSION=0.1.5
+ARG VORBIS_VERSION=1.3.5
+ARG OPUS_VERSION=1.2.1
+ARG THEORA_VERSION=1.1.1
 # x264 only has a stable branch no tags
-RUN \
-  X264_VERSION=aaa9aa83a111ed6f1db253d5afa91c5fc844583f && \
-  git clone git://git.videolan.org/x264.git && \
-  cd x264 && \
-  git checkout $X264_VERSION && \
-  CFLAGS="-fno-strict-overflow -fstack-protector-all -fPIE" LDFLAGS="-Wl,-z,relro -Wl,-z,now -fPIE -pie" \
-  ./configure --enable-pic --enable-static && make -j4 install
+ARG X264_VERSION=aaa9aa83a111ed6f1db253d5afa91c5fc844583f
+ARG X265_VERSION=2.7
+ARG WEBP_VERSION=1.0.0
+ARG WAVPACK_VERSION=5.1.0
+ARG SPEEX_VERSION=1.2.0
 
 # -static-libgcc is needed to make gcc not include gcc_s as "as-needed" shared library which
 # cmake will include as a implicit library
+ENV CFLAGS="-static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE"
+ENV CXXFLAGS="-static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE"
+ENV LDFLAGS="-Wl,-z,relro -Wl,-z,now -fPIE -pie"
+
+RUN cat /proc/cpuinfo | grep ^processor | wc -l > /build_concurrency
+
 RUN \
-  X265_VERSION=2.7 && \
+  echo \
+  "{" \
+  "\"ffmpeg\": \"$FFMPEG_VERSION\"", \
+  "\"libfdk_aac\": \"$FDK_AAC_VERSION\"", \
+  "\"libvorbis\": \"$VORBIS_VERSION\"", \
+  "\"libopus\": \"$OPUS_VERSION\"", \
+  "\"libtheora\": \"$THEORA_VERSION\"", \
+  "\"libx264\": \"$X264_VERSION\"", \
+  "\"libx265\": \"$X265_VERSION\"", \
+  "\"libwebp\": \"$WEBP_VERSION\"", \
+  "\"libwavpack\": \"$WAVPACK_VERSION\"", \
+  "\"libspeex\": \"$SPEEX_VERSION\"" \
+  "}" \
+  | jq . > /versions.json
+
+RUN \
+  wget -O - "https://github.com/mstorsjo/fdk-aac/archive/v$FDK_AAC_VERSION.tar.gz" | tar xz && \
+  cd fdk-aac-$FDK_AAC_VERSION && \
+  ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(cat /build_concurrency) install
+
+RUN \
+  wget -O - "https://downloads.xiph.org/releases/vorbis/libvorbis-$VORBIS_VERSION.tar.gz" | tar xz && \
+  cd libvorbis-$VORBIS_VERSION && \
+  ./configure --enable-static --disable-shared && make -j$(cat /build_concurrency) install
+
+RUN \
+  wget -O - "https://archive.mozilla.org/pub/opus/opus-$OPUS_VERSION.tar.gz" | tar xz && \
+  cd opus-$OPUS_VERSION && \
+  ./configure --enable-static --disable-shared && make -j$(cat /build_concurrency) install
+
+# require libogg to build
+RUN \
+  wget -O - "https://downloads.xiph.org/releases/theora/libtheora-$THEORA_VERSION.tar.bz2" | tar xj && \
+  cd libtheora-$THEORA_VERSION && \
+  ./configure --enable-static --disable-shared && make -j$(cat /build_concurrency) install
+
+RUN \
+  git clone git://git.videolan.org/x264.git && \
+  cd x264 && \
+  git checkout $X264_VERSION && \
+  ./configure --enable-pic --enable-static --disable-shared && make -j$(cat /build_concurrency) install
+
+RUN \
   wget -O - "https://bitbucket.org/multicoreware/x265/downloads/x265_$X265_VERSION.tar.gz" | tar xz && \
   cd x265_$X265_VERSION/build/linux && \
-  CFLAGS="-static-libgcc -fno-strict-overflow -fPIE" \
-  CXXFLAGS="-static-libgcc -fno-strict-overflow -fPIE" \
-  LDFLAGS="-Wl,-z,relro -Wl,-z,now -fPIE -pie" \
   cmake -G "Unix Makefiles" -DENABLE_SHARED=OFF -DENABLE_AGGRESSIVE_CHECKS=ON ../../source && \
-  make -j4 install
+  make -j$(cat /build_concurrency) install
 
 RUN \
-  WEBP_VERSION=1.0.0 && \
-  wget -O - https://github.com/webmproject/libwebp/archive/v$WEBP_VERSION.tar.gz | tar xz && \
+  wget -O - "https://github.com/webmproject/libwebp/archive/v$WEBP_VERSION.tar.gz" | tar xz && \
   cd libwebp-$WEBP_VERSION && \
-  ./autogen.sh && \
-  CFLAGS="-fno-strict-overflow -fstack-protector-all -fPIE" LDFLAGS="-Wl,-z,relro -Wl,-z,now -fPIE -pie" \
-  ./configure --enable-static --disable-shared && \
-  make -j4 install
+  ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(cat /build_concurrency) install
 
 RUN \
-  WAVPACK_VERSION=5.1.0 && \
-  wget -O - https://github.com/dbry/WavPack/archive/$WAVPACK_VERSION.tar.gz | tar xz && \
+  wget -O - "https://github.com/dbry/WavPack/archive/$WAVPACK_VERSION.tar.gz" | tar xz && \
   cd WavPack-$WAVPACK_VERSION && \
-  ./autogen.sh && \
-  CFLAGS="-fno-strict-overflow -fstack-protector-all -fPIE" LDFLAGS="-Wl,-z,relro -Wl,-z,now -fPIE -pie" \
-  ./configure --enable-static --disable-shared && \
-  make -j4 install
+  ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(cat /build_concurrency) install
 
 RUN \
-  SPEEX_VERSION=1.2.0 && \
-  wget -O - https://github.com/xiph/speex/archive/Speex-$SPEEX_VERSION.tar.gz | tar xz && \
+  wget -O - "https://github.com/xiph/speex/archive/Speex-$SPEEX_VERSION.tar.gz" | tar xz && \
   cd speex-Speex-$SPEEX_VERSION && \
-  ./autogen.sh && \
-  CFLAGS="-fno-strict-overflow -fstack-protector-all -fPIE" LDFLAGS="-Wl,-z,relro -Wl,-z,now -fPIE -pie" \
-  ./configure --enable-static --disable-shared && \
-  make -j4 install
+  ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(cat /build_concurrency) install
 
 # note that this will produce a "static" PIE binary with no dynamic lib deps
-ENV FFMPEG_VERSION=3.4.2
 RUN \
   git clone --branch n$FFMPEG_VERSION --depth 1 https://github.com/FFmpeg/FFmpeg.git && \
   cd FFmpeg && \
@@ -129,7 +131,7 @@ RUN \
   --enable-libwavpack \
   --enable-libspeex \
   && \
-  make -j4 install
+  make -j$(cat /build_concurrency) install
 
 # sanity tests
 RUN \
@@ -141,5 +143,5 @@ RUN \
 
 FROM scratch
 LABEL maintainer="Mattias Wadman mattias.wadman@gmail.com"
-COPY --from=ffmpeg-builder /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /
+COPY --from=ffmpeg-builder /versions.json /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /
 ENTRYPOINT ["/ffmpeg"]
