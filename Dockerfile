@@ -8,22 +8,23 @@ RUN apk add --no-cache \
   autoconf \
   automake \
   libtool \
+  diffutils \
   cmake \
   git \
   yasm \
   jq \
   zlib-dev \
-  openssl-dev \
-  lame-dev \
-  libogg-dev \
-  libvpx-dev
+  openssl-dev
 
 ARG FFMPEG_VERSION=3.4.2
+ARG MP3LAME_VERSION=3.100
 ARG FDK_AAC_VERSION=0.1.5
+ARG OGG_VERISON=1.3.3
 ARG VORBIS_VERSION=1.3.5
 ARG OPUS_VERSION=1.2.1
 ARG THEORA_VERSION=1.1.1
-# x264 only has a stable branch no tags
+ARG VPX_VERSION=1.7.0
+# x264 only have a stable branch no tags
 ARG X264_VERSION=aaa9aa83a111ed6f1db253d5afa91c5fc844583f
 ARG X265_VERSION=2.7
 ARG WEBP_VERSION=1.0.0
@@ -42,10 +43,13 @@ RUN \
   echo \
   "{" \
   "\"ffmpeg\": \"$FFMPEG_VERSION\"", \
-  "\"libfdk_aac\": \"$FDK_AAC_VERSION\"", \
+  "\"libmp3lame\": \"$MP3LAME_VERSION\"", \
+  "\"libfdk-aac\": \"$FDK_AAC_VERSION\"", \
+  "\"libogg\": \"$OGG_VERSION\"", \
   "\"libvorbis\": \"$VORBIS_VERSION\"", \
   "\"libopus\": \"$OPUS_VERSION\"", \
   "\"libtheora\": \"$THEORA_VERSION\"", \
+  "\"libvpx\": \"$VPX_VERSION\"", \
   "\"libx264\": \"$X264_VERSION\"", \
   "\"libx265\": \"$X265_VERSION\"", \
   "\"libwebp\": \"$WEBP_VERSION\"", \
@@ -55,10 +59,21 @@ RUN \
   | jq . > /versions.json
 
 RUN \
+  wget -O - "https://sourceforge.net/projects/lame/files/lame/$MP3LAME_VERSION/lame-$MP3LAME_VERSION.tar.gz/download" | tar xz && \
+  cd lame-$MP3LAME_VERSION && \
+  ./configure --enable-static --disable-shared && make -j$(cat /build_concurrency) install
+
+RUN \
   wget -O - "https://github.com/mstorsjo/fdk-aac/archive/v$FDK_AAC_VERSION.tar.gz" | tar xz && \
   cd fdk-aac-$FDK_AAC_VERSION && \
   ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(cat /build_concurrency) install
 
+RUN \
+  wget -O - "http://downloads.xiph.org/releases/ogg/libogg-$OGG_VERISON.tar.gz" | tar xz && \
+  cd libogg-$OGG_VERISON && \
+  ./configure --enable-static --disable-shared && make -j$(cat /build_concurrency) install
+
+# require libogg to build
 RUN \
   wget -O - "https://downloads.xiph.org/releases/vorbis/libvorbis-$VORBIS_VERSION.tar.gz" | tar xz && \
   cd libvorbis-$VORBIS_VERSION && \
@@ -69,10 +84,14 @@ RUN \
   cd opus-$OPUS_VERSION && \
   ./configure --enable-static --disable-shared && make -j$(cat /build_concurrency) install
 
-# require libogg to build
 RUN \
   wget -O - "https://downloads.xiph.org/releases/theora/libtheora-$THEORA_VERSION.tar.bz2" | tar xj && \
   cd libtheora-$THEORA_VERSION && \
+  ./configure --enable-static --disable-shared && make -j$(cat /build_concurrency) install
+
+RUN \
+  wget -O - "https://github.com/webmproject/libvpx/archive/v$VPX_VERSION.tar.gz" | tar xz && \
+  cd libvpx-$VPX_VERSION && \
   ./configure --enable-static --disable-shared && make -j$(cat /build_concurrency) install
 
 RUN \
@@ -102,7 +121,6 @@ RUN \
   cd speex-Speex-$SPEEX_VERSION && \
   ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(cat /build_concurrency) install
 
-# note that this will produce a "static" PIE binary with no dynamic lib deps
 RUN \
   git clone --branch n$FFMPEG_VERSION --depth 1 https://github.com/FFmpeg/FFmpeg.git && \
   cd FFmpeg && \
