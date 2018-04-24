@@ -12,6 +12,7 @@ RUN apk add --no-cache \
   cmake \
   git \
   yasm \
+  nasm \
   jq \
   zlib-dev \
   openssl-dev
@@ -98,7 +99,7 @@ RUN \
   git clone git://git.videolan.org/x264.git && \
   cd x264 && \
   git checkout $X264_VERSION && \
-  ./configure --enable-pic --enable-static --disable-shared && make -j$(cat /build_concurrency) install
+  ./configure --enable-pic --enable-static && make -j$(cat /build_concurrency) install
 
 RUN \
   wget -O - "https://bitbucket.org/multicoreware/x265/downloads/x265_$X265_VERSION.tar.gz" | tar xz && \
