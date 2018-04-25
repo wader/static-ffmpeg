@@ -17,7 +17,7 @@ RUN apk add --no-cache \
   zlib-dev \
   openssl-dev
 
-ARG FFMPEG_VERSION=3.4.2
+ARG FFMPEG_VERSION=4.0
 ARG MP3LAME_VERSION=3.100
 ARG FDK_AAC_VERSION=0.1.5
 ARG OGG_VERISON=1.3.3
@@ -31,6 +31,7 @@ ARG X265_VERSION=2.7
 ARG WEBP_VERSION=1.0.0
 ARG WAVPACK_VERSION=5.1.0
 ARG SPEEX_VERSION=1.2.0
+ARG AOM_VERSION=fc8c5f8f7ffe2448fc7525e2b74b30780361a192
 
 # -static-libgcc is needed to make gcc not include gcc_s as "as-needed" shared library which
 # cmake will include as a implicit library
@@ -43,19 +44,20 @@ RUN cat /proc/cpuinfo | grep ^processor | wc -l > /build_concurrency
 RUN \
   echo \
   "{" \
-  "\"ffmpeg\": \"$FFMPEG_VERSION\"", \
-  "\"libmp3lame\": \"$MP3LAME_VERSION\"", \
-  "\"libfdk-aac\": \"$FDK_AAC_VERSION\"", \
-  "\"libogg\": \"$OGG_VERSION\"", \
-  "\"libvorbis\": \"$VORBIS_VERSION\"", \
-  "\"libopus\": \"$OPUS_VERSION\"", \
-  "\"libtheora\": \"$THEORA_VERSION\"", \
-  "\"libvpx\": \"$VPX_VERSION\"", \
-  "\"libx264\": \"$X264_VERSION\"", \
-  "\"libx265\": \"$X265_VERSION\"", \
-  "\"libwebp\": \"$WEBP_VERSION\"", \
-  "\"libwavpack\": \"$WAVPACK_VERSION\"", \
-  "\"libspeex\": \"$SPEEX_VERSION\"" \
+  "\"ffmpeg\": \"$FFMPEG_VERSION\"," \
+  "\"libmp3lame\": \"$MP3LAME_VERSION\"," \
+  "\"libfdk-aac\": \"$FDK_AAC_VERSION\"," \
+  "\"libogg\": \"$OGG_VERSION\"," \
+  "\"libvorbis\": \"$VORBIS_VERSION\"," \
+  "\"libopus\": \"$OPUS_VERSION\"," \
+  "\"libtheora\": \"$THEORA_VERSION\"," \
+  "\"libvpx\": \"$VPX_VERSION\"," \
+  "\"libx264\": \"$X264_VERSION\"," \
+  "\"libx265\": \"$X265_VERSION\"," \
+  "\"libwebp\": \"$WEBP_VERSION\"," \
+  "\"libwavpack\": \"$WAVPACK_VERSION\"," \
+  "\"libspeex\": \"$SPEEX_VERSION\"," \
+  "\"libaom\": \"$AOM_VERSION\"" \
   "}" \
   | jq . > /versions.json
 
@@ -123,6 +125,14 @@ RUN \
   ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(cat /build_concurrency) install
 
 RUN \
+  git clone "https://aomedia.googlesource.com/aom" && \
+  cd aom && \
+  git checkout $AOM_VERSION && \
+  mkdir build_tmp && cd build_tmp && \
+  cmake -DENABLE_SHARED=OFF -DCONFIG_UNIT_TESTS=0 .. && \
+  make -j$(cat /build_concurrency) install
+
+RUN \
   git clone --branch n$FFMPEG_VERSION --depth 1 https://github.com/FFmpeg/FFmpeg.git && \
   cd FFmpeg && \
   ./configure \
@@ -135,7 +145,6 @@ RUN \
   --enable-nonfree \
   --enable-openssl \
   --enable-iconv \
-  --disable-ffserver \
   --disable-doc \
   --disable-ffplay \
   --enable-libmp3lame \
@@ -149,6 +158,7 @@ RUN \
   --enable-libwebp \
   --enable-libwavpack \
   --enable-libspeex \
+  --enable-libaom \
   && \
   make -j$(cat /build_concurrency) install
 
