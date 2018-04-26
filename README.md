@@ -17,4 +17,5 @@ libx265,
 libwebp,
 libwavpack,
 libspeex,
+libaom,
 and all default native ffmpeg codecs.
