@@ -13,6 +13,7 @@ RUN apk add --no-cache \
   git \
   yasm \
   nasm \
+  texinfo \
   jq \
   zlib-dev \
   openssl-dev
@@ -145,7 +146,6 @@ RUN \
   --enable-nonfree \
   --enable-openssl \
   --enable-iconv \
-  --disable-doc \
   --disable-ffplay \
   --enable-libmp3lame \
   --enable-libfdk-aac \
@@ -173,4 +173,5 @@ RUN \
 FROM scratch
 LABEL maintainer="Mattias Wadman mattias.wadman@gmail.com"
 COPY --from=ffmpeg-builder /versions.json /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /
+COPY --from=ffmpeg-builder /usr/local/share/doc/ffmpeg/* /doc/
 ENTRYPOINT ["/ffmpeg"]
