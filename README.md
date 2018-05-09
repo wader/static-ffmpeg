@@ -1,9 +1,11 @@
 ### static-ffmpeg
 
-Docker image with static ffmpeg and ffprobe binaries. To be run as or used in
-multi-stage as e.g. `COPY --from=mwader/static-ffmpeg:3.4.2 /* /usr/local/bin/`
-when ffmpeg is needed. Binaries are built as hardened PIE binaries
-with no external dependencies (uses musl from alpine instead of glibc).
+Docker image with static ffmpeg and ffprobe binaries. To be run as is or used in
+multi-stage built as e.g. `COPY --from=mwader/static-ffmpeg:4.0 /ffmpeg /ffprobe /usr/local/bin/`
+when ffmpeg is needed.
+
+Binaries are built as hardened PIE binaries with no external dependencies (uses musl from alpine
+instead of glibc).
 
 Built with
 libmp3lame,
