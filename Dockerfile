@@ -21,7 +21,7 @@ RUN apk add --no-cache \
 ARG FFMPEG_VERSION=4.0
 ARG MP3LAME_VERSION=3.100
 ARG FDK_AAC_VERSION=0.1.5
-ARG OGG_VERISON=1.3.3
+ARG OGG_VERSION=1.3.3
 ARG VORBIS_VERSION=1.3.5
 ARG OPUS_VERSION=1.2.1
 ARG THEORA_VERSION=1.1.1
@@ -73,8 +73,8 @@ RUN \
   ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(cat /build_concurrency) install
 
 RUN \
-  wget -O - "http://downloads.xiph.org/releases/ogg/libogg-$OGG_VERISON.tar.gz" | tar xz && \
-  cd libogg-$OGG_VERISON && \
+  wget -O - "http://downloads.xiph.org/releases/ogg/libogg-$OGG_VERSION.tar.gz" | tar xz && \
+  cd libogg-$OGG_VERSION && \
   ./configure --enable-static --disable-shared && make -j$(cat /build_concurrency) install
 
 # require libogg to build
