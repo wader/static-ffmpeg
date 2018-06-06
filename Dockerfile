@@ -155,16 +155,17 @@ RUN \
   git clone --branch n$FFMPEG_VERSION --depth 1 https://github.com/FFmpeg/FFmpeg.git && \
   cd FFmpeg && \
   ./configure \
-  --toolchain=hardened \
-  --disable-shared \
-  --enable-static \
   --pkg-config-flags=--static \
   --extra-ldflags=-static \
+  --toolchain=hardened \
+  --disable-debug \
+  --disable-shared \
+  --disable-ffplay \
+  --enable-static \
   --enable-gpl \
   --enable-nonfree \
   --enable-openssl \
   --enable-iconv \
-  --disable-ffplay \
   --enable-libmp3lame \
   --enable-libfdk-aac \
   --enable-libvorbis \
