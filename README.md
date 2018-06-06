@@ -20,4 +20,6 @@ libwebp,
 libwavpack,
 libspeex,
 libaom,
+libvidstab,
+libkvazaar
 and all default native ffmpeg codecs.
