@@ -33,6 +33,8 @@ ARG WEBP_VERSION=1.0.0
 ARG WAVPACK_VERSION=5.1.0
 ARG SPEEX_VERSION=1.2.0
 ARG AOM_VERSION=1e954337be798ddb841de69b3ff0d435fa620fd0
+ARG VIDSTAB_VERSION=1.1.0
+ARG KVAZAAR_VERSION=1.2.0
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
@@ -61,7 +63,9 @@ RUN \
   "\"libwebp\": \"$WEBP_VERSION\"," \
   "\"libwavpack\": \"$WAVPACK_VERSION\"," \
   "\"libspeex\": \"$SPEEX_VERSION\"," \
-  "\"libaom\": \"$AOM_VERSION\"" \
+  "\"libaom\": \"$AOM_VERSION\"," \
+  "\"libvidstab\": \"$VIDSTAB_VERSION\"," \
+  "\"libkvazaar\": \"$KVAZAAR_VERSION\"" \
   "}" \
   | jq . > /versions.json
 
@@ -137,6 +141,17 @@ RUN \
   make -j$(cat /build_concurrency) install
 
 RUN \
+  wget -O - "https://github.com/georgmartius/vid.stab/archive/v$VIDSTAB_VERSION.tar.gz" | tar xz && \
+  cd vid.stab-$VIDSTAB_VERSION && \
+  cmake -DBUILD_SHARED_LIBS=OFF . && \
+  make -j$(cat /build_concurrency) install
+
+RUN \
+  wget -O - "https://github.com/ultravideo/kvazaar/archive/v$KVAZAAR_VERSION.tar.gz" | tar xz && \
+  cd kvazaar-$KVAZAAR_VERSION && \
+  ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(cat /build_concurrency) install
+
+RUN \
   git clone --branch n$FFMPEG_VERSION --depth 1 https://github.com/FFmpeg/FFmpeg.git && \
   cd FFmpeg && \
   ./configure \
@@ -162,6 +177,8 @@ RUN \
   --enable-libwavpack \
   --enable-libspeex \
   --enable-libaom \
+  --enable-libvidstab \
+  --enable-libkvazaar \
   && \
   make -j$(cat /build_concurrency) install
 
