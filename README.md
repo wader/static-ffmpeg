@@ -1,6 +1,6 @@
 ### static-ffmpeg
 
-Docker image with static ffmpeg and ffprobe binaries. To be run as is or used in
+Docker image with static x86 64bit ffmpeg and ffprobe binaries. To be run as is or used in
 multi-stage built as e.g. `COPY --from=mwader/static-ffmpeg:4.0 /ffmpeg /ffprobe /usr/local/bin/`
 when ffmpeg is needed.
 
