@@ -34,10 +34,13 @@ ARG WAVPACK_VERSION=5.1.0
 ARG SPEEX_VERSION=1.2.0
 ARG AOM_VERSION=fc8c5f8f7ffe2448fc7525e2b74b30780361a192
 
+# -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
+# default automake cflags.
 # -static-libgcc is needed to make gcc not include gcc_s as "as-needed" shared library which
-# cmake will include as a implicit library
-ENV CFLAGS="-static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE"
-ENV CXXFLAGS="-static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE"
+# cmake will include as a implicit library.
+# other options to get hardened build (same as ffmpeg hardened)
+ENV CFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE"
+ENV CXXFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE"
 ENV LDFLAGS="-Wl,-z,relro -Wl,-z,now -fPIE -pie"
 
 RUN cat /proc/cpuinfo | grep ^processor | wc -l > /build_concurrency
