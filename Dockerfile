@@ -183,16 +183,12 @@ RUN \
   && \
   make -j$(cat /build_concurrency) install
 
-# sanity tests
-RUN \
-  ldd /usr/local/bin/ffmpeg | grep -vq lib && \
-  ldd /usr/local/bin/ffprobe | grep -vq lib && \
-  /usr/local/bin/ffmpeg -version && \
-  /usr/local/bin/ffprobe -version && \
-  /usr/local/bin/ffmpeg -i https://www.google.com 2>&1 | grep -q "Invalid data found when processing input"
-
 FROM scratch
 LABEL maintainer="Mattias Wadman mattias.wadman@gmail.com"
 COPY --from=ffmpeg-builder /versions.json /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /
 COPY --from=ffmpeg-builder /usr/local/share/doc/ffmpeg/* /doc/
+# sanity tests
+RUN ["/ffmpeg", "-version"]
+RUN ["/ffprobe", "-version"]
+RUN ["/ffprobe", "https://github.com/favicon.ico"]
 ENTRYPOINT ["/ffmpeg"]
