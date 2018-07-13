@@ -1,4 +1,4 @@
-FROM alpine:3.7 AS ffmpeg-builder
+FROM alpine:3.8 AS ffmpeg-builder
 
 RUN apk add --no-cache \
   coreutils \
