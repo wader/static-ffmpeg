@@ -21,12 +21,10 @@ libvidstab,
 libkvazaar
 and all default native ffmpeg codecs.
 
-#### Multi-stage usage
+#### Usage
 ```Dockerfile
 COPY --from=mwader/static-ffmpeg:4.0.1 /ffmpeg /ffprobe /usr/local/bin/
 ```
-
-#### `docker run` usage
 ```sh
 docker run --rm -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg -i file.wav file.mp3
 ```
