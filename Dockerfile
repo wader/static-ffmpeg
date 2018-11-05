@@ -18,21 +18,21 @@ RUN apk add --no-cache \
   zlib-dev \
   openssl-dev
 
-ARG FFMPEG_VERSION=4.0.2
+ARG FFMPEG_VERSION=4.0.3
 ARG MP3LAME_VERSION=3.100
 ARG FDK_AAC_VERSION=0.1.6
 ARG OGG_VERSION=1.3.3
 ARG VORBIS_VERSION=1.3.6
-ARG OPUS_VERSION=1.2.1
+ARG OPUS_VERSION=1.3
 ARG THEORA_VERSION=1.1.1
 ARG VPX_VERSION=1.7.0
 # x264 only have a stable branch no tags
-ARG X264_VERSION=e9a5903edf8ca59ef20e6f4894c196f135af735e
-ARG X265_VERSION=2.8
+ARG X264_VERSION=0a84d986e7020f8344f00752e3600b9769cc1e85
+ARG X265_VERSION=2.9
 ARG WEBP_VERSION=1.0.0
 ARG WAVPACK_VERSION=5.1.0
 ARG SPEEX_VERSION=1.2.0
-ARG AOM_VERSION=1e954337be798ddb841de69b3ff0d435fa620fd0
+ARG AOM_VERSION=1.0.0
 ARG VIDSTAB_VERSION=1.1.0
 ARG KVAZAAR_VERSION=1.2.0
 
@@ -133,11 +133,10 @@ RUN \
   ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(cat /build_concurrency) install
 
 RUN \
-  git clone "https://aomedia.googlesource.com/aom" && \
+  git clone --branch v$AOM_VERSION --depth 1 "https://aomedia.googlesource.com/aom" && \
   cd aom && \
-  git checkout $AOM_VERSION && \
   mkdir build_tmp && cd build_tmp && \
-  cmake -DENABLE_SHARED=OFF -DCONFIG_UNIT_TESTS=0 .. && \
+  cmake -DENABLE_SHARED=OFF -DENABLE_TESTS=0 .. && \
   make -j$(cat /build_concurrency) install
 
 RUN \
