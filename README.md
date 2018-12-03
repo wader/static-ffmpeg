@@ -23,7 +23,7 @@ and all default native ffmpeg codecs.
 
 #### Usage
 ```Dockerfile
-COPY --from=mwader/static-ffmpeg:4.0.3 /ffmpeg /ffprobe /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:4.1 /ffmpeg /ffprobe /usr/local/bin/
 ```
 ```sh
 docker run --rm -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg -i file.wav file.mp3
