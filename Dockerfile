@@ -29,27 +29,6 @@ ENV CXXFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPI
 ENV LDFLAGS="-Wl,-z,relro -Wl,-z,now -fPIE -pie"
 
 
-RUN \
-  echo \
-  "{" \
-  "\"ffmpeg\": \"$FFMPEG_VERSION\"," \
-  "\"libmp3lame\": \"$MP3LAME_VERSION\"," \
-  "\"libfdk-aac\": \"$FDK_AAC_VERSION\"," \
-  "\"libogg\": \"$OGG_VERSION\"," \
-  "\"libvorbis\": \"$VORBIS_VERSION\"," \
-  "\"libopus\": \"$OPUS_VERSION\"," \
-  "\"libtheora\": \"$THEORA_VERSION\"," \
-  "\"libvpx\": \"$VPX_VERSION\"," \
-  "\"libx264\": \"$X264_VERSION\"," \
-  "\"libx265\": \"$X265_VERSION\"," \
-  "\"libwebp\": \"$WEBP_VERSION\"," \
-  "\"libwavpack\": \"$WAVPACK_VERSION\"," \
-  "\"libspeex\": \"$SPEEX_VERSION\"," \
-  "\"libaom\": \"$AOM_VERSION\"," \
-  "\"libvidstab\": \"$VIDSTAB_VERSION\"," \
-  "\"libkvazaar\": \"$KVAZAAR_VERSION\"" \
-  "}" \
-  | jq . > /versions.json
 RUN apk add --no-cache \
   coreutils \
   openssl \
@@ -68,6 +47,25 @@ RUN apk add --no-cache \
   zlib-dev \
   openssl-dev
 
+RUN \
+  jq -n '{ \
+  ffmpeg: env.FFMPEG_VERSION, \
+  libmp3lame: env.MP3LAME_VERSION, \
+  "libfdk-aac": env.FDK_AAC_VERSION, \
+  libogg: env.OGG_VERSION, \
+  libvorbis: env.VORBIS_VERSION, \
+  libopus: env.OPUS_VERSION, \
+  libtheora: env.THEORA_VERSION, \
+  libvpx: env.VPX_VERSION, \
+  libx264: env.X264_VERSION, \
+  libx265: env.X265_VERSION, \
+  libwebp: env.WEBP_VERSION, \
+  libwavpack: env.WAVPACK_VERSION, \
+  libspeex: env.SPEEX_VERSION, \
+  libaom: env.AOM_VERSION, \
+  libvidstab: env.VIDSTAB_VERSION, \
+  libkvazaar: env.KVAZAAR_VERSION \
+  }' > /versions.json
 
 RUN \
   wget -O - "https://sourceforge.net/projects/lame/files/lame/$MP3LAME_VERSION/lame-$MP3LAME_VERSION.tar.gz/download" | tar xz && \
