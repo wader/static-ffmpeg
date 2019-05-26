@@ -1,4 +1,3 @@
-
 FROM alpine:3.9 AS builder
 
 ARG FFMPEG_VERSION=4.1.3
@@ -26,8 +25,7 @@ ARG KVAZAAR_VERSION=1.2.0
 # other options to get hardened build (same as ffmpeg hardened)
 ENV CFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE"
 ENV CXXFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE"
-ENV LDFLAGS="-Wl,-z,relro -Wl,-z,now -fPIE -pie"
-
+ENV LDFLAGS="-Wl,-z,relro,-z,now -fPIE -pie"
 
 RUN apk add --no-cache \
   coreutils \
