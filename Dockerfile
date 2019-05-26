@@ -1,21 +1,4 @@
 
-RUN apk add --no-cache \
-  coreutils \
-  openssl \
-  bash \
-  build-base \
-  autoconf \
-  automake \
-  libtool \
-  diffutils \
-  cmake \
-  git \
-  yasm \
-  nasm \
-  texinfo \
-  jq \
-  zlib-dev \
-  openssl-dev
 FROM alpine:3.9 AS builder
 
 ARG FFMPEG_VERSION=4.1.3
@@ -67,6 +50,24 @@ RUN \
   "\"libkvazaar\": \"$KVAZAAR_VERSION\"" \
   "}" \
   | jq . > /versions.json
+RUN apk add --no-cache \
+  coreutils \
+  openssl \
+  bash \
+  build-base \
+  autoconf \
+  automake \
+  libtool \
+  diffutils \
+  cmake \
+  git \
+  yasm \
+  nasm \
+  texinfo \
+  jq \
+  zlib-dev \
+  openssl-dev
+
 
 RUN \
   wget -O - "https://sourceforge.net/projects/lame/files/lame/$MP3LAME_VERSION/lame-$MP3LAME_VERSION.tar.gz/download" | tar xz && \
