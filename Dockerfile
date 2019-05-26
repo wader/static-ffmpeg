@@ -1,4 +1,3 @@
-FROM alpine:3.9 AS ffmpeg-builder
 
 RUN apk add --no-cache \
   coreutils \
@@ -17,6 +16,7 @@ RUN apk add --no-cache \
   jq \
   zlib-dev \
   openssl-dev
+FROM alpine:3.9 AS builder
 
 ARG FFMPEG_VERSION=4.1.3
 ARG MP3LAME_VERSION=3.100
@@ -182,8 +182,8 @@ RUN \
 
 FROM scratch
 LABEL maintainer="Mattias Wadman mattias.wadman@gmail.com"
-COPY --from=ffmpeg-builder /versions.json /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /
-COPY --from=ffmpeg-builder /usr/local/share/doc/ffmpeg/* /doc/
+COPY --from=builder /versions.json /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /
+COPY --from=builder /usr/local/share/doc/ffmpeg/* /doc/
 # sanity tests
 RUN ["/ffmpeg", "-version"]
 RUN ["/ffprobe", "-version"]
