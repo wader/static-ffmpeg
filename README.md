@@ -1,8 +1,7 @@
 ## static-ffmpeg
 
-Docker image with static x86 64bit ffmpeg and ffprobe binaries.
-Binaries are built as hardened PIE binaries with no external dependencies
-(uses musl from alpine instead of glibc).
+Image with ffmpeg and ffprobe binaries built as hardened static PIE binaries with no
+external dependencies. Can be used with any base image even scratch.
 
 Built with
 libmp3lame,
