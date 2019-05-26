@@ -20,7 +20,7 @@ libvidstab,
 libkvazaar
 and all default native ffmpeg codecs.
 
-#### Usage
+### Usage
 ```Dockerfile
 COPY --from=mwader/static-ffmpeg:4.1.3 /ffmpeg /ffprobe /usr/local/bin/
 ```
@@ -31,8 +31,17 @@ docker run --rm -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.1.3 -i file.wav 
 docker run --rm --entrypoint=/ffprobe -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.1.3 -i file.wav
 ```
 
-#### Files in the image
+### Files in the image
 `/ffmpeg` ffmpeg binary  
 `/ffprobe` ffprobe binary  
 `/doc/*` ffmpeg documentation  
 `/versions.json` JSON file with ffmpeg and library versions
+
+### TLS
+
+Binaries are built with TLS support but by default ffmpeg currently do
+not do certificate verifications. To enable verification you need to run
+ffmpeg with `-tls_verify 1` and `-ca_file /path/to/cert.pem`. For alpine
+the ca file is included by default at `/etc/ssl/cert.pem` and for debian/ubuntu
+you have to install the `ca-certificates` package which will install the file at
+`/etc/ssl/certs/ca-certificates.crt`.
