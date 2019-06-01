@@ -17,20 +17,28 @@ ARG SPEEX_VERSION=1.2.0
 ARG AOM_VERSION=1.0.0
 ARG VIDSTAB_VERSION=1.1.0
 ARG KVAZAAR_VERSION=1.2.0
+ARG FRIBIDI_VERSION=1.0.5
+ARG ASS_VERSION=0.14.0
+ARG ZIMG_VERSION=2.8
+ARG SOXR_VERSION=0.1.3
+ARG OPENJPEG_VERSION=2.3.1
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
 # -static-libgcc is needed to make gcc not include gcc_s as "as-needed" shared library which
 # cmake will include as a implicit library.
 # other options to get hardened build (same as ffmpeg hardened)
-ENV CFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE"
-ENV CXXFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE"
-ENV LDFLAGS="-Wl,-z,relro,-z,now -fPIE -pie"
+ARG CFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE"
+ARG CXXFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE"
+ARG LDFLAGS="-Wl,-z,relro,-z,now -fPIE -pie"
 
 RUN apk add --no-cache \
   coreutils \
   openssl \
+  openssl-dev \
   bash \
+  tar \
+  xz \
   build-base \
   autoconf \
   automake \
@@ -42,8 +50,21 @@ RUN apk add --no-cache \
   nasm \
   texinfo \
   jq \
+  zlib \
   zlib-dev \
-  openssl-dev
+  libxml2 \
+  libxml2-dev \
+  fontconfig \
+  fontconfig-dev \
+  freetype \
+  freetype-dev \
+  freetype-static \
+  graphite2-static \
+  glib-static \
+  libpng-static \
+  harfbuzz \
+  harfbuzz-dev \
+  harfbuzz-static
 
 RUN \
   jq -n '{ \
@@ -62,7 +83,12 @@ RUN \
   libspeex: env.SPEEX_VERSION, \
   libaom: env.AOM_VERSION, \
   libvidstab: env.VIDSTAB_VERSION, \
-  libkvazaar: env.KVAZAAR_VERSION \
+  libkvazaar: env.KVAZAAR_VERSION, \
+  libfribidi: env.FRIBIDI_VERSION, \
+  libass: env.ASS_VERSION, \
+  libzimg: env.ZIMG_VERSION, \
+  libsoxr: env.SOXR_VERSION, \
+  libopenjpeg: env.OPENJPEG_VERSION, \
   }' > /versions.json
 
 RUN \
@@ -94,7 +120,7 @@ RUN \
 RUN \
   wget -O - "https://downloads.xiph.org/releases/theora/libtheora-$THEORA_VERSION.tar.bz2" | tar xj && \
   cd libtheora-$THEORA_VERSION && \
-  ./configure --enable-static --disable-shared && make -j$(nproc) install
+  ./configure --disable-examples --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
   wget -O - "https://github.com/webmproject/libvpx/archive/v$VPX_VERSION.tar.gz" | tar xz && \
@@ -146,6 +172,34 @@ RUN \
   ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
+  wget -O - "https://github.com/fribidi/fribidi/releases/download/v$FRIBIDI_VERSION/fribidi-$FRIBIDI_VERSION.tar.bz2" | tar xj && \
+  cd fribidi-* && \
+  ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(nproc) install
+
+RUN \
+  wget -O - "https://github.com/libass/libass/releases/download/$ASS_VERSION/libass-$ASS_VERSION.tar.gz" | tar xz && \
+  cd libass-* && \
+  ./configure --enable-static --disable-shared && make -j$(nproc) && make install
+
+RUN \
+  wget -O - "https://github.com/sekrit-twc/zimg/archive/release-$ZIMG_VERSION.tar.gz" | tar xz && \
+  cd zimg-* && \
+  ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(nproc) install
+
+# TODO: skips openmp for now. could not get it to work with alpine gmp
+RUN \
+  wget -O - "https://sourceforge.net/projects/soxr/files/soxr-$SOXR_VERSION-Source.tar.xz" | tar xJ && \
+  cd soxr-* && \
+  cmake -G "Unix Makefiles" -DWITH_OPENMP=OFF -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF && \
+  make -j$(nproc) install
+
+RUN \
+  wget -O - "https://github.com/uclouvain/openjpeg/archive/v$OPENJPEG_VERSION.tar.gz" | tar xz && \
+  cd openjpeg-* && \
+  cmake -G "Unix Makefiles" -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF && \
+  make -j$(nproc) install
+
+RUN \
   git clone --branch n$FFMPEG_VERSION --depth 1 https://github.com/FFmpeg/FFmpeg.git && \
   cd FFmpeg && \
   ./configure \
@@ -160,6 +214,7 @@ RUN \
   --enable-nonfree \
   --enable-openssl \
   --enable-iconv \
+  --enable-libxml2 \
   --enable-libmp3lame \
   --enable-libfdk-aac \
   --enable-libvorbis \
@@ -174,8 +229,20 @@ RUN \
   --enable-libaom \
   --enable-libvidstab \
   --enable-libkvazaar \
+  --enable-libfreetype \
+  --enable-fontconfig \
+  --enable-libfribidi \
+  --enable-libass \
+  --enable-libzimg \
+  --enable-libsoxr \
+  --enable-libopenjpeg \
   && \
   make -j$(nproc) install
+
+# make sure binaries have no dependencies
+RUN \
+  test $(ldd /usr/local/bin/ffmpeg | wc -l) -eq 1 && \
+  test $(ldd /usr/local/bin/ffprobe | wc -l) -eq 1
 
 FROM scratch
 LABEL maintainer="Mattias Wadman mattias.wadman@gmail.com"
@@ -184,5 +251,5 @@ COPY --from=builder /usr/local/share/doc/ffmpeg/* /doc/
 # sanity tests
 RUN ["/ffmpeg", "-version"]
 RUN ["/ffprobe", "-version"]
-RUN ["/ffprobe", "https://github.com/favicon.ico"]
+RUN ["/ffprobe", "-i", "https://github.com/favicon.ico"]
 ENTRYPOINT ["/ffmpeg"]

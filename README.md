@@ -4,6 +4,7 @@ Image with ffmpeg and ffprobe binaries built as hardened static PIE binaries wit
 external dependencies. Can be used with any base image even scratch.
 
 Built with
+libxml2,
 libmp3lame,
 libfdk-aac,
 libvorbis,
@@ -17,7 +18,14 @@ libwavpack,
 libspeex,
 libaom,
 libvidstab,
-libkvazaar
+libkvazaar,
+libfreetype,
+fontconfig,
+libfribidi,
+libass,
+libzimg,
+libsoxr,
+libopenjpeg
 and all default native ffmpeg codecs.
 
 ### Usage
