@@ -220,8 +220,8 @@ RUN \
   --enable-libzimg \
   --enable-libsoxr \
   --enable-libopenjpeg \
-  && \
-  make -j$(nproc) install
+  || (cat ffbuild/config.log ; false) \
+  && make -j$(nproc) install
 
 # make sure binaries have no dependencies
 RUN \
