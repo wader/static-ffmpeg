@@ -1,4 +1,4 @@
-FROM alpine:3.9 AS builder
+FROM alpine:3.10 AS builder
 
 ARG FFMPEG_VERSION=4.1.3
 ARG MP3LAME_VERSION=3.100
@@ -17,10 +17,8 @@ ARG SPEEX_VERSION=1.2.0
 ARG AOM_VERSION=1.0.0
 ARG VIDSTAB_VERSION=1.1.0
 ARG KVAZAAR_VERSION=1.2.0
-ARG FRIBIDI_VERSION=1.0.5
 ARG ASS_VERSION=0.14.0
 ARG ZIMG_VERSION=2.8
-ARG SOXR_VERSION=0.1.3
 ARG OPENJPEG_VERSION=2.3.1
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
@@ -28,7 +26,7 @@ ARG OPENJPEG_VERSION=2.3.1
 # -static-libgcc is needed to make gcc not include gcc_s as "as-needed" shared library which
 # cmake will include as a implicit library.
 # other options to get hardened build (same as ffmpeg hardened)
-ARG CFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE"
+ARG CFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE -fopenmp"
 ARG CXXFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE"
 ARG LDFLAGS="-Wl,-z,relro,-z,now -fPIE -pie"
 
@@ -64,7 +62,13 @@ RUN apk add --no-cache \
   libpng-static \
   harfbuzz \
   harfbuzz-dev \
-  harfbuzz-static
+  harfbuzz-static \
+  fribidi \
+  fribidi-dev \
+  fribidi-static \
+  soxr \
+  soxr-dev \
+  soxr-static
 
 RUN \
   jq -n '{ \
@@ -84,10 +88,8 @@ RUN \
   libaom: env.AOM_VERSION, \
   libvidstab: env.VIDSTAB_VERSION, \
   libkvazaar: env.KVAZAAR_VERSION, \
-  libfribidi: env.FRIBIDI_VERSION, \
   libass: env.ASS_VERSION, \
   libzimg: env.ZIMG_VERSION, \
-  libsoxr: env.SOXR_VERSION, \
   libopenjpeg: env.OPENJPEG_VERSION, \
   }' > /versions.json
 
@@ -159,23 +161,12 @@ RUN \
   cd kvazaar-* && ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
-  wget -O - "https://github.com/fribidi/fribidi/releases/download/v$FRIBIDI_VERSION/fribidi-$FRIBIDI_VERSION.tar.bz2" | tar xj && \
-  cd fribidi-* && ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(nproc) install
-
-RUN \
   wget -O - "https://github.com/libass/libass/releases/download/$ASS_VERSION/libass-$ASS_VERSION.tar.gz" | tar xz && \
   cd libass-* && ./configure --enable-static --disable-shared && make -j$(nproc) && make install
 
 RUN \
   wget -O - "https://github.com/sekrit-twc/zimg/archive/release-$ZIMG_VERSION.tar.gz" | tar xz && \
   cd zimg-* && ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(nproc) install
-
-# TODO: skips openmp for now. could not get it to work with alpine gmp
-RUN \
-  wget -O - "https://sourceforge.net/projects/soxr/files/soxr-$SOXR_VERSION-Source.tar.xz" | tar xJ && \
-  cd soxr-* && \
-  cmake -G "Unix Makefiles" -DWITH_OPENMP=OFF -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF && \
-  make -j$(nproc) install
 
 RUN \
   wget -O - "https://github.com/uclouvain/openjpeg/archive/v$OPENJPEG_VERSION.tar.gz" | tar xz && \
@@ -188,7 +179,7 @@ RUN \
   cd FFmpeg && \
   ./configure \
   --pkg-config-flags=--static \
-  --extra-ldflags=-static \
+  --extra-ldflags="-static -fopenmp" \
   --toolchain=hardened \
   --disable-debug \
   --disable-shared \
