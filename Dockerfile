@@ -71,8 +71,16 @@ RUN apk add --no-cache \
   soxr-static
 
 RUN \
+  OPENSSL_VERSION=$(pkg-config --modversion openssl) \
+  LIBXML2_VERSION=$(pkg-config --modversion libxml-2.0) \
+  FREETYPE_VERSION=$(pkg-config --modversion freetype2)  \
+  FONTCONFIG_VERSION=$(pkg-config --modversion fontconfig)  \
+  FRIBIDI_VERSION=$(pkg-config --modversion fribidi)  \
+  SOXR_VERSION=$(pkg-config --modversion soxr) \
   jq -n '{ \
   ffmpeg: env.FFMPEG_VERSION, \
+  openssl: env.OPENSSL_VERSION, \
+  libxml2: env.LIBXML2_VERSION, \
   libmp3lame: env.MP3LAME_VERSION, \
   "libfdk-aac": env.FDK_AAC_VERSION, \
   libogg: env.OGG_VERSION, \
@@ -88,8 +96,12 @@ RUN \
   libaom: env.AOM_VERSION, \
   libvidstab: env.VIDSTAB_VERSION, \
   libkvazaar: env.KVAZAAR_VERSION, \
+  libfreetype: env.FREETYPE_VERSION, \
+  fontconfig: env.FONTCONFIG_VERSION, \
+  libfribidi: env.FRIBIDI_VERSION, \
   libass: env.ASS_VERSION, \
   libzimg: env.ZIMG_VERSION, \
+  libsoxr: env.SOXR_VERSION, \
   libopenjpeg: env.OPENJPEG_VERSION, \
   }' > /versions.json
 
