@@ -149,12 +149,6 @@ RUN \
   cd libvorbis-* && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
-  wget -O libvorbis.tar.gz "https://downloads.xiph.org/releases/vorbis/libvorbis-$VORBIS_VERSION.tar.gz" && \
-  sha256sum --status -c $(echo "$VORBIS_SHA256  libvorbis.tar.gz" > hash ; echo hash) && \
-  tar xfz libvorbis.tar.gz && \
-  cd libvorbis-* && ./configure --enable-static --disable-shared && make -j$(nproc) install
-
-RUN \
   wget -O opus.tar.gz "https://archive.mozilla.org/pub/opus/opus-$OPUS_VERSION.tar.gz" && \
   sha256sum --status -c $(echo "$OPUS_SHA256  opus.tar.gz" > hash ; echo hash) && \
   tar xfz opus.tar.gz && \
