@@ -55,3 +55,9 @@ ffmpeg with `-tls_verify 1` and `-ca_file /path/to/cert.pem`. For alpine
 the ca file is included by default at `/etc/ssl/cert.pem` and for debian/ubuntu
 you have to install the `ca-certificates` package which will install the file at
 `/etc/ssl/certs/ca-certificates.crt`.
+
+### Contribute
+
+Feel free to create issues or PRs if you have any improvements or problems.
+Please also consider making a [donation](https://ffmpeg.org/donations.html) to
+the FFmpeg project or to other projects used by this image if you find it useful.
