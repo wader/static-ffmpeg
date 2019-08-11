@@ -36,17 +36,23 @@ and all default native ffmpeg codecs.
 COPY --from=mwader/static-ffmpeg:4.2.0-1 /ffmpeg /ffprobe /usr/local/bin/
 ```
 ```sh
-docker run --rm -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.2.0-1 -i file.wav file.mp3
+docker run --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.2.0-1 -i file.wav file.mp3
 ```
 ```sh
-docker run --rm --entrypoint=/ffprobe -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.2.0-1 -i file.wav
+docker run --rm --entrypoint=/ffprobe -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.2.0-1 -i file.wav
 ```
 
 ### Files in the image
 `/ffmpeg` ffmpeg binary  
 `/ffprobe` ffprobe binary  
-`/doc` ffmpeg documentation  
+`/doc` Documentation  
 `/versions.json` JSON file with ffmpeg and library versions
+
+### Security
+
+Binaries are built with various hardening features but it's probably still a good idea to run
+them as non-root even when used inside a container, especially so if running on input files
+that you don't control.
 
 ### TLS
 
