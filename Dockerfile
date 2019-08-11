@@ -38,6 +38,8 @@ ARG ZIMG_VERSION=2.9.1
 ARG ZIMG_SHA256=8efa0c381aa6a9bcd5ea4ae22ad06dccf6c1dc705c394547de016951d1946154
 ARG OPENJPEG_VERSION=2.3.1
 ARG OPENJPEG_SHA256=63f5a4713ecafc86de51bfad89cc07bb788e9bba24ebbf0c4ca637621aadb6a9
+ARG LIBDAV1D_VERSION=0.4.0
+ARG LIBDAV1D_SHA256=f3a825bce590778b4959807470cd853bbcbd0d3c10d98958a3a1eea09ce64544
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
@@ -46,7 +48,7 @@ ARG OPENJPEG_SHA256=63f5a4713ecafc86de51bfad89cc07bb788e9bba24ebbf0c4ca637621aad
 # other options to get hardened build (same as ffmpeg hardened)
 ARG CFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE"
 ARG CXXFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE"
-ARG LDFLAGS="-Wl,-z,relro,-z,now -fPIE -pie"
+ARG LDFLAGS="-Wl,-z,relro,-z,now"
 
 RUN apk add --no-cache \
   coreutils \
@@ -61,6 +63,8 @@ RUN apk add --no-cache \
   libtool \
   diffutils \
   cmake \
+  meson \
+  ninja \
   git \
   yasm \
   nasm \
@@ -121,6 +125,7 @@ RUN \
   libzimg: env.ZIMG_VERSION, \
   libsoxr: env.SOXR_VERSION, \
   libopenjpeg: env.OPENJPEG_VERSION, \
+  libdav1d: env.LIBDAV1D_VERSION, \
   }' > /versions.json
 
 RUN \
@@ -234,6 +239,12 @@ RUN \
   cd openjpeg-* && cmake -G "Unix Makefiles" -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF && make -j$(nproc) install
 
 RUN \
+  wget -O dav1d.tar.gz "https://code.videolan.org/videolan/dav1d/-/archive/$LIBDAV1D_VERSION/dav1d-$LIBDAV1D_VERSION.tar.gz" && \
+  sha256sum --status -c $(echo "${LIBDAV1D_SHA256}  dav1d.tar.gz" > hash ; echo hash) && \
+  tar xfz dav1d.tar.gz && \
+  cd dav1d-* && meson build --buildtype release -Ddefault_library=static && ninja -C build install
+
+RUN \
   wget -O ffmpeg.tar.gz "https://github.com/FFmpeg/FFmpeg/archive/n$FFMPEG_VERSION.tar.gz" && \
   sha256sum --status -c $(echo "$FFMPEG_SHA256  ffmpeg.tar.gz" > hash ; echo hash) && \
   tar xfz ffmpeg.tar.gz && \
@@ -273,6 +284,7 @@ RUN \
   --enable-libzimg \
   --enable-libsoxr \
   --enable-libopenjpeg \
+  --enable-libdav1d \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install
 
