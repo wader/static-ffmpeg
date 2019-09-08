@@ -1,44 +1,64 @@
 FROM alpine:3.10.1 AS builder
 
 ARG FFMPEG_VERSION=4.2
+ARG FFMPEG_URL="https://github.com/FFmpeg/FFmpeg/archive/n$FFMPEG_VERSION.tar.gz"
 ARG FFMPEG_SHA256=81063b716b5c08e72561771e22390030f0284f560461bebea643ba5d3586f0b8
 ARG MP3LAME_VERSION=3.100
+ARG MP3LAME_URL="https://sourceforge.net/projects/lame/files/lame/$MP3LAME_VERSION/lame-$MP3LAME_VERSION.tar.gz/download"
 ARG MP3LAME_SHA256=ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e
 ARG FDK_AAC_VERSION=2.0.0
+ARG FDK_AAC_URL="https://github.com/mstorsjo/fdk-aac/archive/v$FDK_AAC_VERSION.tar.gz"
 ARG FDK_AAC_SHA256=6e6c7921713788e31df655911e1d42620b057180b00bf16874f5d630e1d5b9a2
 ARG OGG_VERSION=1.3.3
+ARG OGG_URL="https://downloads.xiph.org/releases/ogg/libogg-$OGG_VERSION.tar.gz"
 ARG OGG_SHA256=c2e8a485110b97550f453226ec644ebac6cb29d1caef2902c007edab4308d985
 ARG VORBIS_VERSION=1.3.6
+ARG VORBIS_URL="https://downloads.xiph.org/releases/vorbis/libvorbis-$VORBIS_VERSION.tar.gz"
 ARG VORBIS_SHA256=6ed40e0241089a42c48604dc00e362beee00036af2d8b3f46338031c9e0351cb
 ARG OPUS_VERSION=1.3.1
+ARG OPUS_URL="https://archive.mozilla.org/pub/opus/opus-$OPUS_VERSION.tar.gz"
 ARG OPUS_SHA256=65b58e1e25b2a114157014736a3d9dfeaad8d41be1c8179866f144a2fb44ff9d
 ARG THEORA_VERSION=1.1.1
+ARG THEORA_URL="https://downloads.xiph.org/releases/theora/libtheora-$THEORA_VERSION.tar.bz2"
 ARG THEORA_SHA256=b6ae1ee2fa3d42ac489287d3ec34c5885730b1296f0801ae577a35193d3affbc
 ARG VPX_VERSION=1.8.0
+ARG VPX_URL="https://github.com/webmproject/libvpx/archive/v$VPX_VERSION.tar.gz"
 ARG VPX_SHA256=86df18c694e1c06cc8f83d2d816e9270747a0ce6abe316e93a4f4095689373f6
 # x264 only have a stable branch no tags and we checkout commit so no hash is needed
+ARG X264_URL="git://git.videolan.org/x264.git"
 ARG X264_VERSION=72db437770fd1ce3961f624dd57a8e75ff65ae0b
 ARG X265_VERSION=3.1.1
+ARG X265_URL="https://bitbucket.org/multicoreware/x265/downloads/x265_$X265_VERSION.tar.gz"
 ARG X265_SHA256=827900c7cc0a0105b8a96460fab7cd22b97afa7b2835b5cb979c44bddaa3c8d0
 ARG WEBP_VERSION=1.0.2
+ARG WEBP_URL="https://github.com/webmproject/libwebp/archive/v$WEBP_VERSION.tar.gz"
 ARG WEBP_SHA256=347cf85ddc3497832b5fa9eee62164a37b249c83adae0ba583093e039bf4881f
 ARG WAVPACK_VERSION=5.1.0
+ARG WAVPACK_URL="https://github.com/dbry/WavPack/archive/$WAVPACK_VERSION.tar.gz"
 ARG WAVPACK_SHA256=1af7eaccbf560271013d4179d98ef6fc681a2bb3603382577eeba73d438785f4
 ARG SPEEX_VERSION=1.2.0
+ARG SPEEX_URL="https://github.com/xiph/speex/archive/Speex-$SPEEX_VERSION.tar.gz"
 ARG SPEEX_SHA256=4781a30d3a501abc59a4266f9bbf8b1da66fd509bef014697dc3f61e406b990c
 ARG AOM_VERSION=1.0.0
+ARG AOM_URL="https://aomedia.googlesource.com/aom"
 ARG AOM_COMMIT=d14c5bb4f336ef1842046089849dee4a301fbbf0
 ARG VIDSTAB_VERSION=1.1.0
+ARG VIDSTAB_URL="https://github.com/georgmartius/vid.stab/archive/v$VIDSTAB_VERSION.tar.gz"
 ARG VIDSTAB_SHA256=14d2a053e56edad4f397be0cb3ef8eb1ec3150404ce99a426c4eb641861dc0bb
 ARG KVAZAAR_VERSION=1.2.0
+ARG KVAZAAR_URL="https://github.com/ultravideo/kvazaar/archive/v$KVAZAAR_VERSION.tar.gz"
 ARG KVAZAAR_SHA256=480ecfd9b4d2b7d21b355e4a35fcf47b4db7a3b0315b6219d93733db42392bd9
 ARG ASS_VERSION=0.14.0
+ARG ASS_URL="https://github.com/libass/libass/releases/download/$ASS_VERSION/libass-$ASS_VERSION.tar.gz"
 ARG ASS_SHA256=8d5a5c920b90b70a108007ffcd2289ac652c0e03fc88e6eecefa37df0f2e7fdf
 ARG ZIMG_VERSION=2.9.1
+ARG ZIMG_URL="https://github.com/sekrit-twc/zimg/archive/release-$ZIMG_VERSION.tar.gz"
 ARG ZIMG_SHA256=8efa0c381aa6a9bcd5ea4ae22ad06dccf6c1dc705c394547de016951d1946154
 ARG OPENJPEG_VERSION=2.3.1
+ARG OPENJPEG_URL="https://github.com/uclouvain/openjpeg/archive/v$OPENJPEG_VERSION.tar.gz"
 ARG OPENJPEG_SHA256=63f5a4713ecafc86de51bfad89cc07bb788e9bba24ebbf0c4ca637621aadb6a9
 ARG LIBDAV1D_VERSION=0.4.0
+ARG LIBDAV1D_URL="https://code.videolan.org/videolan/dav1d/-/archive/$LIBDAV1D_VERSION/dav1d-$LIBDAV1D_VERSION.tar.gz"
 ARG LIBDAV1D_SHA256=f3a825bce590778b4959807470cd853bbcbd0d3c10d98958a3a1eea09ce64544
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
@@ -129,56 +149,56 @@ RUN \
   }' > /versions.json
 
 RUN \
-  wget -O lame.tar.gz "https://sourceforge.net/projects/lame/files/lame/$MP3LAME_VERSION/lame-$MP3LAME_VERSION.tar.gz/download" && \
+  wget -O lame.tar.gz "$MP3LAME_URL" && \
   sha256sum --status -c $(echo "$MP3LAME_SHA256  lame.tar.gz" > hash ; echo hash) && \
   tar xfz lame.tar.gz && \
   cd lame-* && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
-  wget -O fdk-aac.tar.gz "https://github.com/mstorsjo/fdk-aac/archive/v$FDK_AAC_VERSION.tar.gz" && \
+  wget -O fdk-aac.tar.gz "$FDK_AAC_URL" && \
   sha256sum --status -c $(echo "$FDK_AAC_SHA256  fdk-aac.tar.gz" > hash ; echo hash) && \
   tar xfz fdk-aac.tar.gz && \
   cd fdk-aac-* && ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
-  wget -O libogg.tar.gz "http://downloads.xiph.org/releases/ogg/libogg-$OGG_VERSION.tar.gz" && \
+  wget -O libogg.tar.gz "$OGG_URL" && \
   sha256sum --status -c $(echo "$OGG_SHA256  libogg.tar.gz" > hash ; echo hash) && \
   tar xfz libogg.tar.gz && \
   cd libogg-* && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 # require libogg to build
 RUN \
-  wget -O libvorbis.tar.gz "https://downloads.xiph.org/releases/vorbis/libvorbis-$VORBIS_VERSION.tar.gz" && \
+  wget -O libvorbis.tar.gz "$VORBIS_URL" && \
   sha256sum --status -c $(echo "$VORBIS_SHA256  libvorbis.tar.gz" > hash ; echo hash) && \
   tar xfz libvorbis.tar.gz && \
   cd libvorbis-* && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
-  wget -O opus.tar.gz "https://archive.mozilla.org/pub/opus/opus-$OPUS_VERSION.tar.gz" && \
+  wget -O opus.tar.gz "$OPUS_URL" && \
   sha256sum --status -c $(echo "$OPUS_SHA256  opus.tar.gz" > hash ; echo hash) && \
   tar xfz opus.tar.gz && \
   cd opus-* && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
-  wget -O libtheora.tar.gz "https://downloads.xiph.org/releases/theora/libtheora-$THEORA_VERSION.tar.bz2" && \
+  wget -O libtheora.tar.gz "$THEORA_URL" && \
   sha256sum --status -c $(echo "$THEORA_SHA256  libtheora.tar.gz" > hash ; echo hash) && \
   tar xfj libtheora.tar.gz && \
   cd libtheora-* && ./configure --disable-examples --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
-  wget -O libvpx.tar.gz "https://github.com/webmproject/libvpx/archive/v$VPX_VERSION.tar.gz" && \
+  wget -O libvpx.tar.gz "$VPX_URL" && \
   sha256sum --status -c $(echo "$VPX_SHA256  libvpx.tar.gz" > hash ; echo hash) && \
   tar xfz libvpx.tar.gz && \
   cd libvpx-* && ./configure --enable-static --disable-shared --disable-unit-tests --disable-examples && make -j$(nproc) install
 
 RUN \
-  git clone git://git.videolan.org/x264.git && \
+  git clone "$X264_URL" && \
   cd x264 && \
   git checkout $X264_VERSION && \
   ./configure --enable-pic --enable-static && make -j$(nproc) install
 
 RUN \
-  wget -O x265.tar.gz "https://bitbucket.org/multicoreware/x265/downloads/x265_$X265_VERSION.tar.gz" && \
+  wget -O x265.tar.gz "$X265_URL" && \
   sha256sum --status -c $(echo "$X265_SHA256  x265.tar.gz" > hash ; echo hash) && \
   tar xfz x265.tar.gz && \
   cd x265_*/build/linux && \
@@ -186,66 +206,66 @@ RUN \
   make -j$(nproc) install
 
 RUN \
-  wget -O libwebp.tar.gz "https://github.com/webmproject/libwebp/archive/v$WEBP_VERSION.tar.gz" && \
+  wget -O libwebp.tar.gz "$WEBP_URL" && \
   sha256sum --status -c $(echo "$WEBP_SHA256  libwebp.tar.gz" > hash ; echo hash) && \
   tar xfz libwebp.tar.gz && \
   cd libwebp-* && ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
-  wget -O wavpack.tar.gz "https://github.com/dbry/WavPack/archive/$WAVPACK_VERSION.tar.gz" && \
+  wget -O wavpack.tar.gz "$WAVPACK_URL" && \
   sha256sum --status -c $(echo "$WAVPACK_SHA256  wavpack.tar.gz" > hash ; echo hash) && \
   tar xfz wavpack.tar.gz && \
   cd WavPack-* && ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
-  wget -O speex.tar.gz "https://github.com/xiph/speex/archive/Speex-$SPEEX_VERSION.tar.gz" && \
+  wget -O speex.tar.gz "$SPEEX_URL" && \
   sha256sum --status -c $(echo "$SPEEX_SHA256  speex.tar.gz" > hash ; echo hash) && \
   tar xfz speex.tar.gz && \
   cd speex-Speex-* && ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
-  git clone --depth 1 --branch v$AOM_VERSION https://aomedia.googlesource.com/aom && \
+  git clone --depth 1 --branch v$AOM_VERSION "$AOM_URL" && \
   cd aom && test $(git rev-parse HEAD) = $AOM_COMMIT && \
   mkdir build_tmp && cd build_tmp && cmake -DENABLE_SHARED=OFF -DENABLE_TESTS=0 .. && make -j$(nproc) install
 
 RUN \
-  wget -O vid.stab.tar.gz "https://github.com/georgmartius/vid.stab/archive/v$VIDSTAB_VERSION.tar.gz" && \
+  wget -O vid.stab.tar.gz "$VIDSTAB_URL" && \
   sha256sum --status -c $(echo "$VIDSTAB_SHA256  vid.stab.tar.gz" > hash ; echo hash) && \
   tar xfz vid.stab.tar.gz && \
   cd vid.stab-* && cmake -DBUILD_SHARED_LIBS=OFF . && make -j$(nproc) install
 
 RUN \
-  wget -O kvazaar.tar.gz "https://github.com/ultravideo/kvazaar/archive/v$KVAZAAR_VERSION.tar.gz" && \
+  wget -O kvazaar.tar.gz "$KVAZAAR_URL" && \
   sha256sum --status -c $(echo "$KVAZAAR_SHA256  kvazaar.tar.gz" > hash ; echo hash) && \
   tar xfz kvazaar.tar.gz && \
   cd kvazaar-* && ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
-  wget -O libass.tar.gz "https://github.com/libass/libass/releases/download/$ASS_VERSION/libass-$ASS_VERSION.tar.gz" && \
+  wget -O libass.tar.gz "$ASS_URL" && \
   sha256sum --status -c $(echo "$ASS_SHA256  libass.tar.gz" > hash ; echo hash) && \
   tar xfz libass.tar.gz && \
   cd libass-* && ./configure --enable-static --disable-shared && make -j$(nproc) && make install
 
 RUN \
-  wget -O zimg.tar.gz "https://github.com/sekrit-twc/zimg/archive/release-$ZIMG_VERSION.tar.gz" && \
+  wget -O zimg.tar.gz "$ZIMG_URL" && \
   sha256sum --status -c $(echo "$ZIMG_SHA256  zimg.tar.gz" > hash ; echo hash) && \
   tar xfz zimg.tar.gz && \
   cd zimg-* && ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
-  wget -O openjpeg.tar.gz "https://github.com/uclouvain/openjpeg/archive/v$OPENJPEG_VERSION.tar.gz" && \
+  wget -O openjpeg.tar.gz "$OPENJPEG_URL" && \
   sha256sum --status -c $(echo "$OPENJPEG_SHA256  openjpeg.tar.gz" > hash ; echo hash) && \
   tar xfz openjpeg.tar.gz && \
   cd openjpeg-* && cmake -G "Unix Makefiles" -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF && make -j$(nproc) install
 
 RUN \
-  wget -O dav1d.tar.gz "https://code.videolan.org/videolan/dav1d/-/archive/$LIBDAV1D_VERSION/dav1d-$LIBDAV1D_VERSION.tar.gz" && \
-  sha256sum --status -c $(echo "${LIBDAV1D_SHA256}  dav1d.tar.gz" > hash ; echo hash) && \
+  wget -O dav1d.tar.gz "$LIBDAV1D_URL" && \
+  sha256sum --status -c $(echo "$LIBDAV1D_SHA256  dav1d.tar.gz" > hash ; echo hash) && \
   tar xfz dav1d.tar.gz && \
   cd dav1d-* && meson build --buildtype release -Ddefault_library=static && ninja -C build install
 
 RUN \
-  wget -O ffmpeg.tar.gz "https://github.com/FFmpeg/FFmpeg/archive/n$FFMPEG_VERSION.tar.gz" && \
+  wget -O ffmpeg.tar.gz "$FFMPEG_URL" && \
   sha256sum --status -c $(echo "$FFMPEG_SHA256  ffmpeg.tar.gz" > hash ; echo hash) && \
   tar xfz ffmpeg.tar.gz && \
   cd FFmpeg-* && \
