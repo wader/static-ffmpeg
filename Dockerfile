@@ -317,8 +317,10 @@ FROM scratch
 LABEL maintainer="Mattias Wadman mattias.wadman@gmail.com"
 COPY --from=builder /versions.json /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /
 COPY --from=builder /usr/local/share/doc/ffmpeg/* /doc/
+COPY --from=builder /etc/ssl/cert.pem /etc/ssl/cert.pem
 # sanity tests
 RUN ["/ffmpeg", "-version"]
 RUN ["/ffprobe", "-version"]
 RUN ["/ffprobe", "-i", "https://github.com/favicon.ico"]
+RUN ["/ffprobe", "-tls_verify", "1", "-ca_file", "/etc/ssl/cert.pem", "-i", "https://github.com/favicon.ico"]
 ENTRYPOINT ["/ffmpeg"]

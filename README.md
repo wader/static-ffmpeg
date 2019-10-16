@@ -46,7 +46,8 @@ docker run --rm --entrypoint=/ffprobe -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" m
 `/ffmpeg` ffmpeg binary  
 `/ffprobe` ffprobe binary  
 `/doc` Documentation  
-`/versions.json` JSON file with ffmpeg and library versions
+`/versions.json` JSON file with ffmpeg and library versions  
+`/etc/ssl/cert.pem` CA certs to make `-tls_verify 1 -ca_file /etc/ssl/cert.pem` work if running image directly
 
 ### Security
 
