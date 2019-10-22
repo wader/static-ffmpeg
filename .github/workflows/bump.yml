@@ -1,0 +1,15 @@
+name: 'Automatic version updates'
+on:
+  schedule:
+    # minute hour dom month dow (UTC)
+    - cron: '16 0 * * *'
+jobs:
+  version_update:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: wader/bump@master
+        with:
+          bump_files: Dockerfile
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
