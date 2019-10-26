@@ -78,7 +78,7 @@ ARG OPENJPEG_VERSION=2.3.1
 ARG OPENJPEG_URL="https://github.com/uclouvain/openjpeg/archive/v$OPENJPEG_VERSION.tar.gz"
 ARG OPENJPEG_SHA256=63f5a4713ecafc86de51bfad89cc07bb788e9bba24ebbf0c4ca637621aadb6a9
 # bump: libdav1d /LIBDAV1D_VERSION=([\d.]+)/ https://code.videolan.org/videolan/dav1d.git|^0
-ARG LIBDAV1D_VERSION=0.5.0
+ARG LIBDAV1D_VERSION=0.5.1
 ARG LIBDAV1D_URL="https://code.videolan.org/videolan/dav1d/-/archive/$LIBDAV1D_VERSION/dav1d-$LIBDAV1D_VERSION.tar.gz"
 ARG LIBDAV1D_SHA256=cb770d60891e6199bf2be13fdbb0fbdea78586b40fd672bed9e84b68167f832d
 
