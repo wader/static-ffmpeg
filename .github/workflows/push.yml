@@ -1,4 +1,4 @@
-name: Build on push and PRs
+name: Build on push
 
 on: [push]
 
