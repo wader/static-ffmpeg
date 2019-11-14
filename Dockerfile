@@ -171,44 +171,44 @@ RUN \
 
 RUN \
   wget -O lame.tar.gz "$MP3LAME_URL" && \
-  sha256sum --status -c $(echo "$MP3LAME_SHA256  lame.tar.gz" > hash ; echo hash) && \
+  echo "$MP3LAME_SHA256  lame.tar.gz" | sha256sum --status -c - && \
   tar xfz lame.tar.gz && \
   cd lame-* && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
   wget -O fdk-aac.tar.gz "$FDK_AAC_URL" && \
-  sha256sum --status -c $(echo "$FDK_AAC_SHA256  fdk-aac.tar.gz" > hash ; echo hash) && \
+  echo "$FDK_AAC_SHA256  fdk-aac.tar.gz" | sha256sum --status -c - && \
   tar xfz fdk-aac.tar.gz && \
   cd fdk-aac-* && ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
   wget -O libogg.tar.gz "$OGG_URL" && \
-  sha256sum --status -c $(echo "$OGG_SHA256  libogg.tar.gz" > hash ; echo hash) && \
+  echo "$OGG_SHA256  libogg.tar.gz" | sha256sum --status -c - && \
   tar xfz libogg.tar.gz && \
   cd libogg-* && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 # require libogg to build
 RUN \
   wget -O libvorbis.tar.gz "$VORBIS_URL" && \
-  sha256sum --status -c $(echo "$VORBIS_SHA256  libvorbis.tar.gz" > hash ; echo hash) && \
+  echo "$VORBIS_SHA256  libvorbis.tar.gz" | sha256sum --status -c - && \
   tar xfz libvorbis.tar.gz && \
   cd libvorbis-* && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
   wget -O opus.tar.gz "$OPUS_URL" && \
-  sha256sum --status -c $(echo "$OPUS_SHA256  opus.tar.gz" > hash ; echo hash) && \
+  echo "$OPUS_SHA256  opus.tar.gz" | sha256sum --status -c - && \
   tar xfz opus.tar.gz && \
   cd opus-* && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
   wget -O libtheora.tar.gz "$THEORA_URL" && \
-  sha256sum --status -c $(echo "$THEORA_SHA256  libtheora.tar.gz" > hash ; echo hash) && \
+  echo "$THEORA_SHA256  libtheora.tar.gz" | sha256sum --status -c - && \
   tar xfj libtheora.tar.gz && \
   cd libtheora-* && ./configure --disable-examples --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
   wget -O libvpx.tar.gz "$VPX_URL" && \
-  sha256sum --status -c $(echo "$VPX_SHA256  libvpx.tar.gz" > hash ; echo hash) && \
+  echo "$VPX_SHA256  libvpx.tar.gz" | sha256sum --status -c - && \
   tar xfz libvpx.tar.gz && \
   cd libvpx-* && ./configure --enable-static --disable-shared --disable-unit-tests --disable-examples && make -j$(nproc) install
 
@@ -220,7 +220,7 @@ RUN \
 
 RUN \
   wget -O x265.tar.gz "$X265_URL" && \
-  sha256sum --status -c $(echo "$X265_SHA256  x265.tar.gz" > hash ; echo hash) && \
+  echo "$X265_SHA256  x265.tar.gz" | sha256sum --status -c - && \
   tar xfz x265.tar.gz && \
   cd x265_*/build/linux && \
   cmake -G "Unix Makefiles" -DENABLE_SHARED=OFF -DENABLE_AGGRESSIVE_CHECKS=ON ../../source && \
@@ -228,19 +228,19 @@ RUN \
 
 RUN \
   wget -O libwebp.tar.gz "$WEBP_URL" && \
-  sha256sum --status -c $(echo "$WEBP_SHA256  libwebp.tar.gz" > hash ; echo hash) && \
+  echo "$WEBP_SHA256  libwebp.tar.gz" | sha256sum --status -c - && \
   tar xfz libwebp.tar.gz && \
   cd libwebp-* && ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
   wget -O wavpack.tar.gz "$WAVPACK_URL" && \
-  sha256sum --status -c $(echo "$WAVPACK_SHA256  wavpack.tar.gz" > hash ; echo hash) && \
+  echo "$WAVPACK_SHA256  wavpack.tar.gz" | sha256sum --status -c - && \
   tar xfz wavpack.tar.gz && \
   cd WavPack-* && ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
   wget -O speex.tar.gz "$SPEEX_URL" && \
-  sha256sum --status -c $(echo "$SPEEX_SHA256  speex.tar.gz" > hash ; echo hash) && \
+  echo "$SPEEX_SHA256  speex.tar.gz" | sha256sum --status -c - && \
   tar xfz speex.tar.gz && \
   cd speex-Speex-* && ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
@@ -251,43 +251,43 @@ RUN \
 
 RUN \
   wget -O vid.stab.tar.gz "$VIDSTAB_URL" && \
-  sha256sum --status -c $(echo "$VIDSTAB_SHA256  vid.stab.tar.gz" > hash ; echo hash) && \
+  echo "$VIDSTAB_SHA256  vid.stab.tar.gz" | sha256sum --status -c - && \
   tar xfz vid.stab.tar.gz && \
   cd vid.stab-* && cmake -DBUILD_SHARED_LIBS=OFF . && make -j$(nproc) install
 
 RUN \
   wget -O kvazaar.tar.gz "$KVAZAAR_URL" && \
-  sha256sum --status -c $(echo "$KVAZAAR_SHA256  kvazaar.tar.gz" > hash ; echo hash) && \
+  echo "$KVAZAAR_SHA256  kvazaar.tar.gz" | sha256sum --status -c - && \
   tar xfz kvazaar.tar.gz && \
   cd kvazaar-* && ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
   wget -O libass.tar.gz "$ASS_URL" && \
-  sha256sum --status -c $(echo "$ASS_SHA256  libass.tar.gz" > hash ; echo hash) && \
+  echo "$ASS_SHA256  libass.tar.gz" | sha256sum --status -c - && \
   tar xfz libass.tar.gz && \
   cd libass-* && ./configure --enable-static --disable-shared && make -j$(nproc) && make install
 
 RUN \
   wget -O zimg.tar.gz "$ZIMG_URL" && \
-  sha256sum --status -c $(echo "$ZIMG_SHA256  zimg.tar.gz" > hash ; echo hash) && \
+  echo "$ZIMG_SHA256  zimg.tar.gz" | sha256sum --status -c - && \
   tar xfz zimg.tar.gz && \
   cd zimg-* && ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
   wget -O openjpeg.tar.gz "$OPENJPEG_URL" && \
-  sha256sum --status -c $(echo "$OPENJPEG_SHA256  openjpeg.tar.gz" > hash ; echo hash) && \
+  echo "$OPENJPEG_SHA256  openjpeg.tar.gz" | sha256sum --status -c - && \
   tar xfz openjpeg.tar.gz && \
   cd openjpeg-* && cmake -G "Unix Makefiles" -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF && make -j$(nproc) install
 
 RUN \
   wget -O dav1d.tar.gz "$LIBDAV1D_URL" && \
-  sha256sum --status -c $(echo "$LIBDAV1D_SHA256  dav1d.tar.gz" > hash ; echo hash) && \
+  echo "$LIBDAV1D_SHA256  dav1d.tar.gz" | sha256sum --status -c - && \
   tar xfz dav1d.tar.gz && \
   cd dav1d-* && meson build --buildtype release -Ddefault_library=static && ninja -C build install
 
 RUN \
   wget -O ffmpeg.tar.gz "$FFMPEG_URL" && \
-  sha256sum --status -c $(echo "$FFMPEG_SHA256  ffmpeg.tar.gz" > hash ; echo hash) && \
+  echo "$FFMPEG_SHA256  ffmpeg.tar.gz" | sha256sum --status -c - && \
   tar xfz ffmpeg.tar.gz && \
   cd FFmpeg-* && \
   ./configure \
