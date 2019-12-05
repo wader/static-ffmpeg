@@ -80,7 +80,7 @@ ARG OPENJPEG_SHA256=63f5a4713ecafc86de51bfad89cc07bb788e9bba24ebbf0c4ca637621aad
 # bump: libdav1d /LIBDAV1D_VERSION=([\d.]+)/ https://code.videolan.org/videolan/dav1d.git|^0
 ARG LIBDAV1D_VERSION=0.5.2
 ARG LIBDAV1D_URL="https://code.videolan.org/videolan/dav1d/-/archive/$LIBDAV1D_VERSION/dav1d-$LIBDAV1D_VERSION.tar.gz"
-ARG LIBDAV1D_SHA256=65949759da203243351e9ae99a4c961d609333def4e350b6d9284bbd67f779ee
+ARG LIBDAV1D_SHA256=34180d4c48f65785242c3062b2e098d4c9388b384a8480a5466eb4e452dc4af9
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
