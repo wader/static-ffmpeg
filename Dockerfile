@@ -32,7 +32,7 @@ ARG THEORA_SHA256=b6ae1ee2fa3d42ac489287d3ec34c5885730b1296f0801ae577a35193d3aff
 # bump: libvpx /VPX_VERSION=([\d.]+)/ https://github.com/webmproject/libvpx.git|*
 ARG VPX_VERSION=1.8.2
 ARG VPX_URL="https://github.com/webmproject/libvpx/archive/v$VPX_VERSION.tar.gz"
-ARG VPX_SHA256=df19b8f24758e90640e1ab228ab4a4676ec3df19d23e4593375e6f3847dee03e
+ARG VPX_SHA256=8735d9fcd1a781ae6917f28f239a8aa358ce4864ba113ea18af4bb2dc8b474ac
 # x264 only have a stable branch no tags and we checkout commit so no hash is needed
 # bump: x264 /X264_VERSION=([[:xdigit:]]+)/ git:https://code.videolan.org/videolan/x264.git|/^stable$/|@
 ARG X264_URL="https://code.videolan.org/videolan/x264.git"
@@ -44,7 +44,7 @@ ARG X265_SHA256=6f785f1c9a42e00a56402da88463bb861c49d9af108be53eb3ef10295f2a59aa
 # bump: libwebp /WEBP_VERSION=([\d.]+)/ https://github.com/webmproject/libwebp.git|*
 ARG WEBP_VERSION=1.0.3
 ARG WEBP_URL="https://github.com/webmproject/libwebp/archive/v$WEBP_VERSION.tar.gz"
-ARG WEBP_SHA256=395408a3dc9c3db2b5c200b8722a13a60898c861633b99e6e250186adffd1370
+ARG WEBP_SHA256=082d114bcb18a0e2aafc3148d43367c39304f86bf18ba0b2e766447e111a4a91
 # bump: wavpack /WAVPACK_VERSION=([\d.]+)/ https://github.com/dbry/WavPack.git|*
 ARG WAVPACK_VERSION=5.2.0
 ARG WAVPACK_URL="https://github.com/dbry/WavPack/archive/$WAVPACK_VERSION.tar.gz"
