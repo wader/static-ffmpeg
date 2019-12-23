@@ -30,13 +30,13 @@ ARG THEORA_VERSION=1.1.1
 ARG THEORA_URL="https://downloads.xiph.org/releases/theora/libtheora-$THEORA_VERSION.tar.bz2"
 ARG THEORA_SHA256=b6ae1ee2fa3d42ac489287d3ec34c5885730b1296f0801ae577a35193d3affbc
 # bump: libvpx /VPX_VERSION=([\d.]+)/ https://github.com/webmproject/libvpx.git|*
-ARG VPX_VERSION=1.8.1
+ARG VPX_VERSION=1.8.2
 ARG VPX_URL="https://github.com/webmproject/libvpx/archive/v$VPX_VERSION.tar.gz"
 ARG VPX_SHA256=df19b8f24758e90640e1ab228ab4a4676ec3df19d23e4593375e6f3847dee03e
 # x264 only have a stable branch no tags and we checkout commit so no hash is needed
 # bump: x264 /X264_VERSION=([[:xdigit:]]+)/ git:https://code.videolan.org/videolan/x264.git|/^stable$/|@
 ARG X264_URL="https://code.videolan.org/videolan/x264.git"
-ARG X264_VERSION=72db437770fd1ce3961f624dd57a8e75ff65ae0b
+ARG X264_VERSION=1771b556ee45207f8711744ccbd5d42a3949b14c
 # bump: x265 /X265_VERSION=([\d.]+)/ fetch:https://bitbucket.org/multicoreware/x265/raw/Release_3.1/.hgtags|/(?m:^.* (.*)$)/$1/|^3
 ARG X265_VERSION=3.1.2
 ARG X265_URL="https://bitbucket.org/multicoreware/x265/downloads/x265_$X265_VERSION.tar.gz"
