@@ -30,7 +30,7 @@ ARG THEORA_VERSION=1.1.1
 ARG THEORA_URL="https://downloads.xiph.org/releases/theora/libtheora-$THEORA_VERSION.tar.bz2"
 ARG THEORA_SHA256=b6ae1ee2fa3d42ac489287d3ec34c5885730b1296f0801ae577a35193d3affbc
 # bump: libvpx /VPX_VERSION=([\d.]+)/ https://github.com/webmproject/libvpx.git|*
-ARG VPX_VERSION=1.8.1
+ARG VPX_VERSION=1.8.2
 ARG VPX_URL="https://github.com/webmproject/libvpx/archive/v$VPX_VERSION.tar.gz"
 ARG VPX_SHA256=df19b8f24758e90640e1ab228ab4a4676ec3df19d23e4593375e6f3847dee03e
 # x264 only have a stable branch no tags and we checkout commit so no hash is needed
