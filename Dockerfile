@@ -95,6 +95,7 @@ RUN apk add --no-cache \
   coreutils \
   openssl \
   openssl-dev \
+  openssl-libs-static \
   bash \
   tar \
   xz \
@@ -113,10 +114,15 @@ RUN apk add --no-cache \
   jq \
   zlib \
   zlib-dev \
+  zlib-static \
+  libbz2 \
+  bzip2-dev \
+  bzip2-static \
   libxml2 \
   libxml2-dev \
   fontconfig \
   fontconfig-dev \
+  fontconfig-static \
   freetype \
   freetype-dev \
   freetype-static \
@@ -168,6 +174,15 @@ RUN \
   libopenjpeg: env.OPENJPEG_VERSION, \
   libdav1d: env.LIBDAV1D_VERSION, \
   }' > /versions.json
+
+# TODO: temporary until alpine 3.11 expat-static exists
+ARG EXPAT_URL="https://github.com/libexpat/libexpat/releases/download/R_2_2_9/expat-2.2.9.tar.gz"
+ARG EXPAT_SHA256=4456e0aa72ecc7e1d4b3368cd545a5eec7f9de5133a8dc37fdb1efa6174c4947
+RUN \
+  wget -O expat.tar.gz "$EXPAT_URL" && \
+  echo "$EXPAT_SHA256  expat.tar.gz" | sha256sum --status -c - && \
+  tar xfz expat.tar.gz && \
+  cd expat-* && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
   wget -O lame.tar.gz "$MP3LAME_URL" && \
