@@ -1,5 +1,5 @@
 # bump: alpine /FROM alpine:([\d.]+)/ docker:alpine|^3
-FROM alpine:3.11.0 AS builder
+FROM alpine:3.11.2 AS builder
 
 # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|^4
 ARG FFMPEG_VERSION=4.2.1
@@ -120,6 +120,9 @@ RUN apk add --no-cache \
   bzip2-static \
   libxml2 \
   libxml2-dev \
+  expat \
+  expat-dev \
+  expat-static \
   fontconfig \
   fontconfig-dev \
   fontconfig-static \
@@ -142,14 +145,17 @@ RUN apk add --no-cache \
 RUN \
   OPENSSL_VERSION=$(pkg-config --modversion openssl) \
   LIBXML2_VERSION=$(pkg-config --modversion libxml-2.0) \
+  EXPAT_VERSION=$(pkg-config --modversion expat) \
   FREETYPE_VERSION=$(pkg-config --modversion freetype2)  \
   FONTCONFIG_VERSION=$(pkg-config --modversion fontconfig)  \
   FRIBIDI_VERSION=$(pkg-config --modversion fribidi)  \
   SOXR_VERSION=$(pkg-config --modversion soxr) \
-  jq -n '{ \
+  jq -n \
+  '{ \
   ffmpeg: env.FFMPEG_VERSION, \
   openssl: env.OPENSSL_VERSION, \
   libxml2: env.LIBXML2_VERSION, \
+  expat: env.EXPAT_VERSION, \
   libmp3lame: env.MP3LAME_VERSION, \
   "libfdk-aac": env.FDK_AAC_VERSION, \
   libogg: env.OGG_VERSION, \
@@ -174,15 +180,6 @@ RUN \
   libopenjpeg: env.OPENJPEG_VERSION, \
   libdav1d: env.LIBDAV1D_VERSION, \
   }' > /versions.json
-
-# TODO: temporary until alpine 3.11 expat-static exists
-ARG EXPAT_URL="https://github.com/libexpat/libexpat/releases/download/R_2_2_9/expat-2.2.9.tar.gz"
-ARG EXPAT_SHA256=4456e0aa72ecc7e1d4b3368cd545a5eec7f9de5133a8dc37fdb1efa6174c4947
-RUN \
-  wget -O expat.tar.gz "$EXPAT_URL" && \
-  echo "$EXPAT_SHA256  expat.tar.gz" | sha256sum --status -c - && \
-  tar xfz expat.tar.gz && \
-  cd expat-* && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
   wget -O lame.tar.gz "$MP3LAME_URL" && \
