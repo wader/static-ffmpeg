@@ -2,9 +2,9 @@
 FROM alpine:3.11.2 AS builder
 
 # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|^4
-ARG FFMPEG_VERSION=4.2.1
+ARG FFMPEG_VERSION=4.2.2
 ARG FFMPEG_URL="https://github.com/FFmpeg/FFmpeg/archive/n$FFMPEG_VERSION.tar.gz"
-ARG FFMPEG_SHA256=0c610efe7f8ca1c652595ad76589eb9374d9be053ad0c01de86530e03929d83c
+ARG FFMPEG_SHA256=5447ca061444e574dc0d5e6da1657f49a64a0e660403995c7744beee3e69b2b8
 # bump: mp3lame /MP3LAME_VERSION=([\d.]+)/ svn:http://svn.code.sf.net/p/lame/svn|/^RELEASE__(.*)$/|/_/./|*
 ARG MP3LAME_VERSION=3.100
 ARG MP3LAME_URL="https://sourceforge.net/projects/lame/files/lame/$MP3LAME_VERSION/lame-$MP3LAME_VERSION.tar.gz/download"
