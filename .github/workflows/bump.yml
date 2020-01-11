@@ -2,7 +2,7 @@ name: 'Automatic version updates'
 on:
   schedule:
     # minute hour dom month dow (UTC)
-    - cron: '16 0 * * *'
+    - cron: '0 16 * * *'
 jobs:
   version_update:
     runs-on: ubuntu-latest
