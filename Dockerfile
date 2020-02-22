@@ -81,6 +81,10 @@ ARG OPENJPEG_SHA256=63f5a4713ecafc86de51bfad89cc07bb788e9bba24ebbf0c4ca637621aad
 ARG LIBDAV1D_VERSION=0.5.2
 ARG LIBDAV1D_URL="https://code.videolan.org/videolan/dav1d/-/archive/$LIBDAV1D_VERSION/dav1d-$LIBDAV1D_VERSION.tar.gz"
 ARG LIBDAV1D_SHA256=34180d4c48f65785242c3062b2e098d4c9388b384a8480a5466eb4e452dc4af9
+# bump: libxvid /LIBXVID_VERSION=([\d.]+)/ svn:http://anonymous:@svn.xvid.org|/^release-(.*)$/|/_/./|^1
+ARG LIBXVID_VERSION=1.3.7
+ARG LIBXVID_URL="https://downloads.xvid.com/downloads/xvidcore-$LIBXVID_VERSION.tar.gz"
+ARG LIBXVID_SHA256=abbdcbd39555691dd1c9b4d08f0a031376a3b211652c0d8b3b8aa9be1303ce2d
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
@@ -179,6 +183,7 @@ RUN \
   libsoxr: env.SOXR_VERSION, \
   libopenjpeg: env.OPENJPEG_VERSION, \
   libdav1d: env.LIBDAV1D_VERSION, \
+  libxvid: env.LIBXVID_VERSION, \
   }' > /versions.json
 
 RUN \
@@ -298,6 +303,12 @@ RUN \
   cd dav1d-* && meson build --buildtype release -Ddefault_library=static && ninja -C build install
 
 RUN \
+  wget -O libxvid.tar.gz "$LIBXVID_URL" && \
+  echo "$LIBXVID_SHA256  libxvid.tar.gz" | sha256sum --status -c - && \
+  tar xfz libxvid.tar.gz && \
+  cd xvidcore/build/generic && ./configure --enable-static --disable-shared && make -j$(nproc) && make install
+
+RUN \
   wget -O ffmpeg.tar.gz "$FFMPEG_URL" && \
   echo "$FFMPEG_SHA256  ffmpeg.tar.gz" | sha256sum --status -c - && \
   tar xfz ffmpeg.tar.gz && \
@@ -338,6 +349,7 @@ RUN \
   --enable-libsoxr \
   --enable-libopenjpeg \
   --enable-libdav1d \
+  --enable-libxvid \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install
 

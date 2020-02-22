@@ -28,7 +28,8 @@ libass,
 libzimg,
 libsoxr,
 libopenjpeg,
-libdav1d
+libdav1d,
+libxvid
 and all default native ffmpeg codecs.
 
 ### Usage
