@@ -70,3 +70,11 @@ you have to install the `ca-certificates` package which will install the file at
 Feel free to create issues or PRs if you have any improvements or problems.
 Please also consider making a [donation](https://ffmpeg.org/donations.html) to
 the FFmpeg project or to other projects used by this image if you find it useful.
+
+### TODOs and possible things to add
+
+* Add [vmaf](https://github.com/Netflix/vmaf) support
+* Add [rav1e](https://github.com/xiph/rav1e) support when in stable
+* Add acceleration support (GPU, CUDA, ...)
+* Add qt-faststart
+* Add *.a *.so libraries, headers and pkg-config somehow
