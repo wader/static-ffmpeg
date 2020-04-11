@@ -36,7 +36,7 @@ ARG VPX_SHA256=8735d9fcd1a781ae6917f28f239a8aa358ce4864ba113ea18af4bb2dc8b474ac
 # x264 only have a stable branch no tags and we checkout commit so no hash is needed
 # bump: x264 /X264_VERSION=([[:xdigit:]]+)/ gitrefs:https://code.videolan.org/videolan/x264.git|re:#^refs/heads/master$#|@
 ARG X264_URL="https://code.videolan.org/videolan/x264.git"
-ARG X264_VERSION=1771b556ee45207f8711744ccbd5d42a3949b14c
+ARG X264_VERSION=33f9e1474613f59392be5ab6a7e7abf60fa63622
 # bump: x265 /X265_VERSION=([\d.]+)/ fetch:https://bitbucket.org/multicoreware/x265/raw/Release_3.1/.hgtags|/(?m:^.* (.*)$)/$1/|^3
 ARG X265_VERSION=3.1.2
 ARG X265_URL="https://bitbucket.org/multicoreware/x265/downloads/x265_$X265_VERSION.tar.gz"
