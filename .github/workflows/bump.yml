@@ -9,7 +9,5 @@ jobs:
     steps:
       - uses: actions/checkout@master
       - uses: wader/bump@master
-        with:
-          bump_files: Dockerfile
         env:
           GITHUB_TOKEN: ${{ secrets.BUMP_TOKEN }}
