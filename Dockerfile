@@ -365,21 +365,25 @@ RUN \
   --enable-libdav1d \
   --enable-libxvid \
   || (cat ffbuild/config.log ; false) \
-  && make -j$(nproc) install
+  && make -j$(nproc) install tools/qt-faststart \
+  && cp tools/qt-faststart /usr/local/bin
 
 # make sure binaries have no dependencies
+RUN ls -l  /usr/local/bin
 RUN \
   test $(ldd /usr/local/bin/ffmpeg | wc -l) -eq 1 && \
-  test $(ldd /usr/local/bin/ffprobe | wc -l) -eq 1
+  test $(ldd /usr/local/bin/ffprobe | wc -l) -eq 1 && \
+  test $(ldd /usr/local/bin/qt-faststart | wc -l) -eq 1
 
 FROM scratch
 LABEL maintainer="Mattias Wadman mattias.wadman@gmail.com"
-COPY --from=builder /versions.json /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /
+COPY --from=builder /versions.json /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /usr/local/bin/qt-faststart /
 COPY --from=builder /usr/local/share/doc/ffmpeg/* /doc/
 COPY --from=builder /etc/ssl/cert.pem /etc/ssl/cert.pem
 # sanity tests
 RUN ["/ffmpeg", "-version"]
 RUN ["/ffprobe", "-version"]
+RUN ["/qt-faststart", "-version"]
 RUN ["/ffprobe", "-i", "https://github.com/favicon.ico"]
 RUN ["/ffprobe", "-tls_verify", "1", "-ca_file", "/etc/ssl/cert.pem", "-i", "https://github.com/favicon.ico"]
 ENTRYPOINT ["/ffmpeg"]
