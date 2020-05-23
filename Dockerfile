@@ -2,9 +2,9 @@
 FROM alpine:3.11.6 AS builder
 
 # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|^4
-ARG FFMPEG_VERSION=4.2.2
-ARG FFMPEG_URL="https://github.com/FFmpeg/FFmpeg/archive/n$FFMPEG_VERSION.tar.gz"
-ARG FFMPEG_SHA256=5447ca061444e574dc0d5e6da1657f49a64a0e660403995c7744beee3e69b2b8
+ARG FFMPEG_VERSION=4.2.3
+ARG FFMPEG_URL="https://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.bz2"
+ARG FFMPEG_SHA256=217eb211c33303b37c5521a5abe1f0140854d6810c6a6ee399456cc96356795e
 # bump: mp3lame /MP3LAME_VERSION=([\d.]+)/ svn:http://svn.code.sf.net/p/lame/svn|/^RELEASE__(.*)$/|/_/./|*
 ARG MP3LAME_VERSION=3.100
 ARG MP3LAME_URL="https://sourceforge.net/projects/lame/files/lame/$MP3LAME_VERSION/lame-$MP3LAME_VERSION.tar.gz/download"
@@ -311,8 +311,8 @@ RUN \
 RUN \
   wget -O ffmpeg.tar.gz "$FFMPEG_URL" && \
   echo "$FFMPEG_SHA256  ffmpeg.tar.gz" | sha256sum --status -c - && \
-  tar xfz ffmpeg.tar.gz && \
-  cd FFmpeg-* && \
+  tar xfj ffmpeg.tar.gz && \
+  cd ffmpeg-* && \
   ./configure \
   --pkg-config-flags=--static \
   --extra-cflags="-fopenmp" \
