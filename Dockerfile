@@ -309,9 +309,9 @@ RUN \
   cd xvidcore/build/generic && ./configure --enable-static --disable-shared && make -j$(nproc) && make install
 
 RUN \
-  wget -O ffmpeg.tar.gz "$FFMPEG_URL" && \
-  echo "$FFMPEG_SHA256  ffmpeg.tar.gz" | sha256sum --status -c - && \
-  tar xfj ffmpeg.tar.gz && \
+  wget -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
+  echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum --status -c - && \
+  tar xfj ffmpeg.tar.bz2 && \
   cd ffmpeg-* && \
   ./configure \
   --pkg-config-flags=--static \
