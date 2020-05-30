@@ -142,9 +142,17 @@ RUN apk add --no-cache \
   fribidi \
   fribidi-dev \
   fribidi-static \
+  brotli \
+  brotli-dev \
+  brotli-static \
   soxr \
   soxr-dev \
   soxr-static
+# workaround for https://github.com/google/brotli/issues/795
+# pkgconfig --static can't have different name than .so
+RUN \
+  ln -s /usr/lib/libbrotlicommon-static.a /usr/lib/libbrotlicommon.a && \
+  ln -s /usr/lib/libbrotlidec-static.a /usr/lib/libbrotlidec.a
 
 RUN \
   OPENSSL_VERSION=$(pkg-config --modversion openssl) \
