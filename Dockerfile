@@ -53,10 +53,11 @@ ARG WAVPACK_SHA256=361ca0f4970c1e86b47fb8c3796693048306a9c0ae4c96191d7619aaa8b26
 ARG SPEEX_VERSION=1.2.0
 ARG SPEEX_URL="https://github.com/xiph/speex/archive/Speex-$SPEEX_VERSION.tar.gz"
 ARG SPEEX_SHA256=4781a30d3a501abc59a4266f9bbf8b1da66fd509bef014697dc3f61e406b990c
-# TODO: bump aom, can't find any stable tar.gz release files
-ARG AOM_VERSION=1.0.0
+# bump: aom /AOM_VERSION=([\d.]+)/ git:https://aomedia.googlesource.com/aom|*
+# Remember to update commit hash
+ARG AOM_VERSION=2.0.0
 ARG AOM_URL="https://aomedia.googlesource.com/aom"
-ARG AOM_COMMIT=d14c5bb4f336ef1842046089849dee4a301fbbf0
+ARG AOM_COMMIT=bb35ba9148543f22ba7d8642e4fbd29ae301f5dc
 # bump: vid.stab /VIDSTAB_VERSION=([\d.]+)/ https://github.com/georgmartius/vid.stab.git|*
 ARG VIDSTAB_VERSION=1.1.0
 ARG VIDSTAB_URL="https://github.com/georgmartius/vid.stab/archive/v$VIDSTAB_VERSION.tar.gz"
@@ -316,6 +317,8 @@ RUN \
   tar xfz libxvid.tar.gz && \
   cd xvidcore/build/generic && ./configure --enable-static --disable-shared && make -j$(nproc) && make install
 
+# aom cmake seems to install aom.pc here
+ARG PKG_CONFIG_PATH=/usr/local/lib64/pkgconfig
 RUN \
   wget -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
   echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum --status -c - && \
