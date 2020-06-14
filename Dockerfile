@@ -311,11 +311,15 @@ RUN \
   tar xfz dav1d.tar.gz && \
   cd dav1d-* && meson build --buildtype release -Ddefault_library=static && ninja -C build install
 
+# add extra CFLAGS that are not enabled by -O3
+# http://websvn.xvid.org/cvs/viewvc.cgi/trunk/xvidcore/build/generic/configure.in?revision=2146&view=markup
 RUN \
   wget -O libxvid.tar.gz "$LIBXVID_URL" && \
   echo "$LIBXVID_SHA256  libxvid.tar.gz" | sha256sum --status -c - && \
   tar xfz libxvid.tar.gz && \
-  cd xvidcore/build/generic && ./configure --enable-static --disable-shared && make -j$(nproc) && make install
+  cd xvidcore/build/generic && \
+  CFLAGS="$CLFAGS -fstrength-reduce -ffast-math" \
+  ./configure && make -j$(nproc) && make install
 
 # aom cmake seems to install aom.pc here
 ARG PKG_CONFIG_PATH=/usr/local/lib64/pkgconfig
