@@ -31,7 +31,8 @@ libzimg,
 libsoxr,
 libopenjpeg,
 libdav1d,
-libxvid
+libxvid,
+librav1e
 and all default native ffmpeg codecs.
 
 ### Usage
@@ -98,6 +99,6 @@ the FFmpeg project or to other projects used by this image if you find it useful
 
 * Add [SVT-AV1](https://github.com/OpenVisualCloud/SVT-AV1) support when in stable
 * Add [vmaf](https://github.com/Netflix/vmaf) support
-* Add [rav1e](https://github.com/xiph/rav1e) support [#29](https://github.com/wader/static-ffmpeg/pull/29)
 * Add acceleration support (GPU, CUDA, ...)
 * Add *.a *.so libraries, headers and pkg-config somehow
+* Use cargo-c alpine package once in stable

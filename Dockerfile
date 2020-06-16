@@ -86,6 +86,10 @@ ARG LIBDAV1D_SHA256=c389c0262f081eb8a8bb59a3e5d73a21da801c0a7a6357c6d8db9ebb4b0b
 ARG LIBXVID_VERSION=1.3.7
 ARG LIBXVID_URL="https://downloads.xvid.com/downloads/xvidcore-$LIBXVID_VERSION.tar.gz"
 ARG LIBXVID_SHA256=abbdcbd39555691dd1c9b4d08f0a031376a3b211652c0d8b3b8aa9be1303ce2d
+# bump: rav1e /RAV1E_VERSION=([\d.]+)/ https://github.com/xiph/rav1e.git|^0
+ARG RAV1E_VERSION=0.3.3
+ARG RAV1E_URL="https://github.com/xiph/rav1e/archive/v$RAV1E_VERSION.tar.gz"
+ARG RAV1E_SHA256=e61fdce698ac25f19e25543efea076891296a74f53e3f8480665563ae2d5ff60
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
@@ -115,6 +119,8 @@ RUN apk add --no-cache \
   git \
   yasm \
   nasm \
+  rust \
+  cargo \
   texinfo \
   jq \
   zlib \
@@ -193,6 +199,7 @@ RUN \
   libopenjpeg: env.OPENJPEG_VERSION, \
   libdav1d: env.LIBDAV1D_VERSION, \
   libxvid: env.LIBXVID_VERSION, \
+  librav1e: env.RAV1E_VERSION, \
   }' > /versions.json
 
 RUN \
@@ -321,6 +328,16 @@ RUN \
   CFLAGS="$CLFAGS -fstrength-reduce -ffast-math" \
   ./configure && make -j$(nproc) && make install
 
+RUN cargo install cargo-c
+RUN \
+  wget -O rav1e.tar.gz "$RAV1E_URL" && \
+  tar xfz rav1e.tar.gz && \
+  cd rav1e-* && \
+  cargo cinstall --release
+# cargo-c/alpine rustc results in Libs.private using gcc_s instead of gcc_eh
+# https://gitlab.alpinelinux.org/alpine/aports/-/issues/11806
+RUN sed -i 's/gcc_s/gcc_eh/' /usr/local/lib/pkgconfig/rav1e.pc
+
 RUN \
   wget -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
   echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum --status -c - && \
@@ -364,6 +381,7 @@ RUN \
   --enable-libopenjpeg \
   --enable-libdav1d \
   --enable-libxvid \
+  --enable-librav1e \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install tools/qt-faststart \
   && cp tools/qt-faststart /usr/local/bin
