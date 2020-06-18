@@ -273,7 +273,7 @@ RUN \
 RUN \
   git clone --depth 1 --branch v$AOM_VERSION "$AOM_URL" && \
   cd aom && test $(git rev-parse HEAD) = $AOM_COMMIT && \
-  mkdir build_tmp && cd build_tmp && cmake -DENABLE_SHARED=OFF -DENABLE_TESTS=0 .. && make -j$(nproc) install
+  mkdir build_tmp && cd build_tmp && cmake -DBUILD_SHARED_LIBS=0 -DENABLE_TESTS=0 -DCMAKE_INSTALL_LIBDIR=lib .. && make -j$(nproc) install
 
 RUN \
   wget -O vid.stab.tar.gz "$VIDSTAB_URL" && \
@@ -321,8 +321,6 @@ RUN \
   CFLAGS="$CLFAGS -fstrength-reduce -ffast-math" \
   ./configure && make -j$(nproc) && make install
 
-# aom cmake seems to install aom.pc here
-ARG PKG_CONFIG_PATH=/usr/local/lib64/pkgconfig
 RUN \
   wget -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
   echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum --status -c - && \
