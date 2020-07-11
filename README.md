@@ -1,7 +1,8 @@
 ## static-ffmpeg
 
-Image with ffmpeg and ffprobe binaries built as hardened static PIE binaries with no
-external dependencies. Can be used with any base image even scratch.
+Docker image with ffmpeg and ffprobe binaries built as hardened static PIE
+binaries with no external dependencies. Can be used with any base image even
+scratch.
 
 Built with
 openssl,
@@ -33,14 +34,23 @@ libxvid
 and all default native ffmpeg codecs.
 
 ### Usage
+
+Use `mwader/static-ffmpeg` from docker hub or build image yourself.
+
+In Dockerfile
 ```Dockerfile
-COPY --from=mwader/static-ffmpeg:4.3 /ffmpeg /ffprobe /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:4.3.1 /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:4.3.1 /ffprobe /usr/local/bin/
 ```
+Run directly
 ```sh
-docker run --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.3 -i file.wav file.mp3
+docker run --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.3.1 -i file.wav file.mp3
+docker run --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:4.3.1 -i file.wav
 ```
+Bash alias
 ```sh
-docker run --rm --entrypoint=/ffprobe -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.3 -i file.wav
+alias ffmpeg='docker run --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.3.1'
+alias ffprobe='docker run --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:4.3.1'
 ```
 
 ### Files in the image
