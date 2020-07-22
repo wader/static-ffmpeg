@@ -5,6 +5,7 @@ binaries with no external dependencies. Can be used with any base image even
 scratch.
 
 Built with
+gray,
 openssl,
 iconv,
 libxml2,
