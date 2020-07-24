@@ -336,6 +336,7 @@ RUN \
   --disable-ffplay \
   --enable-static \
   --enable-gpl \
+  --enable-gray \
   --enable-nonfree \
   --enable-openssl \
   --enable-iconv \
