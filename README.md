@@ -71,6 +71,14 @@ Binaries are built with various hardening features but it's probably still a goo
 them as non-root even when used inside a container, especially so if running on input files
 that you don't control.
 
+### Known issues
+
+#### I see `Name does not resolve` errors for hosts that should resolve
+
+This could happen if the hostname resolve to more IP-addresses than can fit in DNS UDP packet
+(probably 512 bytes) causing the response to be truncated. Usually clients should then switch
+to TCP and redo the query but musl libc does currently not support DNS over TCP.
+
 ### TLS
 
 Binaries are built with TLS support but by default ffmpeg currently do
