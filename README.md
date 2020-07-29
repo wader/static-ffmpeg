@@ -85,8 +85,8 @@ the FFmpeg project or to other projects used by this image if you find it useful
 
 ### TODOs and possible things to add
 
+* Add [SVT-AV1]support when in stable
 * Add [vmaf](https://github.com/Netflix/vmaf) support
-* Add [rav1e](https://github.com/xiph/rav1e) support when in stable
+* Add [rav1e](https://github.com/xiph/rav1e) support [#29](https://github.com/wader/static-ffmpeg/pull/29)
 * Add acceleration support (GPU, CUDA, ...)
-* Add qt-faststart
 * Add *.a *.so libraries, headers and pkg-config somehow
