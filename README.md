@@ -98,6 +98,8 @@ the FFmpeg project or to other projects used by this image if you find it useful
 ### TODOs and possible things to add
 
 * Add [SVT-AV1](https://github.com/OpenVisualCloud/SVT-AV1) support when in stable
+* Add libdavs2, libxavs and libxavs2 support
+* Add libuavs3d when in stable
 * Add [vmaf](https://github.com/Netflix/vmaf) support
 * Add acceleration support (GPU, CUDA, ...)
 * Add *.a *.so libraries, headers and pkg-config somehow
