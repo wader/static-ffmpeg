@@ -91,6 +91,10 @@ ARG RAV1E_VERSION=0.3.3
 ARG RAV1E_URL="https://github.com/xiph/rav1e/archive/v$RAV1E_VERSION.tar.gz"
 ARG RAV1E_SHA256=e61fdce698ac25f19e25543efea076891296a74f53e3f8480665563ae2d5ff60
 
+ARG LIBSRT_VERSION=1.4.1
+ARG LIBSRT_URL="https://github.com/Haivision/srt/archive/v${LIBSRT_VERSION}.tar.gz"
+ARG LIBSRT_SHA256=e80ca1cd0711b9c70882c12ec365cda1ba852e1ce8acd43161a21a04de0cbf14
+
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
 # -static-libgcc is needed to make gcc not include gcc_s as "as-needed" shared library which
@@ -154,7 +158,9 @@ RUN apk add --no-cache \
   brotli-static \
   soxr \
   soxr-dev \
-  soxr-static
+  soxr-static \
+  tcl
+  
 # workaround for https://github.com/google/brotli/issues/795
 # pkgconfig --static can't have different name than .so
 RUN \
@@ -328,6 +334,14 @@ RUN \
   CFLAGS="$CLFAGS -fstrength-reduce -ffast-math" \
   ./configure && make -j$(nproc) && make install
 
+## libsrt https://github.com/Haivision/srt
+RUN \
+  wget -O libsrt.tar.gz "$LIBSRT_URL" && \
+  echo "$LIBSRT_SHA256  libsrt.tar.gz" | sha256sum --status -c - && \
+  tar xfz  libsrt.tar.gz && \
+  cd srt-* && ls -l && ./configure && make -j$(nproc) && make install
+
+
 RUN cargo install cargo-c
 RUN \
   wget -O rav1e.tar.gz "$RAV1E_URL" && \
@@ -382,6 +396,7 @@ RUN \
   --enable-libdav1d \
   --enable-libxvid \
   --enable-librav1e \
+  --enable-libsrt \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install tools/qt-faststart \
   && cp tools/qt-faststart /usr/local/bin
