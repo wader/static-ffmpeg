@@ -32,7 +32,8 @@ libsoxr,
 libopenjpeg,
 libdav1d,
 libxvid,
-librav1e
+librav1e,
+libsrt
 and all default native ffmpeg codecs.
 
 ### Usage
