@@ -37,10 +37,10 @@ ARG VPX_SHA256=d279c10e4b9316bf11a570ba16c3d55791e1ad6faa4404c67422eb631782c80a
 # bump: x264 /X264_VERSION=([[:xdigit:]]+)/ gitrefs:https://code.videolan.org/videolan/x264.git|re:#^refs/heads/master$#|@commit
 ARG X264_URL="https://code.videolan.org/videolan/x264.git"
 ARG X264_VERSION=db0d417728460c647ed4a847222a535b00d3dbcb
-# bump: x265 /X265_VERSION=([\d.]+)/ fetch:https://bitbucket.org/multicoreware/x265/raw/Release_3.1/.hgtags|/(?m:^.* (.*)$)/$1/|^3
-ARG X265_VERSION=3.1.2
-ARG X265_URL="https://bitbucket.org/multicoreware/x265/downloads/x265_$X265_VERSION.tar.gz"
-ARG X265_SHA256=6f785f1c9a42e00a56402da88463bb861c49d9af108be53eb3ef10295f2a59aa
+# bump: x265 /X265_VERSION=([\d.]+)/ https://bitbucket.org/multicoreware/x265_git.git|^3
+ARG X265_VERSION=3.4
+ARG X265_URL="https://bitbucket.org/multicoreware/x265_git/get/$X265_VERSION.tar.bz2"
+ARG X265_SHA256=1a430f3a793982d4e0762d67dc2d49f308bf28a8bba4f2d42fea3340e33e9e31
 # bump: libwebp /WEBP_VERSION=([\d.]+)/ https://github.com/webmproject/libwebp.git|*
 ARG WEBP_VERSION=1.1.0
 ARG WEBP_URL="https://github.com/webmproject/libwebp/archive/v$WEBP_VERSION.tar.gz"
@@ -261,8 +261,8 @@ RUN \
 RUN \
   wget -O x265.tar.gz "$X265_URL" && \
   echo "$X265_SHA256  x265.tar.gz" | sha256sum --status -c - && \
-  tar xfz x265.tar.gz && \
-  cd x265_*/build/linux && \
+  tar xfjv x265.tar.gz && \
+  cd multicoreware-x265_git-*/build/linux && \
   cmake -G "Unix Makefiles" -DENABLE_SHARED=OFF -DENABLE_AGGRESSIVE_CHECKS=ON ../../source && \
   make -j$(nproc) install
 
