@@ -341,9 +341,9 @@ RUN \
   tar xfz rav1e.tar.gz && \
   cd rav1e-* && \
   cargo cinstall --release
-# cargo-c/alpine rustc results in Libs.private using gcc_s instead of gcc_eh
+# cargo-c/alpine rustc results in Libs.private depend on gcc_s
 # https://gitlab.alpinelinux.org/alpine/aports/-/issues/11806
-RUN sed -i 's/gcc_s/gcc_eh/' /usr/local/lib/pkgconfig/rav1e.pc
+RUN sed -i 's/-lgcc_s//' /usr/local/lib/pkgconfig/rav1e.pc
 
 RUN \
   wget -O libsrt.tar.gz "$LIBSRT_URL" && \
