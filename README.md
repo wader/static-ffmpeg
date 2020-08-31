@@ -48,15 +48,15 @@ COPY --from=mwader/static-ffmpeg:4.3.1-1 /qt-faststart /usr/local/bin/
 ```
 Run directly
 ```sh
-docker run --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.3.1-1 -i file.wav file.mp3
-docker run --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:4.3.1-1 -i file.wav
-docker run --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/qt-faststart mwader/static-ffmpeg:4.3.1-1 file.mov out.mov
+docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.3.1-1 -i file.wav file.mp3
+docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:4.3.1-1 -i file.wav
+docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/qt-faststart mwader/static-ffmpeg:4.3.1-1 file.mov out.mov
 ```
 Bash alias
 ```sh
-alias ffmpeg='docker run --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.3.1-1'
-alias ffprobe='docker run --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:4.3.1-1'
-alias qt-faststart='docker run --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/qt-faststart mwader/static-ffmpeg:4.3.1-1'
+alias ffmpeg='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.3.1-1'
+alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:4.3.1-1'
+alias qt-faststart='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/qt-faststart mwader/static-ffmpeg:4.3.1-1'
 ```
 
 ### Files in the image
