@@ -213,7 +213,7 @@ RUN \
   wget -O lame.tar.gz "$MP3LAME_URL" && \
   echo "$MP3LAME_SHA256  lame.tar.gz" | sha256sum --status -c - && \
   tar xfz lame.tar.gz && \
-  cd lame-* && ./configure --enable-static --disable-shared && make -j$(nproc) install
+  cd lame-* && ./configure --enable-static --enable-nasm --disable-shared && make -j$(nproc) install
 
 RUN \
   wget -O fdk-aac.tar.gz "$FDK_AAC_URL" && \
@@ -250,7 +250,8 @@ RUN \
   wget -O libvpx.tar.gz "$VPX_URL" && \
   echo "$VPX_SHA256  libvpx.tar.gz" | sha256sum --status -c - && \
   tar xfz libvpx.tar.gz && \
-  cd libvpx-* && ./configure --enable-static --disable-shared --disable-unit-tests --disable-examples && make -j$(nproc) install
+  cd libvpx-* && ./configure --enable-static --enable-vp9-highbitdepth --disable-shared --disable-unit-tests --disable-examples && \
+  make -j$(nproc) install
 
 RUN \
   git clone "$X264_URL" && \
@@ -287,7 +288,7 @@ RUN \
 RUN \
   git clone --depth 1 --branch v$AOM_VERSION "$AOM_URL" && \
   cd aom && test $(git rev-parse HEAD) = $AOM_COMMIT && \
-  mkdir build_tmp && cd build_tmp && cmake -DBUILD_SHARED_LIBS=0 -DENABLE_TESTS=0 -DCMAKE_INSTALL_LIBDIR=lib .. && make -j$(nproc) install
+  mkdir build_tmp && cd build_tmp && cmake -DBUILD_SHARED_LIBS=0 -DENABLE_TESTS=0 -DENABLE_NASM=on -DCMAKE_INSTALL_LIBDIR=lib .. && make -j$(nproc) install
 
 RUN \
   wget -O vid.stab.tar.gz "$VIDSTAB_URL" && \
