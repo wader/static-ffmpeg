@@ -91,9 +91,9 @@ ARG RAV1E_VERSION=0.3.4
 ARG RAV1E_URL="https://github.com/xiph/rav1e/archive/v$RAV1E_VERSION.tar.gz"
 ARG RAV1E_SHA256=797699359d594c929636ddd54474c99fe0577b545a21384514f864d68f67b98f
 # bump: libsrt /LIBSRT_VERSION=([\d.]+)/ https://github.com/Haivision/srt.git|^1
-ARG LIBSRT_VERSION=1.4.1
-ARG LIBSRT_URL="https://github.com/Haivision/srt/archive/v${LIBSRT_VERSION}.tar.gz"
-ARG LIBSRT_SHA256=e80ca1cd0711b9c70882c12ec365cda1ba852e1ce8acd43161a21a04de0cbf14
+ARG LIBSRT_VERSION=1.4.2
+ARG LIBSRT_URL="https://github.com/Haivision/srt/archive/v$LIBSRT_VERSION.tar.gz"
+ARG LIBSRT_SHA256=28a308e72dcbb50eb2f61b50cc4c393c413300333788f3a8159643536684a0c4
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
