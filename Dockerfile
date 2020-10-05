@@ -160,7 +160,7 @@ RUN apk add --no-cache \
   soxr-dev \
   soxr-static \
   tcl
-  
+ 
 # workaround for https://github.com/google/brotli/issues/795
 # pkgconfig --static can't have different name than .so
 RUN \
@@ -403,7 +403,6 @@ RUN \
   && cp tools/qt-faststart /usr/local/bin
 
 # make sure binaries have no dependencies
-RUN ls -l  /usr/local/bin
 RUN \
   test $(ldd /usr/local/bin/ffmpeg | wc -l) -eq 1 && \
   test $(ldd /usr/local/bin/ffprobe | wc -l) -eq 1 && \
