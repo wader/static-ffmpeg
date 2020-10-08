@@ -34,7 +34,7 @@ libdav1d,
 libxvid,
 librav1e,
 libsrt
-and all default native ffmpeg codecs.
+and all default native ffmpeg codecs, formats, filters etc.
 
 ### Usage
 
