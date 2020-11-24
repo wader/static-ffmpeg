@@ -79,9 +79,9 @@ ARG OPENJPEG_VERSION=2.3.1
 ARG OPENJPEG_URL="https://github.com/uclouvain/openjpeg/archive/v$OPENJPEG_VERSION.tar.gz"
 ARG OPENJPEG_SHA256=63f5a4713ecafc86de51bfad89cc07bb788e9bba24ebbf0c4ca637621aadb6a9
 # bump: libdav1d /LIBDAV1D_VERSION=([\d.]+)/ https://code.videolan.org/videolan/dav1d.git|^0
-ARG LIBDAV1D_VERSION=0.7.1
+ARG LIBDAV1D_VERSION=0.8.0
 ARG LIBDAV1D_URL="https://code.videolan.org/videolan/dav1d/-/archive/$LIBDAV1D_VERSION/dav1d-$LIBDAV1D_VERSION.tar.gz"
-ARG LIBDAV1D_SHA256=c389c0262f081eb8a8bb59a3e5d73a21da801c0a7a6357c6d8db9ebb4b0b6835
+ARG LIBDAV1D_SHA256=46cd76dc70840824d5c17a29e5a90cbc61a462a8a8e4c8caf732aefb8c6e538b
 # bump: libxvid /LIBXVID_VERSION=([\d.]+)/ svn:http://anonymous:@svn.xvid.org|/^release-(.*)$/|/_/./|^1
 ARG LIBXVID_VERSION=1.3.7
 ARG LIBXVID_URL="https://downloads.xvid.com/downloads/xvidcore-$LIBXVID_VERSION.tar.gz"
@@ -335,7 +335,7 @@ RUN \
   CFLAGS="$CLFAGS -fstrength-reduce -ffast-math" \
   ./configure && make -j$(nproc) && make install
 
-RUN cargo install cargo-c
+RUN cargo install --vers 0.6.16+cargo-0.45 cargo-c
 RUN \
   wget -O rav1e.tar.gz "$RAV1E_URL" && \
   tar xf rav1e.tar.gz && \
