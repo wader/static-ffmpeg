@@ -55,9 +55,9 @@ ARG SPEEX_URL="https://github.com/xiph/speex/archive/Speex-$SPEEX_VERSION.tar.gz
 ARG SPEEX_SHA256=4781a30d3a501abc59a4266f9bbf8b1da66fd509bef014697dc3f61e406b990c
 # bump: aom /AOM_VERSION=([\d.]+)/ git:https://aomedia.googlesource.com/aom|*
 # Remember to update commit hash
-ARG AOM_VERSION=2.0.0
+ARG AOM_VERSION=2.0.1
 ARG AOM_URL="https://aomedia.googlesource.com/aom"
-ARG AOM_COMMIT=bb35ba9148543f22ba7d8642e4fbd29ae301f5dc
+ARG AOM_COMMIT=b52ee6d44adaef8a08f6984390de050d64df9faa
 # bump: vid.stab /VIDSTAB_VERSION=([\d.]+)/ https://github.com/georgmartius/vid.stab.git|*
 ARG VIDSTAB_VERSION=1.1.0
 ARG VIDSTAB_URL="https://github.com/georgmartius/vid.stab/archive/v$VIDSTAB_VERSION.tar.gz"
