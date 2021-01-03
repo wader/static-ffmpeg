@@ -1,0 +1,6 @@
+#!/bin/sh
+# Usage: hashupdate <FILE> <NAME> <VERSION>
+URL_TEMPLATE=$(grep "$2_URL=" "$1" | sed -E 's/.*="(.*)"/\1/')
+URL=$(echo "$URL_TEMPLATE" | sed "s/\$$2_VERSION/$3/g")
+SHA256=$(curl -sL "$URL" | sha256sum | sed -e 's/  -//g')
+sed -i -E "s/$2_SHA256=.*/$2_SHA256=$SHA256/" "$1"
