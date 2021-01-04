@@ -127,7 +127,7 @@ ARG OPENJPEG_SHA256=8702ba68b442657f11aaeb2b338443ca8d5fb95b0d845757968a7be31ef7
 # bump: dav1d link "Release notes" https://code.videolan.org/videolan/dav1d/-/tags/$LATEST
 ARG DAV1D_VERSION=0.8.1
 ARG DAV1D_URL="https://code.videolan.org/videolan/dav1d/-/archive/$DAV1D_VERSION/dav1d-$DAV1D_VERSION.tar.gz"
-ARG DAV1D_SHA256=46cd76dc70840824d5c17a29e5a90cbc61a462a8a8e4c8caf732aefb8c6e538b
+ARG DAV1D_SHA256=39f52cccc31180c7180ebe8f223de6d12351c0407de0dfac087e8a9cc3feb8da
 # bump: xvid /XVID_VERSION=([\d.]+)/ svn:http://anonymous:@svn.xvid.org|/^release-(.*)$/|/_/./|^1
 # bump: xvid after ./hashupdate Dockerfile LIBXVID $LATEST
 ARG XVID_VERSION=1.3.7
