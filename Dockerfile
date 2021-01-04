@@ -142,7 +142,7 @@ ARG RAV1E_SHA256=ab97209f52695dce740cffb61b0f53b53db5682bfbdd1dfbaf8c93ee36a69a8
 # bump: srt /SRT_VERSION=([\d.]+)/ https://github.com/Haivision/srt.git|^1
 # bump: srt after ./hashupdate Dockerfile SRT $LATEST
 # bump: srt link "Release notes" https://github.com/Haivision/srt/releases/tag/v$LATEST
-ARG SRT_VERSION=1.4.2
+ARG SRT_VERSION=1.4.1
 ARG SRT_URL="https://github.com/Haivision/srt/archive/v${SRT_VERSION}.tar.gz"
 ARG SRT_SHA256=e80ca1cd0711b9c70882c12ec365cda1ba852e1ce8acd43161a21a04de0cbf14
 
