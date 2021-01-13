@@ -80,9 +80,9 @@ ARG LIBWEBP_SHA256=424faab60a14cb92c2a062733b6977b4cc1e875a6398887c5911b3a1a6c56
 # bump: wavpack after ./hashupdate Dockerfile WAVPACK $LATEST
 # bump: wavpack link "Release notes" https://github.com/dbry/WavPack/releases/tag/$LATEST
 # bump: wavpack link "Source diff $CURRENT..$LATEST" https://github.com/dbry/WavPack/compare/$CURRENT..$LATEST
-ARG WAVPACK_VERSION=5.3.0
+ARG WAVPACK_VERSION=5.4.0
 ARG WAVPACK_URL="https://github.com/dbry/WavPack/archive/$WAVPACK_VERSION.tar.gz"
-ARG WAVPACK_SHA256=361ca0f4970c1e86b47fb8c3796693048306a9c0ae4c96191d7619aaa8b26828
+ARG WAVPACK_SHA256=abbe5ca3fc918fdd64ef216200a5c896243ea803a059a0662cd362d0fa827cd2
 # bump: speex /SPEEX_VERSION=([\d.]+)/ https://github.com/xiph/speex.git|*
 # bump: speex after ./hashupdate Dockerfile SPEEX $LATEST
 # bump: speex link "ChangeLog" https://github.com/dbry/WavPack/blob/master/ChangeLog
