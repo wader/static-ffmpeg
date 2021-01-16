@@ -1,6 +1,6 @@
 # bump: alpine /FROM alpine:([\d.]+)/ docker:alpine|^3
 # bump: alpine link "Release notes" https://alpinelinux.org/posts/Alpine-$LATEST-released.html
-FROM alpine:3.12.3 AS builder
+FROM alpine:3.13.0 AS builder
 
 # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|^4
 # bump: ffmpeg after ./hashupdate FFMPEG $LATEST
@@ -386,7 +386,7 @@ RUN \
   CFLAGS="$CLFAGS -fstrength-reduce -ffast-math" \
   ./configure && make -j$(nproc) && make install
 
-RUN cargo install --vers 0.6.16+cargo-0.45 cargo-c
+RUN cargo install cargo-c
 RUN \
   wget -O rav1e.tar.gz "$RAV1E_URL" && \
   tar xf rav1e.tar.gz && \
@@ -403,15 +403,17 @@ RUN \
   cd srt-* && ./configure --enable-shared=0 --cmake-install-libdir=lib --cmake-install-includedir=include --cmake-install-bindir=bin && \
   make -j$(nproc) && make install
 
+# sed changes --toolchain=hardened -pie to -static-pie
 RUN \
   wget -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
   echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum --status -c - && \
   tar xf ffmpeg.tar.bz2 && \
   cd ffmpeg-* && \
+  sed -i 's/add_ldexeflags -fPIE -pie/add_ldexeflags -fPIE -static-pie/' configure && \
   ./configure \
   --pkg-config-flags=--static \
   --extra-cflags="-fopenmp" \
-  --extra-ldflags="-static -fopenmp" \
+  --extra-ldflags="-fopenmp" \
   --toolchain=hardened \
   --disable-debug \
   --disable-shared \
@@ -452,11 +454,12 @@ RUN \
   && make -j$(nproc) install tools/qt-faststart \
   && cp tools/qt-faststart /usr/local/bin
 
-# make sure binaries have no dependencies
+# make sure binaries has no dependencies, is relro, pie and stack nx
+COPY checkelf /
 RUN \
-  test $(ldd /usr/local/bin/ffmpeg | wc -l) -eq 1 && \
-  test $(ldd /usr/local/bin/ffprobe | wc -l) -eq 1 && \
-  test $(ldd /usr/local/bin/qt-faststart | wc -l) -eq 1
+  /checkelf /usr/local/bin/ffmpeg && \
+  /checkelf /usr/local/bin/ffprobe && \
+  /checkelf /usr/local/bin/qt-faststart
 
 FROM scratch
 LABEL maintainer="Mattias Wadman mattias.wadman@gmail.com"

@@ -1,0 +1,18 @@
+#!/bin/sh
+
+NOEXTLIBS=$(test "$(ldd "$1" | wc -l)" -eq 1 && echo yes || echo no)
+RELRO=$(readelf -l "$1" | grep -q GNU_RELRO && echo yes || echo no)
+BIND_NOW=$(readelf -d "$1" | grep -q BIND_NOW && echo yes || echo no)
+PIE=$(readelf -h "$1" | grep -q DYN && echo yes || echo no)
+STACKNX=$(readelf -W -l "$1" | grep GNU_STACK | grep -q -v RWE && echo yes || echo no)
+
+file "$1"
+echo "No external libs: $NOEXTLIBS"
+echo "Relocate read-only: $RELRO"
+echo "Resolve at startup: $BIND_NOW"
+echo "Position independent code: $PIE"
+echo "Stack non-executable: $STACKNX"
+
+if [ "$NOEXTLIBS" != "yes" ] || [ "$RELRO" != "yes" ] || [ "$BIND_NOW" != "yes" ] || [ "$PIE" != "yes" ] || [ "$STACKNX" != "yes" ] ; then
+    exit 1
+fi
