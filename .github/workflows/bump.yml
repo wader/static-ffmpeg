@@ -11,6 +11,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      - uses: wader/bump@master
+      - uses: wader/bump/action@master
         env:
           GITHUB_TOKEN: ${{ secrets.BUMP_TOKEN }}
