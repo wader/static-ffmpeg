@@ -62,7 +62,7 @@ ARG VPX_SHA256=d279c10e4b9316bf11a570ba16c3d55791e1ad6faa4404c67422eb631782c80a
 # bump: x264 after ./hashupdate Dockerfile X264 $LATEST
 # bump: x264 link "Source diff $CURRENT..$LATEST" https://code.videolan.org/videolan/x264/-/compare/$CURRENT...$LATEST
 ARG X264_URL="https://code.videolan.org/videolan/x264.git"
-ARG X264_VERSION=d198931a63049db1f2c92d96c34904c69fde8117
+ARG X264_VERSION=544c61f082194728d0391fb280a6e138ba320a96
 # bump: x265 /X265_VERSION=([\d.]+)/ https://bitbucket.org/multicoreware/x265_git.git|^3
 # bump: x265 after ./hashupdate Dockerfile X265 $LATEST
 # bump: x265 link "releasenotes" https://bitbucket.org/multicoreware/x265_git/src/master/doc/reST/releasenotes.rst
