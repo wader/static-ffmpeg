@@ -1,6 +1,6 @@
 # bump: alpine /FROM alpine:([\d.]+)/ docker:alpine|^3
 # bump: alpine link "Release notes" https://alpinelinux.org/posts/Alpine-$LATEST-released.html
-FROM alpine:3.13.0 AS builder
+FROM alpine:3.13.1 AS builder
 
 # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|^4
 # bump: ffmpeg after ./hashupdate FFMPEG $LATEST
