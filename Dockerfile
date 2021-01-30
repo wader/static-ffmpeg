@@ -73,9 +73,9 @@ ARG X265_SHA256=1a430f3a793982d4e0762d67dc2d49f308bf28a8bba4f2d42fea3340e33e9e31
 # bump: libwebp after ./hashupdate Dockerfile LIBWEBP $LATEST
 # bump: libwebp link "Release notes" https://github.com/webmproject/libwebp/releases/tag/v$LATEST
 # bump: libwebp link "Source diff $CURRENT..$LATEST" https://github.com/webmproject/libwebp/compare/v$CURRENT..v$LATEST
-ARG LIBWEBP_VERSION=1.1.0
+ARG LIBWEBP_VERSION=1.2.0
 ARG LIBWEBP_URL="https://github.com/webmproject/libwebp/archive/v$LIBWEBP_VERSION.tar.gz"
-ARG LIBWEBP_SHA256=424faab60a14cb92c2a062733b6977b4cc1e875a6398887c5911b3a1a6c56c51
+ARG LIBWEBP_SHA256=d60608c45682fa1e5d41c3c26c199be5d0184084cd8a971a6fc54035f76487d3
 # bump: wavpack /WAVPACK_VERSION=([\d.]+)/ https://github.com/dbry/WavPack.git|*
 # bump: wavpack after ./hashupdate Dockerfile WAVPACK $LATEST
 # bump: wavpack link "Release notes" https://github.com/dbry/WavPack/releases/tag/$LATEST
