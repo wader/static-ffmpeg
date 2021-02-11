@@ -94,9 +94,9 @@ ARG SPEEX_SHA256=4781a30d3a501abc59a4266f9bbf8b1da66fd509bef014697dc3f61e406b990
 # bump: aom after ./hashupdate Dockerfile AOM $LATEST
 # bump: aom link "CHANGELOG" https://aomedia.googlesource.com/aom/+/refs/tags/v$LATEST/CHANGELOG
 # Remember to update commit hash
-ARG AOM_VERSION=2.0.1
+ARG AOM_VERSION=2.0.2
 ARG AOM_URL="https://aomedia.googlesource.com/aom"
-ARG AOM_COMMIT=b52ee6d44adaef8a08f6984390de050d64df9faa
+ARG AOM_COMMIT=cb1d48da8da2061e72018761788a18b8fa8013bb
 # bump: vid.stab /VIDSTAB_VERSION=([\d.]+)/ https://github.com/georgmartius/vid.stab.git|*
 # bump: vid.stab after ./hashupdate Dockerfile VIDSTAB $LATEST
 ARG VIDSTAB_VERSION=1.1.0
