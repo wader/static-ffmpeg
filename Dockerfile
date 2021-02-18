@@ -1,6 +1,6 @@
 # bump: alpine /FROM alpine:([\d.]+)/ docker:alpine|^3
 # bump: alpine link "Release notes" https://alpinelinux.org/posts/Alpine-$LATEST-released.html
-FROM alpine:3.13.1 AS builder
+FROM alpine:3.13.2 AS builder
 
 # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|^4
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
@@ -210,7 +210,10 @@ RUN apk add --no-cache \
   soxr-dev \
   soxr-static \
   tcl
- 
+
+# cargo-c is not in stable main yet
+RUN apk add --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing cargo-c
+
 # workaround for https://github.com/google/brotli/issues/795
 # pkgconfig --static can't have different name than .so
 RUN \
@@ -386,7 +389,6 @@ RUN \
   CFLAGS="$CLFAGS -fstrength-reduce -ffast-math" \
   ./configure && make -j$(nproc) && make install
 
-RUN cargo install cargo-c
 RUN \
   wget -O rav1e.tar.gz "$RAV1E_URL" && \
   tar xf rav1e.tar.gz && \
