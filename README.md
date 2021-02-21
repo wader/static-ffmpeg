@@ -42,21 +42,21 @@ Use `mwader/static-ffmpeg` from docker hub or build image yourself.
 
 In Dockerfile
 ```Dockerfile
-COPY --from=mwader/static-ffmpeg:4.3.1-2 /ffmpeg /usr/local/bin/
-COPY --from=mwader/static-ffmpeg:4.3.1-2 /ffprobe /usr/local/bin/
-COPY --from=mwader/static-ffmpeg:4.3.1-2 /qt-faststart /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:4.3.2 /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:4.3.2 /ffprobe /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:4.3.2 /qt-faststart /usr/local/bin/
 ```
 Run directly
 ```sh
-docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.3.1-2 -i file.wav file.mp3
-docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:4.3.1-2 -i file.wav
-docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/qt-faststart mwader/static-ffmpeg:4.3.1-2 file.mov out.mov
+docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.3.2 -i file.wav file.mp3
+docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:4.3.2 -i file.wav
+docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/qt-faststart mwader/static-ffmpeg:4.3.2 file.mov out.mov
 ```
 Bash alias
 ```sh
-alias ffmpeg='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.3.1-2'
-alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:4.3.1-2'
-alias qt-faststart='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/qt-faststart mwader/static-ffmpeg:4.3.1-2'
+alias ffmpeg='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.3.2'
+alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:4.3.2'
+alias qt-faststart='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/qt-faststart mwader/static-ffmpeg:4.3.2'
 ```
 
 ### Files in the image
