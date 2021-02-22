@@ -142,9 +142,9 @@ ARG RAV1E_SHA256=c3ea1a2275f09c8a8964084c094d81f01c07fb405930633164ba69d0613a900
 # bump: srt /SRT_VERSION=([\d.]+)/ https://github.com/Haivision/srt.git|^1
 # bump: srt after ./hashupdate Dockerfile SRT $LATEST
 # bump: srt link "Release notes" https://github.com/Haivision/srt/releases/tag/v$LATEST
-ARG SRT_VERSION=1.4.1
+ARG SRT_VERSION=1.4.2
 ARG SRT_URL="https://github.com/Haivision/srt/archive/v${SRT_VERSION}.tar.gz"
-ARG SRT_SHA256=e80ca1cd0711b9c70882c12ec365cda1ba852e1ce8acd43161a21a04de0cbf14
+ARG SRT_SHA256=28a308e72dcbb50eb2f61b50cc4c393c413300333788f3a8159643536684a0c4
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
