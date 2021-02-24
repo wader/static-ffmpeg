@@ -14,6 +14,10 @@ echo "Resolve at startup: $BIND_NOW"
 echo "Position independent code: $PIE"
 echo "Stack non-executable: $STACKNX"
 
-if [ "$NOEXTLIBS" != "yes" ] || [ "$RELRO" != "yes" ] || [ "$BIND_NOW" != "yes" ] || [ "$PIE" != "yes" ] || [ "$STACKNX" != "yes" ] ; then
+if [ "$NOEXTLIBS" != "yes" ] ||
+    [ "$RELRO" != "yes" ] ||
+    [ "$BIND_NOW" != "yes" ] ||
+    [ "$PIE" != "yes" ] ||
+    [ "$STACKNX" != "yes" ]; then
     exit 1
 fi
