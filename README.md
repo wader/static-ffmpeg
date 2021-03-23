@@ -33,7 +33,11 @@ libopenjpeg,
 libdav1d,
 libxvid,
 librav1e,
-libsrt
+libsrt,
+libsvtav1,
+libdavs2,
+libxavs2,
+libvmaf
 and all default native ffmpeg codecs, formats, filters etc.
 
 ### Usage
@@ -42,21 +46,21 @@ Use `mwader/static-ffmpeg` from docker hub or build image yourself.
 
 In Dockerfile
 ```Dockerfile
-COPY --from=mwader/static-ffmpeg:4.3.2 /ffmpeg /usr/local/bin/
-COPY --from=mwader/static-ffmpeg:4.3.2 /ffprobe /usr/local/bin/
-COPY --from=mwader/static-ffmpeg:4.3.2 /qt-faststart /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:4.4.0 /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:4.4.0 /ffprobe /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:4.4.0 /qt-faststart /usr/local/bin/
 ```
 Run directly
 ```sh
-docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.3.2 -i file.wav file.mp3
-docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:4.3.2 -i file.wav
-docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/qt-faststart mwader/static-ffmpeg:4.3.2 file.mov out.mov
+docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.4.0 -i file.wav file.mp3
+docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:4.4.0 -i file.wav
+docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/qt-faststart mwader/static-ffmpeg:4.4.0 file.mov out.mov
 ```
 Bash alias
 ```sh
-alias ffmpeg='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.3.2'
-alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:4.3.2'
-alias qt-faststart='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/qt-faststart mwader/static-ffmpeg:4.3.2'
+alias ffmpeg='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.4.0'
+alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:4.4.0'
+alias qt-faststart='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/qt-faststart mwader/static-ffmpeg:4.4.0'
 ```
 
 ### Files in the image
@@ -98,10 +102,7 @@ the FFmpeg project or to other projects used by this image if you find it useful
 
 ### TODOs and possible things to add
 
-* Add [SVT-AV1](https://github.com/OpenVisualCloud/SVT-AV1) support when in stable
-* Add libdavs2, libxavs and libxavs2 support
-* Add libuavs3d when in stable
-* Add [vmaf](https://github.com/Netflix/vmaf) support
+* Add libuavs3d (releases missing? https://github.com/uavs3/uavs3d/issues/11)
 * Add acceleration support (GPU, CUDA, ...)
 * Add *.a *.so libraries, headers and pkg-config somehow
-* Use cargo-c alpine package once in stable
+* Use cargo-c stable alpine package (uses edge/testing now)

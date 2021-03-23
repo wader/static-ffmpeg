@@ -6,9 +6,9 @@ FROM alpine:3.13.4 AS builder
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
 # bump: ffmpeg link "Changelog" https://github.com/FFmpeg/FFmpeg/blob/n$LATEST/Changelog
 # bump: ffmpeg link "Source diff $CURRENT..$LATEST" https://github.com/FFmpeg/FFmpeg/compare/n$CURRENT..n$LATEST
-ARG FFMPEG_VERSION=4.3.2
+ARG FFMPEG_VERSION=4.4
 ARG FFMPEG_URL="https://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.bz2"
-ARG FFMPEG_SHA256=ab3a6d6a70358ba0a5f67f37f91f6656b7302b02e98e5b8c846c16763c99913a
+ARG FFMPEG_SHA256=42093549751b582cf0f338a21a3664f52e0a9fbe0d238d3c992005e493607d0e
 # bump: mp3lame /MP3LAME_VERSION=([\d.]+)/ svn:http://svn.code.sf.net/p/lame/svn|/^RELEASE__(.*)$/|/_/./|*
 # bump: mp3lame after ./hashupdate Dockerfile MP3LAME $LATEST
 # bump: mp3lame link "ChangeLog" http://svn.code.sf.net/p/lame/svn/trunk/lame/ChangeLog
@@ -76,16 +76,9 @@ ARG X265_SHA256=7ebc5d2de6ce5dfefb434e422e59a0c4715fe939c784ac2f3d41af5775adc706
 ARG LIBWEBP_VERSION=1.2.0
 ARG LIBWEBP_URL="https://github.com/webmproject/libwebp/archive/v$LIBWEBP_VERSION.tar.gz"
 ARG LIBWEBP_SHA256=d60608c45682fa1e5d41c3c26c199be5d0184084cd8a971a6fc54035f76487d3
-# bump: wavpack /WAVPACK_VERSION=([\d.]+)/ https://github.com/dbry/WavPack.git|*
-# bump: wavpack after ./hashupdate Dockerfile WAVPACK $LATEST
-# bump: wavpack link "Release notes" https://github.com/dbry/WavPack/releases/tag/$LATEST
-# bump: wavpack link "Source diff $CURRENT..$LATEST" https://github.com/dbry/WavPack/compare/$CURRENT..$LATEST
-ARG WAVPACK_VERSION=5.4.0
-ARG WAVPACK_URL="https://github.com/dbry/WavPack/archive/$WAVPACK_VERSION.tar.gz"
-ARG WAVPACK_SHA256=abbe5ca3fc918fdd64ef216200a5c896243ea803a059a0662cd362d0fa827cd2
 # bump: speex /SPEEX_VERSION=([\d.]+)/ https://github.com/xiph/speex.git|*
 # bump: speex after ./hashupdate Dockerfile SPEEX $LATEST
-# bump: speex link "ChangeLog" https://github.com/dbry/WavPack/blob/master/ChangeLog
+# bump: speex link "ChangeLog" https://github.com/xiph/speex//blob/master/ChangeLog
 # bump: speex link "Source diff $CURRENT..$LATEST" https://github.com/xiph/speex/compare/$CURRENT..$LATEST
 ARG SPEEX_VERSION=1.2.0
 ARG SPEEX_URL="https://github.com/xiph/speex/archive/Speex-$SPEEX_VERSION.tar.gz"
@@ -102,11 +95,11 @@ ARG AOM_COMMIT=d853caa2ab62d161e5edf344ffee7b597449dc0d
 ARG VIDSTAB_VERSION=1.1.0
 ARG VIDSTAB_URL="https://github.com/georgmartius/vid.stab/archive/v$VIDSTAB_VERSION.tar.gz"
 ARG VIDSTAB_SHA256=14d2a053e56edad4f397be0cb3ef8eb1ec3150404ce99a426c4eb641861dc0bb
-# bump: kvazaar /KVAZAAR_VERSION=([\d.]+)/ https://github.com/ultravideo/kvazaar.git|^1
+# bump: kvazaar /KVAZAAR_VERSION=([\d.]+)/ https://github.com/ultravideo/kvazaar.git|^2
 # bump: kvazaar after ./hashupdate Dockerfile KVAZAAR $LATEST
-ARG KVAZAAR_VERSION=1.3.0
+ARG KVAZAAR_VERSION=2.0.0
 ARG KVAZAAR_URL="https://github.com/ultravideo/kvazaar/archive/v$KVAZAAR_VERSION.tar.gz"
-ARG KVAZAAR_SHA256=f694fe71cc6e3e6f583a9faf380825ea93b2635c4db8d1d3121b9ebcf736ac1c
+ARG KVAZAAR_SHA256=213edca448f127f9c6d194cdfd21593d10331f9061d95751424e1001bae60b5d
 # bump: libass /LIBASS_VERSION=([\d.]+)/ https://github.com/libass/libass.git|*
 # bump: libass after ./hashupdate Dockerfile LIBASS $LATEST
 ARG LIBASS_VERSION=0.15.0
@@ -145,6 +138,33 @@ ARG RAV1E_SHA256=b0be59435a40e03b973ecc551ca7e632e03190b5a20f944818afa3c2ecf4852
 ARG SRT_VERSION=1.4.2
 ARG SRT_URL="https://github.com/Haivision/srt/archive/v${SRT_VERSION}.tar.gz"
 ARG SRT_SHA256=28a308e72dcbb50eb2f61b50cc4c393c413300333788f3a8159643536684a0c4
+# bump: svtav1 /SVTAV1_VERSION=([\d.]+)/ https://gitlab.com/AOMediaCodec/SVT-AV1.git|^0
+# bump: svtav1 after ./hashupdate Dockerfile SVTAV1 $LATEST
+# bump: svtav1 link "Release notes" https://gitlab.com/AOMediaCodec/SVT-AV1/-/releases/v$LATEST
+ARG SVTAV1_VERSION=0.8.6
+ARG SVTAV1_URL="https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/v$SVTAV1_VERSION/SVT-AV1-v$SVTAV1_VERSION.tar.bz2"
+ARG SVTAV1_SHA256=e942959be6b062f4adea33fd5dbfbd5581b178ce87b4baf9bd84283fbc8203e1
+# bump: davs2 /DAVS2_VERSION=([\d.]+)/ https://github.com/pkuvcl/davs2.git|^1
+# bump: davs2 after ./hashupdate Dockerfile DAVS2 $LATEST
+# bump: davs2 link "Release" https://github.com/pkuvcl/davs2/releases/tag/$LATEST
+# bump: davs2 link "Source diff $CURRENT..$LATEST" https://github.com/pkuvcl/davs2/compare/v$CURRENT..v$LATEST
+ARG DAVS2_VERSION=1.6
+ARG DAVS2_URL="https://github.com/pkuvcl/davs2/archive/refs/tags/$DAVS2_VERSION.tar.gz"
+ARG DAVS2_SHA256=de93800f016cbaf08cb40184a8069050dc625da5240a528155137052d1cf81c8
+# bump: xavs2 /XAVS2_VERSION=([\d.]+)/ https://github.com/pkuvcl/xavs2.git|^1
+# bump: xavs2 after ./hashupxate Dockerfile XAVS2 $LATEST
+# bump: xavs2 link "Release" https://github.com/pkuvcl/xavs2/releases/tag/$LATEST
+# bump: xavs2 link "Source diff $CURRENT..$LATEST" https://github.com/pkuvcl/xavs2/compare/v$CURRENT..v$LATEST
+ARG XAVS2_VERSION=1.3
+ARG XAVS2_URL="https://github.com/pkuvcl/xavs2/archive/refs/tags/$XAVS2_VERSION.tar.gz"
+ARG XAVS2_SHA256=28f9204dc9384336de7c6210cd3317d2d6b94ec23a4d1b6113fcbe7f00d7230b
+# bump: vmaf /VMAF_VERSION=([\d.]+)/ https://github.com/Netflix/vmaf.git|*
+# bump: vmaf after ./hashupxate Dockerfile VMAF $LATEST
+# bump: vmaf link "Release" https://github.com/Netflix/vmaf/releases/tag/v$LATEST
+# bump: vmaf link "Source diff $CURRENT..$LATEST" https://github.com/Netflix/vmaf/compare/v$CURRENT..v$LATEST
+ARG VMAF_VERSION=2.1.1
+ARG VMAF_URL="https://github.com/Netflix/vmaf/archive/refs/tags/v$VMAF_VERSION.tar.gz"
+ARG VMAF_SHA256=e7fc00ae1322a7eccfcf6d4f1cdf9c67eec8058709887c8c6c3795c617326f77
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
@@ -209,7 +229,8 @@ RUN apk add --no-cache \
   soxr \
   soxr-dev \
   soxr-static \
-  tcl
+  tcl \
+  xxd
 
 # cargo-c is not in stable main yet
 RUN apk add --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing cargo-c
@@ -244,7 +265,6 @@ RUN \
   libx264: env.X264_VERSION, \
   libx265: env.X265_VERSION, \
   libwebp: env.LIBWEBP_VERSION, \
-  libwavpack: env.WAVPACK_VERSION, \
   libspeex: env.SPEEX_VERSION, \
   libaom: env.AOM_VERSION, \
   libvidstab: env.VIDSTAB_VERSION, \
@@ -260,6 +280,10 @@ RUN \
   libxvid: env.XVID_VERSION, \
   librav1e: env.RAV1E_VERSION, \
   libsrt: env.SRT_VERSION, \
+  libsvtav1: env.SVTAV1_VERSION, \
+  libdavs2: env.DAVS2_VERSION, \
+  libxavs2: env.XAVS2_VERSION, \
+  libvmaf: env.VMAF_VERSION, \
   }' > /versions.json
 
 RUN \
@@ -294,9 +318,9 @@ RUN \
   cd opus-* && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
-  wget -O libtheora.tar.gz "$THEORA_URL" && \
-  echo "$THEORA_SHA256  libtheora.tar.gz" | sha256sum --status -c - && \
-  tar xf libtheora.tar.gz && \
+  wget -O libtheora.tar.bz2 "$THEORA_URL" && \
+  echo "$THEORA_SHA256  libtheora.tar.bz2" | sha256sum --status -c - && \
+  tar xf libtheora.tar.bz2 && \
   cd libtheora-* && ./configure --disable-examples --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
@@ -312,12 +336,14 @@ RUN \
   git checkout $X264_VERSION && \
   ./configure --enable-pic --enable-static && make -j$(nproc) install
 
+# -w-macro-params-legacy to not log lots of asm warnings
+# https://bitbucket.org/multicoreware/x265_git/issues/559/warnings-when-assembling-with-nasm-215
 RUN \
-  wget -O x265.tar.gz "$X265_URL" && \
-  echo "$X265_SHA256  x265.tar.gz" | sha256sum --status -c - && \
-  tar xf x265.tar.gz && \
+  wget -O x265.tar.bz2 "$X265_URL" && \
+  echo "$X265_SHA256  x265.tar.bz2" | sha256sum --status -c - && \
+  tar xf x265.tar.bz2 && \
   cd multicoreware-x265_git-*/build/linux && \
-  cmake -G "Unix Makefiles" -DENABLE_SHARED=OFF -DENABLE_AGGRESSIVE_CHECKS=ON ../../source && \
+  cmake -G "Unix Makefiles" -DENABLE_SHARED=OFF -DENABLE_AGGRESSIVE_CHECKS=ON ../../source -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy && \
   make -j$(nproc) install
 
 RUN \
@@ -325,12 +351,6 @@ RUN \
   echo "$LIBWEBP_SHA256  libwebp.tar.gz" | sha256sum --status -c - && \
   tar xf libwebp.tar.gz && \
   cd libwebp-* && ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(nproc) install
-
-RUN \
-  wget -O wavpack.tar.gz "$WAVPACK_URL" && \
-  echo "$WAVPACK_SHA256  wavpack.tar.gz" | sha256sum --status -c - && \
-  tar xf wavpack.tar.gz && \
-  cd WavPack-* && ./autogen.sh && ./configure --enable-static --disable-shared && make -j$(nproc) install
 
 RUN \
   wget -O speex.tar.gz "$SPEEX_URL" && \
@@ -371,7 +391,7 @@ RUN \
   wget -O openjpeg.tar.gz "$OPENJPEG_URL" && \
   echo "$OPENJPEG_SHA256  openjpeg.tar.gz" | sha256sum --status -c - && \
   tar xf openjpeg.tar.gz && \
-  cd openjpeg-* && cmake -G "Unix Makefiles" -DBUILD_SHARED_LIBS=OFF -DBUILD_TESTS=OFF && make -j$(nproc) install
+  cd openjpeg-* && cmake -G "Unix Makefiles" -DBUILD_SHARED_LIBS=OFF && make -j$(nproc) install
 
 RUN \
   wget -O dav1d.tar.gz "$DAV1D_URL" && \
@@ -405,7 +425,45 @@ RUN \
   cd srt-* && ./configure --enable-shared=0 --cmake-install-libdir=lib --cmake-install-includedir=include --cmake-install-bindir=bin && \
   make -j$(nproc) && make install
 
+# sed to fix symbol name conflict with vmaf, fixed in master
+# https://gitlab.com/AOMediaCodec/SVT-AV1/-/commit/75af3e6f9241f5df07ffa8c67281a9eff9a476ad
+RUN \
+  wget -O svtav1.tar.bz2 "$SVTAV1_URL" && \
+  echo "$SVTAV1_SHA256  svtav1.tar.bz2" | sha256sum --status -c - && \
+  tar xf svtav1.tar.bz2 && \
+  cd SVT-AV1-* && \
+  sed -i 's/picture_copy(/svt_av1_picture_copy(/g' \
+    Source/Lib/Common/Codec/EbPictureOperators.c \
+    Source/Lib/Common/Codec/EbPictureOperators.h \
+    Source/Lib/Encoder/Codec/EbFullLoop.c \
+    Source/Lib/Encoder/Codec/EbProductCodingLoop.c && \
+  cd Build && \
+  cmake .. -G"Unix Makefiles" -DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release && \
+  make -j$(nproc) install
+
+# TODO: seems to be issus with asm on musl
+RUN \
+  wget -O davs2.tar.gz "$DAVS2_URL" && \
+  tar xf davs2.tar.gz && \
+  cd davs2-*/build/linux && ./configure --disable-asm --enable-pic && \
+  make -j$(nproc) install
+
+# TODO: seems to be issus with asm on musl
+RUN \
+  wget -O xavs2.tar.gz "$XAVS2_URL" && \
+  echo "$XAVS2_SHA256  xavs2.tar.gz" | sha256sum --status -c - && \
+  tar xf xavs2.tar.gz && \
+  cd xavs2-*/build/linux && ./configure --disable-asm --enable-pic && \
+  make -j$(nproc) install
+
+RUN \
+  wget -O vmaf.tar.gz "$VMAF_URL" && \
+  echo "$VMAF_SHA256  vmaf.tar.gz" | sha256sum --status -c - && \
+  tar xf vmaf.tar.gz && \
+  cd vmaf-*/libvmaf && meson build --buildtype release -Ddefault_library=static && ninja -vC build install
+
 # sed changes --toolchain=hardened -pie to -static-pie
+# extra libs stdc++ is for vmaf
 RUN \
   wget -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
   echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum --status -c - && \
@@ -416,6 +474,7 @@ RUN \
   --pkg-config-flags=--static \
   --extra-cflags="-fopenmp" \
   --extra-ldflags="-fopenmp" \
+  --extra-libs="-lstdc++" \
   --toolchain=hardened \
   --disable-debug \
   --disable-shared \
@@ -436,7 +495,6 @@ RUN \
   --enable-libx264 \
   --enable-libx265 \
   --enable-libwebp \
-  --enable-libwavpack \
   --enable-libspeex \
   --enable-libaom \
   --enable-libvidstab \
@@ -452,6 +510,10 @@ RUN \
   --enable-libxvid \
   --enable-librav1e \
   --enable-libsrt \
+  --enable-libsvtav1 \
+  --enable-libdavs2 \
+  --enable-libxavs2 \
+  --enable-libvmaf \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install tools/qt-faststart \
   && cp tools/qt-faststart /usr/local/bin
