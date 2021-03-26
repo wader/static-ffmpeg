@@ -92,11 +92,11 @@ ARG SPEEX_URL="https://github.com/xiph/speex/archive/Speex-$SPEEX_VERSION.tar.gz
 ARG SPEEX_SHA256=4781a30d3a501abc59a4266f9bbf8b1da66fd509bef014697dc3f61e406b990c
 # bump: aom /AOM_VERSION=([\d.]+)/ git:https://aomedia.googlesource.com/aom|*
 # bump: aom after ./hashupdate Dockerfile AOM $LATEST
+# bump: aom after COMMIT=$(git ls-remote https://aomedia.googlesource.com/aom v$LATEST^{} | awk '{print $1}') && sed -i -E "s/^ARG AOM_COMMIT=.*/ARG AOM_COMMIT=$COMMIT/" Dockerfile
 # bump: aom link "CHANGELOG" https://aomedia.googlesource.com/aom/+/refs/tags/v$LATEST/CHANGELOG
-# Remember to update commit hash
-ARG AOM_VERSION=2.0.2
+ARG AOM_VERSION=3.0.0
 ARG AOM_URL="https://aomedia.googlesource.com/aom"
-ARG AOM_COMMIT=cb1d48da8da2061e72018761788a18b8fa8013bb
+ARG AOM_COMMIT=d853caa2ab62d161e5edf344ffee7b597449dc0d
 # bump: vid.stab /VIDSTAB_VERSION=([\d.]+)/ https://github.com/georgmartius/vid.stab.git|*
 # bump: vid.stab after ./hashupdate Dockerfile VIDSTAB $LATEST
 ARG VIDSTAB_VERSION=1.1.0
