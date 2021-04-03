@@ -209,7 +209,9 @@ RUN apk add --no-cache \
   soxr \
   soxr-dev \
   soxr-static \
-  tcl
+  tcl \
+  libmodplug \
+  libmodplug-dev
 
 # cargo-c is not in stable main yet
 RUN apk add --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing cargo-c
@@ -228,6 +230,7 @@ RUN \
   FONTCONFIG_VERSION=$(pkg-config --modversion fontconfig)  \
   FRIBIDI_VERSION=$(pkg-config --modversion fribidi)  \
   SOXR_VERSION=$(pkg-config --modversion soxr) \
+  LIBMODPLUG_VERSION=$(pkg-config --modversion libmodplug) \
   jq -n \
   '{ \
   ffmpeg: env.FFMPEG_VERSION, \
@@ -260,6 +263,7 @@ RUN \
   libxvid: env.XVID_VERSION, \
   librav1e: env.RAV1E_VERSION, \
   libsrt: env.SRT_VERSION, \
+  libmodplug: env.LIBMODPLUG_VERSION, \
   }' > /versions.json
 
 RUN \
@@ -412,6 +416,7 @@ RUN \
   tar xf ffmpeg.tar.bz2 && \
   cd ffmpeg-* && \
   sed -i 's/add_ldexeflags -fPIE -pie/add_ldexeflags -fPIE -static-pie/' configure && \
+  sed -i '/enabled libmodplug/ s/ModPlug_Load/ModPlug_Load -lmodplug -lm -lstdc++/' configure && \
   ./configure \
   --pkg-config-flags=--static \
   --extra-cflags="-fopenmp" \
@@ -452,7 +457,7 @@ RUN \
   --enable-libxvid \
   --enable-librav1e \
   --enable-libsrt \
-  --enable-libopenmpt \
+  --enable-libmodplug \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install tools/qt-faststart \
   && cp tools/qt-faststart /usr/local/bin
