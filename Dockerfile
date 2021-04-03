@@ -452,6 +452,7 @@ RUN \
   --enable-libxvid \
   --enable-librav1e \
   --enable-libsrt \
+  --enable-libopenmpt \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install tools/qt-faststart \
   && cp tools/qt-faststart /usr/local/bin
