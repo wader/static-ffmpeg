@@ -145,6 +145,10 @@ ARG RAV1E_SHA256=c3ea1a2275f09c8a8964084c094d81f01c07fb405930633164ba69d0613a900
 ARG SRT_VERSION=1.4.2
 ARG SRT_URL="https://github.com/Haivision/srt/archive/v${SRT_VERSION}.tar.gz"
 ARG SRT_SHA256=28a308e72dcbb50eb2f61b50cc4c393c413300333788f3a8159643536684a0c4
+# bump: ???
+ARG LIBMODPLUG_VERSION=0.8.9.0
+ARG LIBMODPLUG_URL="https://downloads.sourceforge.net/modplug-xmms/libmodplug-$LIBMODPLUG_VERSION.tar.gz"
+ARG LIBMODPLUG_SHA256=457ca5a6c179656d66c01505c0d95fafaead4329b9dbaa0f997d00a3508ad9de
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
@@ -209,9 +213,7 @@ RUN apk add --no-cache \
   soxr \
   soxr-dev \
   soxr-static \
-  tcl \
-  libmodplug \
-  libmodplug-dev
+  tcl
 
 # cargo-c is not in stable main yet
 RUN apk add --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing cargo-c
@@ -230,7 +232,6 @@ RUN \
   FONTCONFIG_VERSION=$(pkg-config --modversion fontconfig)  \
   FRIBIDI_VERSION=$(pkg-config --modversion fribidi)  \
   SOXR_VERSION=$(pkg-config --modversion soxr) \
-  LIBMODPLUG_VERSION=$(pkg-config --modversion libmodplug) \
   jq -n \
   '{ \
   ffmpeg: env.FFMPEG_VERSION, \
@@ -409,6 +410,11 @@ RUN \
   cd srt-* && ./configure --enable-shared=0 --cmake-install-libdir=lib --cmake-install-includedir=include --cmake-install-bindir=bin && \
   make -j$(nproc) && make install
 
+RUN \
+    wget -O libmodplug.tar.gz "$LIBMODPLUG_URL" && \
+    tar xf libmodplug.tar.gz && \
+    cd libmodplug-* && ./configure --enable-static --disable-shared && make -j$(nproc) install
+
 # sed changes --toolchain=hardened -pie to -static-pie
 RUN \
   wget -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
@@ -416,7 +422,6 @@ RUN \
   tar xf ffmpeg.tar.bz2 && \
   cd ffmpeg-* && \
   sed -i 's/add_ldexeflags -fPIE -pie/add_ldexeflags -fPIE -static-pie/' configure && \
-  sed -i '/enabled libmodplug/ s/ModPlug_Load/ModPlug_Load -lmodplug -lm -lstdc++/' configure && \
   ./configure \
   --pkg-config-flags=--static \
   --extra-cflags="-fopenmp" \
