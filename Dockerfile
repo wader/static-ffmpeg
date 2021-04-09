@@ -6,9 +6,9 @@ FROM alpine:3.13.4 AS builder
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
 # bump: ffmpeg link "Changelog" https://github.com/FFmpeg/FFmpeg/blob/n$LATEST/Changelog
 # bump: ffmpeg link "Source diff $CURRENT..$LATEST" https://github.com/FFmpeg/FFmpeg/compare/n$CURRENT..n$LATEST
-ARG FFMPEG_VERSION=4.3.2
+ARG FFMPEG_VERSION=4.4
 ARG FFMPEG_URL="https://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.bz2"
-ARG FFMPEG_SHA256=ab3a6d6a70358ba0a5f67f37f91f6656b7302b02e98e5b8c846c16763c99913a
+ARG FFMPEG_SHA256=42093549751b582cf0f338a21a3664f52e0a9fbe0d238d3c992005e493607d0e
 # bump: mp3lame /MP3LAME_VERSION=([\d.]+)/ svn:http://svn.code.sf.net/p/lame/svn|/^RELEASE__(.*)$/|/_/./|*
 # bump: mp3lame after ./hashupdate Dockerfile MP3LAME $LATEST
 # bump: mp3lame link "ChangeLog" http://svn.code.sf.net/p/lame/svn/trunk/lame/ChangeLog
