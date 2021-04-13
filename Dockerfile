@@ -463,7 +463,7 @@ RUN \
   cd vmaf-*/libvmaf && meson build --buildtype release -Ddefault_library=static && ninja -vC build install
 
 # sed changes --toolchain=hardened -pie to -static-pie
-# extra libs stdc++ is for vmaf
+# extra libs stdc++ is for vmaf https://github.com/Netflix/vmaf/issues/788
 RUN \
   wget -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
   echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum --status -c - && \
