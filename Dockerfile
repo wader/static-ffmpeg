@@ -102,9 +102,9 @@ ARG KVAZAAR_URL="https://github.com/ultravideo/kvazaar/archive/v$KVAZAAR_VERSION
 ARG KVAZAAR_SHA256=213edca448f127f9c6d194cdfd21593d10331f9061d95751424e1001bae60b5d
 # bump: libass /LIBASS_VERSION=([\d.]+)/ https://github.com/libass/libass.git|*
 # bump: libass after ./hashupdate Dockerfile LIBASS $LATEST
-ARG LIBASS_VERSION=0.15.0
+ARG LIBASS_VERSION=0.15.1
 ARG LIBASS_URL="https://github.com/libass/libass/releases/download/$LIBASS_VERSION/libass-$LIBASS_VERSION.tar.gz"
-ARG LIBASS_SHA256=9cbddee5e8c87e43a5fe627a19cd2aa4c36552156eb4edcf6c5a30bd4934fe58
+ARG LIBASS_SHA256=101e2be1bf52e8fc265e7ca2225af8bd678839ba13720b969883eb9da43048a6
 # bump: zimg /ZIMG_VERSION=([\d.]+)/ https://github.com/sekrit-twc/zimg.git|*
 # bump: zimg after ./hashupdate Dockerfile ZIMG $LATEST
 ARG ZIMG_VERSION=3.0.1
