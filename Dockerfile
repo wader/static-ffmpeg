@@ -92,26 +92,31 @@ ARG AOM_URL="https://aomedia.googlesource.com/aom"
 ARG AOM_COMMIT=c0f14141bd71414b004dccd66d48b27570299fa3
 # bump: vid.stab /VIDSTAB_VERSION=([\d.]+)/ https://github.com/georgmartius/vid.stab.git|*
 # bump: vid.stab after ./hashupdate Dockerfile VIDSTAB $LATEST
+# bump: vid.stab link "Changelog" https://github.com/georgmartius/vid.stab/blob/master/Changelog
 ARG VIDSTAB_VERSION=1.1.0
 ARG VIDSTAB_URL="https://github.com/georgmartius/vid.stab/archive/v$VIDSTAB_VERSION.tar.gz"
 ARG VIDSTAB_SHA256=14d2a053e56edad4f397be0cb3ef8eb1ec3150404ce99a426c4eb641861dc0bb
 # bump: kvazaar /KVAZAAR_VERSION=([\d.]+)/ https://github.com/ultravideo/kvazaar.git|^2
 # bump: kvazaar after ./hashupdate Dockerfile KVAZAAR $LATEST
+# bump: kvazaar link "Release notes" https://github.com/ultravideo/kvazaar/releases/tag/v$LATEST
 ARG KVAZAAR_VERSION=2.0.0
 ARG KVAZAAR_URL="https://github.com/ultravideo/kvazaar/archive/v$KVAZAAR_VERSION.tar.gz"
 ARG KVAZAAR_SHA256=213edca448f127f9c6d194cdfd21593d10331f9061d95751424e1001bae60b5d
 # bump: libass /LIBASS_VERSION=([\d.]+)/ https://github.com/libass/libass.git|*
 # bump: libass after ./hashupdate Dockerfile LIBASS $LATEST
+# bump: libass link "Release notes" https://github.com/libass/libass/releases/tag/$LATEST
 ARG LIBASS_VERSION=0.15.1
 ARG LIBASS_URL="https://github.com/libass/libass/releases/download/$LIBASS_VERSION/libass-$LIBASS_VERSION.tar.gz"
 ARG LIBASS_SHA256=101e2be1bf52e8fc265e7ca2225af8bd678839ba13720b969883eb9da43048a6
 # bump: zimg /ZIMG_VERSION=([\d.]+)/ https://github.com/sekrit-twc/zimg.git|*
 # bump: zimg after ./hashupdate Dockerfile ZIMG $LATEST
+# bump: zimg link "ChangeLog" https://github.com/sekrit-twc/zimg/blob/master/ChangeLog
 ARG ZIMG_VERSION=3.0.1
 ARG ZIMG_URL="https://github.com/sekrit-twc/zimg/archive/release-$ZIMG_VERSION.tar.gz"
 ARG ZIMG_SHA256=c50a0922f4adac4efad77427d13520ed89b8366eef0ef2fa379572951afcc73f
 # bump: openjpeg /OPENJPEG_VERSION=([\d.]+)/ https://github.com/uclouvain/openjpeg.git|*
 # bump: openjpeg after ./hashupdate Dockerfile OPENJPEG $LATEST
+# bump: openjpeg link "CHANGELOG" https://github.com/uclouvain/openjpeg/blob/master/CHANGELOG.md
 ARG OPENJPEG_VERSION=2.4.0
 ARG OPENJPEG_URL="https://github.com/uclouvain/openjpeg/archive/v$OPENJPEG_VERSION.tar.gz"
 ARG OPENJPEG_SHA256=8702ba68b442657f11aaeb2b338443ca8d5fb95b0d845757968a7be31ef7f16d
