@@ -416,6 +416,7 @@ RUN \
 
 RUN \
   wget -O rav1e.tar.gz "$RAV1E_URL" && \
+  echo "$RAV1E_SHA256  rav1e.tar.gz" | sha256sum --status -c - && \
   tar xf rav1e.tar.gz && \
   cd rav1e-* && \
   cargo cinstall --release
@@ -449,6 +450,7 @@ RUN \
 # TODO: seems to be issus with asm on musl
 RUN \
   wget -O davs2.tar.gz "$DAVS2_URL" && \
+  echo "$DAVS2_SHA256  davs2.tar.gz" | sha256sum --status -c - && \
   tar xf davs2.tar.gz && \
   cd davs2-*/build/linux && ./configure --disable-asm --enable-pic && \
   make -j$(nproc) install
