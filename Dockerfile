@@ -26,9 +26,9 @@ ARG FDK_AAC_SHA256=7812b4f0cf66acda0d0fe4302545339517e702af7674dd04e5fe22a5ade16
 # bump: ogg after ./hashupdate Dockerfile OGG $LATEST
 # bump: ogg link "CHANGES" https://github.com/xiph/ogg/blob/master/CHANGES
 # bump: ogg link "Source diff $CURRENT..$LATEST" https://github.com/xiph/ogg/compare/v$CURRENT..v$LATEST
-ARG OGG_VERSION=1.3.4
+ARG OGG_VERSION=1.3.5
 ARG OGG_URL="https://downloads.xiph.org/releases/ogg/libogg-$OGG_VERSION.tar.gz"
-ARG OGG_SHA256=fe5670640bd49e828d64d2879c31cb4dde9758681bb664f9bdbf159a01b0c76e
+ARG OGG_SHA256=0eb4b4b9420a0f51db142ba3f9c64b333f826532dc0f48c6410ae51f4799b664
 # bump: vorbis /VORBIS_VERSION=([\d.]+)/ https://github.com/xiph/vorbis.git|*
 # bump: vorbis after ./hashupdate Dockerfile VORBIS $LATEST
 # bump: vorbis link "CHANGES" https://github.com/xiph/vorbis/blob/master/CHANGES
