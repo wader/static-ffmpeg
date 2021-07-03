@@ -157,14 +157,14 @@ ARG DAVS2_VERSION=1.6
 ARG DAVS2_URL="https://github.com/pkuvcl/davs2/archive/refs/tags/$DAVS2_VERSION.tar.gz"
 ARG DAVS2_SHA256=de93800f016cbaf08cb40184a8069050dc625da5240a528155137052d1cf81c8
 # bump: xavs2 /XAVS2_VERSION=([\d.]+)/ https://github.com/pkuvcl/xavs2.git|^1
-# bump: xavs2 after ./hashupxate Dockerfile XAVS2 $LATEST
+# bump: xavs2 after ./hashupdate Dockerfile XAVS2 $LATEST
 # bump: xavs2 link "Release" https://github.com/pkuvcl/xavs2/releases/tag/$LATEST
 # bump: xavs2 link "Source diff $CURRENT..$LATEST" https://github.com/pkuvcl/xavs2/compare/v$CURRENT..v$LATEST
 ARG XAVS2_VERSION=1.3
 ARG XAVS2_URL="https://github.com/pkuvcl/xavs2/archive/refs/tags/$XAVS2_VERSION.tar.gz"
 ARG XAVS2_SHA256=28f9204dc9384336de7c6210cd3317d2d6b94ec23a4d1b6113fcbe7f00d7230b
 # bump: vmaf /VMAF_VERSION=([\d.]+)/ https://github.com/Netflix/vmaf.git|*
-# bump: vmaf after ./hashupxate Dockerfile VMAF $LATEST
+# bump: vmaf after ./hashupdate Dockerfile VMAF $LATEST
 # bump: vmaf link "Release" https://github.com/Netflix/vmaf/releases/tag/v$LATEST
 # bump: vmaf link "Source diff $CURRENT..$LATEST" https://github.com/Netflix/vmaf/compare/v$CURRENT..v$LATEST
 ARG VMAF_VERSION=2.1.1
