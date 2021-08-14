@@ -73,9 +73,9 @@ ARG X265_SHA256=7ebc5d2de6ce5dfefb434e422e59a0c4715fe939c784ac2f3d41af5775adc706
 # bump: libwebp after ./hashupdate Dockerfile LIBWEBP $LATEST
 # bump: libwebp link "Release notes" https://github.com/webmproject/libwebp/releases/tag/v$LATEST
 # bump: libwebp link "Source diff $CURRENT..$LATEST" https://github.com/webmproject/libwebp/compare/v$CURRENT..v$LATEST
-ARG LIBWEBP_VERSION=1.2.0
+ARG LIBWEBP_VERSION=1.2.1
 ARG LIBWEBP_URL="https://github.com/webmproject/libwebp/archive/v$LIBWEBP_VERSION.tar.gz"
-ARG LIBWEBP_SHA256=d60608c45682fa1e5d41c3c26c199be5d0184084cd8a971a6fc54035f76487d3
+ARG LIBWEBP_SHA256=01bcde6a40a602294994050b81df379d71c40b7e39c819c024d079b3c56307f4
 # bump: speex /SPEEX_VERSION=([\d.]+)/ https://github.com/xiph/speex.git|*
 # bump: speex after ./hashupdate Dockerfile SPEEX $LATEST
 # bump: speex link "ChangeLog" https://github.com/xiph/speex//blob/master/ChangeLog
