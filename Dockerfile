@@ -470,11 +470,10 @@ RUN \
   echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum --status -c - && \
   tar xf ffmpeg.tar.bz2 && \
   cd ffmpeg-* && \
-  sed -i 's/add_ldexeflags -fPIE -pie/add_ldexeflags -fPIE -static-pie/' configure && \
   ./configure \
   --pkg-config-flags=--static \
   --extra-cflags="-fopenmp" \
-  --extra-ldflags="-fopenmp" \
+  --extra-ldflags="-static -fopenmp" \
   --extra-libs="-lstdc++" \
   --toolchain=hardened \
   --disable-debug \
