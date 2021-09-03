@@ -170,6 +170,10 @@ ARG XAVS2_SHA256=28f9204dc9384336de7c6210cd3317d2d6b94ec23a4d1b6113fcbe7f00d7230
 ARG VMAF_VERSION=2.2.0
 ARG VMAF_URL="https://github.com/Netflix/vmaf/archive/refs/tags/v$VMAF_VERSION.tar.gz"
 ARG VMAF_SHA256=239e8e70ed2ae7b25f3a6ed9557f28c4ed287d5b1b82ce24da8916106864218f
+# bump: libmodplug /LIBMODPLUG_VERSION=([\d.]+)/ fetch:https://sourceforge.net/projects/modplug-xmms/files/|/libmodplug-([\d.]+).tar.gz/
+ARG LIBMODPLUG_VERSION=0.8.9.0
+ARG LIBMODPLUG_URL="https://downloads.sourceforge.net/modplug-xmms/libmodplug-$LIBMODPLUG_VERSION.tar.gz"
+ARG LIBMODPLUG_SHA256=457ca5a6c179656d66c01505c0d95fafaead4329b9dbaa0f997d00a3508ad9de
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
@@ -283,6 +287,7 @@ RUN \
   libdavs2: env.DAVS2_VERSION, \
   libxavs2: env.XAVS2_VERSION, \
   libvmaf: env.VMAF_VERSION, \
+  libmodplug: env.LIBMODPLUG_VERSION, \
   }' > /versions.json
 
 RUN \
@@ -463,6 +468,11 @@ RUN \
   tar xf vmaf.tar.gz && \
   cd vmaf-*/libvmaf && meson build --buildtype release -Ddefault_library=static && ninja -vC build install
 
+RUN \
+    wget -O libmodplug.tar.gz "$LIBMODPLUG_URL" && \
+    tar xf libmodplug.tar.gz && \
+    cd libmodplug-* && ./configure --enable-static --disable-shared && make -j$(nproc) install
+
 # sed changes --toolchain=hardened -pie to -static-pie
 # extra libs stdc++ is for vmaf https://github.com/Netflix/vmaf/issues/788
 RUN \
@@ -515,6 +525,7 @@ RUN \
   --enable-libdavs2 \
   --enable-libxavs2 \
   --enable-libvmaf \
+  --enable-libmodplug \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install tools/qt-faststart \
   && cp tools/qt-faststart /usr/local/bin
