@@ -120,7 +120,7 @@ ARG ZIMG_SHA256=b9eadf1df12ae8395ba781f2468965d411b21abbebbebeae3651d492227d4633
 ARG OPENJPEG_VERSION=2.4.0
 ARG OPENJPEG_URL="https://github.com/uclouvain/openjpeg/archive/v$OPENJPEG_VERSION.tar.gz"
 ARG OPENJPEG_SHA256=8702ba68b442657f11aaeb2b338443ca8d5fb95b0d845757968a7be31ef7f16d
-# bump: dav1d /DAV1D_VERSION=([\d.]+)/ https://code.videolan.org/videolan/dav1d.git|^0
+# bump: dav1d /DAV1D_VERSION=([\d.]+)/ https://code.videolan.org/videolan/dav1d.git|*
 # bump: dav1d after ./hashupdate Dockerfile DAV1D $LATEST
 # bump: dav1d link "Release notes" https://code.videolan.org/videolan/dav1d/-/tags/$LATEST
 ARG DAV1D_VERSION=0.9.2
@@ -131,7 +131,7 @@ ARG DAV1D_SHA256=59a5fc9cc5d8ea780ad71ede6d589ed33fb5179d87780dcf80a00ee85495293
 ARG XVID_VERSION=1.3.7
 ARG XVID_URL="https://downloads.xvid.com/downloads/xvidcore-$XVID_VERSION.tar.gz"
 ARG XVID_SHA256=abbdcbd39555691dd1c9b4d08f0a031376a3b211652c0d8b3b8aa9be1303ce2d
-# bump: rav1e /RAV1E_VERSION=([\d.]+)/ https://github.com/xiph/rav1e.git|^0
+# bump: rav1e /RAV1E_VERSION=([\d.]+)/ https://github.com/xiph/rav1e.git|/\d+\./|*
 # bump: rav1e after ./hashupdate Dockerfile RAV1E $LATEST
 # bump: rav1e link "Release notes" https://github.com/xiph/rav1e/releases/tag/v$LATEST
 ARG RAV1E_VERSION=0.4.1
