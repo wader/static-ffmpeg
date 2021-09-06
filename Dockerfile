@@ -111,9 +111,9 @@ ARG LIBASS_SHA256=101e2be1bf52e8fc265e7ca2225af8bd678839ba13720b969883eb9da43048
 # bump: zimg /ZIMG_VERSION=([\d.]+)/ https://github.com/sekrit-twc/zimg.git|*
 # bump: zimg after ./hashupdate Dockerfile ZIMG $LATEST
 # bump: zimg link "ChangeLog" https://github.com/sekrit-twc/zimg/blob/master/ChangeLog
-ARG ZIMG_VERSION=3.0.2
+ARG ZIMG_VERSION=3.0.3
 ARG ZIMG_URL="https://github.com/sekrit-twc/zimg/archive/release-$ZIMG_VERSION.tar.gz"
-ARG ZIMG_SHA256=b9eadf1df12ae8395ba781f2468965d411b21abbebbebeae3651d492227d4633
+ARG ZIMG_SHA256=5e002992bfe8b9d2867fdc9266dc84faca46f0bfd931acc2ae0124972b6170a7
 # bump: openjpeg /OPENJPEG_VERSION=([\d.]+)/ https://github.com/uclouvain/openjpeg.git|*
 # bump: openjpeg after ./hashupdate Dockerfile OPENJPEG $LATEST
 # bump: openjpeg link "CHANGELOG" https://github.com/uclouvain/openjpeg/blob/master/CHANGELOG.md
