@@ -105,9 +105,9 @@ ARG KVAZAAR_SHA256=213edca448f127f9c6d194cdfd21593d10331f9061d95751424e1001bae60
 # bump: libass /LIBASS_VERSION=([\d.]+)/ https://github.com/libass/libass.git|*
 # bump: libass after ./hashupdate Dockerfile LIBASS $LATEST
 # bump: libass link "Release notes" https://github.com/libass/libass/releases/tag/$LATEST
-ARG LIBASS_VERSION=0.15.1
+ARG LIBASS_VERSION=0.15.2
 ARG LIBASS_URL="https://github.com/libass/libass/releases/download/$LIBASS_VERSION/libass-$LIBASS_VERSION.tar.gz"
-ARG LIBASS_SHA256=101e2be1bf52e8fc265e7ca2225af8bd678839ba13720b969883eb9da43048a6
+ARG LIBASS_SHA256=1b2a54dda819ef84fa2dee3069cf99748a886363d2adb630fde87fe046e2d1d5
 # bump: zimg /ZIMG_VERSION=([\d.]+)/ https://github.com/sekrit-twc/zimg.git|*
 # bump: zimg after ./hashupdate Dockerfile ZIMG $LATEST
 # bump: zimg link "ChangeLog" https://github.com/sekrit-twc/zimg/blob/master/ChangeLog
