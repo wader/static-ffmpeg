@@ -167,9 +167,9 @@ ARG XAVS2_SHA256=28f9204dc9384336de7c6210cd3317d2d6b94ec23a4d1b6113fcbe7f00d7230
 # bump: vmaf after ./hashupdate Dockerfile VMAF $LATEST
 # bump: vmaf link "Release" https://github.com/Netflix/vmaf/releases/tag/v$LATEST
 # bump: vmaf link "Source diff $CURRENT..$LATEST" https://github.com/Netflix/vmaf/compare/v$CURRENT..v$LATEST
-ARG VMAF_VERSION=2.2.0
+ARG VMAF_VERSION=2.2.1
 ARG VMAF_URL="https://github.com/Netflix/vmaf/archive/refs/tags/v$VMAF_VERSION.tar.gz"
-ARG VMAF_SHA256=239e8e70ed2ae7b25f3a6ed9557f28c4ed287d5b1b82ce24da8916106864218f
+ARG VMAF_SHA256=7354bda92b98baec13273aef016605b16d5f845541460e0330c014c7c678c315
 # bump: libmodplug /LIBMODPLUG_VERSION=([\d.]+)/ fetch:https://sourceforge.net/projects/modplug-xmms/files/|/libmodplug-([\d.]+).tar.gz/
 # bump: libmodplug after ./hashupdate Dockerfile LIBMODPLUG $LATEST
 # bump: libmodplug link "NEWS" https://sourceforge.net/p/modplug-xmms/git/ci/master/tree/libmodplug/NEWS
@@ -204,8 +204,6 @@ RUN apk add --no-cache \
   git \
   yasm \
   nasm \
-  rust \
-  cargo \
   texinfo \
   jq \
   zlib \
@@ -243,8 +241,9 @@ RUN apk add --no-cache \
   tcl \
   xxd
 
-# cargo-c is not in stable main yet
-RUN apk add --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing cargo-c
+# cargo-c is not in stable main yet and seem to require 1.53+ (or-pattern)
+RUN apk add --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community rust cargo
+RUN CARGO_HTTP_MULTIPLEXING=false cargo install --debug cargo-c
 
 RUN \
   OPENSSL_VERSION=$(pkg-config --modversion openssl) \
