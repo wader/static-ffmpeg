@@ -54,9 +54,9 @@ ARG THEORA_SHA256=b6ae1ee2fa3d42ac489287d3ec34c5885730b1296f0801ae577a35193d3aff
 # bump: libvpx after ./hashupdate Dockerfile VPX $LATEST
 # bump: libvpx link "CHANGELOG" https://github.com/webmproject/libvpx/blob/master/CHANGELOG
 # bump: libvpx link "Source diff $CURRENT..$LATEST" https://github.com/webmproject/libvpx/compare/v$CURRENT..v$LATEST
-ARG VPX_VERSION=1.10.0
+ARG VPX_VERSION=1.11.0
 ARG VPX_URL="https://github.com/webmproject/libvpx/archive/v$VPX_VERSION.tar.gz"
-ARG VPX_SHA256=85803ccbdbdd7a3b03d930187cb055f1353596969c1f92ebec2db839fa4f834a
+ARG VPX_SHA256=965e51c91ad9851e2337aebcc0f517440c637c506f3a03948062e3d5ea129a83
 # x264 only have a stable branch no tags and we checkout commit so no hash is needed
 # bump: x264 /X264_VERSION=([[:xdigit:]]+)/ gitrefs:https://code.videolan.org/videolan/x264.git|re:#^refs/heads/stable$#|@commit
 # bump: x264 after ./hashupdate Dockerfile X264 $LATEST
