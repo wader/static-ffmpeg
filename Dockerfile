@@ -167,9 +167,9 @@ ARG XAVS2_SHA256=28f9204dc9384336de7c6210cd3317d2d6b94ec23a4d1b6113fcbe7f00d7230
 # bump: vmaf after ./hashupdate Dockerfile VMAF $LATEST
 # bump: vmaf link "Release" https://github.com/Netflix/vmaf/releases/tag/v$LATEST
 # bump: vmaf link "Source diff $CURRENT..$LATEST" https://github.com/Netflix/vmaf/compare/v$CURRENT..v$LATEST
-ARG VMAF_VERSION=2.2.1
+ARG VMAF_VERSION=2.3.0
 ARG VMAF_URL="https://github.com/Netflix/vmaf/archive/refs/tags/v$VMAF_VERSION.tar.gz"
-ARG VMAF_SHA256=7354bda92b98baec13273aef016605b16d5f845541460e0330c014c7c678c315
+ARG VMAF_SHA256=d8dcc83f8e9686e6855da4c33d8c373f1735d87294edbd86ed662ba2f2f89277
 # bump: libmodplug /LIBMODPLUG_VERSION=([\d.]+)/ fetch:https://sourceforge.net/projects/modplug-xmms/files/|/libmodplug-([\d.]+).tar.gz/
 # bump: libmodplug after ./hashupdate Dockerfile LIBMODPLUG $LATEST
 # bump: libmodplug link "NEWS" https://sourceforge.net/p/modplug-xmms/git/ci/master/tree/libmodplug/NEWS
