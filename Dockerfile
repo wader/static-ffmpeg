@@ -1,3 +1,14 @@
+# cargo-c is not in alpine main yet and seem to require rust 1.53+ (or-pattern)
+# to build. So temporary solution is to build a static binary of cargo-c and
+# copy it into the builder image.
+# bump: cargo-c-rust /FROM rust:([\d.]+)-bullseye AS cargo-c/ docker:rust|^1
+FROM rust:1.56.0-bullseye AS cargo-c
+RUN \
+  apt-get update && \
+  apt-get install -y musl-tools build-essential
+RUN rustup target add x86_64-unknown-linux-musl
+RUN cargo install --target=x86_64-unknown-linux-musl --version 0.9.5 cargo-c --features=vendored-openssl
+
 # bump: alpine /FROM alpine:([\d.]+)/ docker:alpine|^3
 # bump: alpine link "Release notes" https://alpinelinux.org/posts/Alpine-$LATEST-released.html
 FROM alpine:3.14.2 AS builder
@@ -188,6 +199,8 @@ ARG LDFLAGS="-Wl,-z,relro,-z,now"
 
 RUN apk add --no-cache \
   coreutils \
+  rust \
+  cargo \
   openssl \
   openssl-dev \
   openssl-libs-static \
@@ -241,9 +254,8 @@ RUN apk add --no-cache \
   tcl \
   xxd
 
-# cargo-c is not in stable main yet and seem to require 1.53+ (or-pattern)
-RUN apk add --repository=http://dl-cdn.alpinelinux.org/alpine/edge/community rust cargo
-RUN CARGO_HTTP_MULTIPLEXING=false cargo install --debug cargo-c
+# see comment a the top about cargo-c
+COPY --from=cargo-c /usr/local/cargo/bin/cargo-c* /usr/bin
 
 RUN \
   OPENSSL_VERSION=$(pkg-config --modversion openssl) \
