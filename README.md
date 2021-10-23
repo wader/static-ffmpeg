@@ -10,6 +10,7 @@ openssl,
 iconv,
 libxml2,
 libmp3lame,
+libtwolame,
 libfdk-aac,
 libvorbis,
 libopus,
@@ -21,6 +22,7 @@ libx265,
 libwebp,
 libwavpack,
 libspeex,
+libvmaf
 libaom,
 libvidstab,
 libkvazaar,
@@ -38,8 +40,10 @@ libsrt,
 libsvtav1,
 libdavs2,
 libxavs2,
-libvmaf
-and all default native ffmpeg codecs, formats, filters etc.
+libmodplug,
+libuavs3d,
+libmysofa
+and all native ffmpeg codecs, formats, filters etc.
 
 ### Usage
 
@@ -103,7 +107,6 @@ the FFmpeg project or to other projects used by this image if you find it useful
 
 ### TODOs and possible things to add
 
-* Add libuavs3d (releases missing? https://github.com/uavs3/uavs3d/issues/11)
 * Add acceleration support (GPU, CUDA, ...)
 * Add *.a *.so libraries, headers and pkg-config somehow
-* Use cargo-c stable alpine package (uses edge/testing now)
+* Use cargo-c stable alpine package
