@@ -76,6 +76,13 @@ alias qt-faststart='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" 
 `/versions.json` JSON file with ffmpeg and library versions  
 `/etc/ssl/cert.pem` CA certs to make `-tls_verify 1 -ca_file /etc/ssl/cert.pem` work if running image directly
 
+### Tags
+
+`latest` Latest master build.
+
+`MAJOR.MINOR.PATCH[-BUILD]` Specific version of ffmpeg with the features that was in master at the time of tagging.
+`-BUILD` means that was an additional build with that version to add of fix something.
+
 ### Security
 
 Binaries are built with various hardening features but it's probably still a good idea to run
