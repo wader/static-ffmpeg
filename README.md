@@ -51,21 +51,21 @@ Use `mwader/static-ffmpeg` from docker hub or build image yourself.
 
 In Dockerfile
 ```Dockerfile
-COPY --from=mwader/static-ffmpeg:4.4.0 /ffmpeg /usr/local/bin/
-COPY --from=mwader/static-ffmpeg:4.4.0 /ffprobe /usr/local/bin/
-COPY --from=mwader/static-ffmpeg:4.4.0 /qt-faststart /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:4.4.1 /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:4.4.1 /ffprobe /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:4.4.1 /qt-faststart /usr/local/bin/
 ```
 Run directly
 ```sh
-docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.4.0 -i file.wav file.mp3
-docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:4.4.0 -i file.wav
-docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/qt-faststart mwader/static-ffmpeg:4.4.0 file.mov out.mov
+docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.4.1 -i file.wav file.mp3
+docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:4.4.1 -i file.wav
+docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/qt-faststart mwader/static-ffmpeg:4.4.1 file.mov out.mov
 ```
 Bash alias
 ```sh
-alias ffmpeg='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.4.0'
-alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:4.4.0'
-alias qt-faststart='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/qt-faststart mwader/static-ffmpeg:4.4.0'
+alias ffmpeg='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.4.1'
+alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:4.4.1'
+alias qt-faststart='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/qt-faststart mwader/static-ffmpeg:4.4.1'
 ```
 
 ### Files in the image
