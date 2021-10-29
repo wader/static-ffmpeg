@@ -405,6 +405,8 @@ RUN \
   tar xf vmaf.tar.gz && \
   cd vmaf-*/libvmaf && meson build --buildtype=release -Ddefault_library=static -Dbuilt_in_models=true -Denable_tests=false -Denable_docs=false -Denable_avx512=true -Denable_float=true && \
   ninja -j$(nproc) -vC build install
+# extra libs stdc++ is for vmaf https://github.com/Netflix/vmaf/issues/788
+RUN  sed -i 's/-lvmaf /-lvmaf -lstdc++ /' /usr/local/lib/pkgconfig/libvmaf.pc
 
 # build after libvmaf
 RUN \
@@ -540,7 +542,6 @@ RUN \
   make -j$(nproc) install
 
 # sed changes --toolchain=hardened -pie to -static-pie
-# extra libs stdc++ is for vmaf https://github.com/Netflix/vmaf/issues/788
 RUN \
   wget -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
   echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum --status -c - && \
@@ -551,7 +552,6 @@ RUN \
   --pkg-config-flags="--static" \
   --extra-cflags="-fopenmp" \
   --extra-ldflags="-fopenmp" \
-  --extra-libs="-lstdc++" \
   --toolchain=hardened \
   --disable-debug \
   --disable-shared \
