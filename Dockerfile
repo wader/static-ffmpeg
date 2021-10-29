@@ -3,11 +3,12 @@
 # copy it into the builder image.
 # bump: cargo-c-rust /FROM rust:([\d.]+)-bullseye AS cargo-c/ docker:rust|^1
 FROM rust:1.56.0-bullseye AS cargo-c
+COPY rustuphosttarget .
 RUN \
   apt-get update && \
   apt-get install -y musl-tools build-essential
-RUN rustup target add x86_64-unknown-linux-musl
-RUN cargo install --target=x86_64-unknown-linux-musl --version 0.9.5 cargo-c --features=vendored-openssl
+RUN rustup target add $(./rustuphosttarget)
+RUN cargo install --target=$(./rustuphosttarget) --version 0.9.5 cargo-c --features=vendored-openssl
 
 # bump: alpine /FROM alpine:([\d.]+)/ docker:alpine|^3
 # bump: alpine link "Release notes" https://alpinelinux.org/posts/Alpine-$LATEST-released.html
