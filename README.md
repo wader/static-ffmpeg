@@ -41,7 +41,8 @@ libdavs2,
 libxavs2,
 libmodplug,
 libuavs3d,
-libmysofa
+libmysofa,
+librubberband
 and all native ffmpeg codecs, formats, filters etc.
 
 ### Usage
