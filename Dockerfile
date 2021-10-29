@@ -207,6 +207,12 @@ ARG LIBMYSOFA_SHA256=94cb02e488de4dc0860c8d23b29d93d290bb0a004d4aa17e1642985bba1
 # bump: uavs3d link "Source diff $CURRENT..$LATEST" https://github.com/uavs3/uavs3d/compare/$CURRENT..$LATEST
 ARG UAVS3D_URL="https://github.com/uavs3/uavs3d.git"
 ARG UAVS3D_COMMIT=57d20183301d4197d1c938f62f8a5911e33465d7
+# bump: rubberband /RUBBERBAND_COMMIT=([[:xdigit:]]+)/ gitrefs:https://github.com/breakfastquay/rubberband.git|re:#^refs/heads/master$#|@commit
+# bump: rubberband after ./hashupdate Dockerfile RUBBERBAND $LATEST
+# bump: rubberband after COMMIT=$(git ls-remote https://github.com/breakfastquay/rubberband.git $LATEST^{} | awk '{print $1}') && sed -i -E "s/^ARG RUBBERBAND_COMMIT=.*/ARG RUBBERBAND_COMMIT=$COMMIT/" Dockerfile
+# bump: rubberband link "Source diff $CURRENT..$LATEST" https://github.com/breakfastquay/rubberband/compare/$CURRENT..$LATEST
+ARG RUBBERBAND_URL="https://github.com/breakfastquay/rubberband.git"
+ARG RUBBERBAND_COMMIT="b3c920a35ed1ea4da37ddd62a12d3a81278097d1"
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
@@ -257,6 +263,8 @@ RUN apk add --no-cache \
   tcl \
   numactl numactl-dev \
   cunit cunit-dev \
+  fftw-dev \
+  libsamplerate-dev \
   xxd
 
 # see comment a the top about cargo-c
@@ -270,6 +278,8 @@ RUN \
   FONTCONFIG_VERSION=$(pkg-config --modversion fontconfig)  \
   FRIBIDI_VERSION=$(pkg-config --modversion fribidi)  \
   SOXR_VERSION=$(pkg-config --modversion soxr) \
+  FFTW_VERSION=$(pkg-config --modversion fftw) \
+  LIBSAMPLERATE_VERSION=$(pkg-config --modversion samplerate) \
   jq -n \
   '{ \
   ffmpeg: env.FFMPEG_VERSION, \
@@ -309,6 +319,9 @@ RUN \
   libmodplug: env.LIBMODPLUG_VERSION, \
   uavs3d: env.UAVS3D_COMMIT, \
   libmysofa: env.LIBMYSOFA_VERSION, \
+  libsamplerate: env.LIBSAMPLERATE_VERSION, \
+  rubberband: env.RUBBERBAND_COMMIT, \
+  fftw: env.FFTW_VERSION, \
   }' > /versions.json
 
 RUN \
@@ -542,6 +555,13 @@ RUN \
   cmake -G"Unix Makefiles" -DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release .. && \
   make -j$(nproc) install
 
+RUN \
+  git clone "$RUBBERBAND_URL" && \
+  cd rubberband && git checkout $RUBBERBAND_COMMIT && \
+  meson -Dno_shared=true -Dfft=fftw build && \
+  ninja -j$(nproc) -vC build install && \
+  echo "Requires.private: fftw3 samplerate" >> /usr/local/lib/pkgconfig/rubberband.pc
+
 # sed changes --toolchain=hardened -pie to -static-pie
 RUN \
   wget -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
@@ -596,6 +616,7 @@ RUN \
   --enable-libmodplug \
   --enable-libuavs3d \
   --enable-libmysofa \
+  --enable-librubberband \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install tools/qt-faststart \
   && cp tools/qt-faststart /usr/local/bin
