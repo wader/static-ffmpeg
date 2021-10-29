@@ -20,7 +20,6 @@ libvpx,
 libx264,
 libx265,
 libwebp,
-libwavpack,
 libspeex,
 libvmaf
 libaom,
