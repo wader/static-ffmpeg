@@ -207,12 +207,13 @@ ARG LIBMYSOFA_SHA256=94cb02e488de4dc0860c8d23b29d93d290bb0a004d4aa17e1642985bba1
 # bump: uavs3d link "Source diff $CURRENT..$LATEST" https://github.com/uavs3/uavs3d/compare/$CURRENT..$LATEST
 ARG UAVS3D_URL="https://github.com/uavs3/uavs3d.git"
 ARG UAVS3D_COMMIT=57d20183301d4197d1c938f62f8a5911e33465d7
-# bump: rubberband /RUBBERBAND_COMMIT=([[:xdigit:]]+)/ gitrefs:https://github.com/breakfastquay/rubberband.git|re:#^refs/heads/master$#|@commit
+# bump: rubberband /RUBBERBAND_VERSION=([\d.]+)/ https://github.com/breakfastquay/rubberband.git|^2
 # bump: rubberband after ./hashupdate Dockerfile RUBBERBAND $LATEST
-# bump: rubberband after COMMIT=$(git ls-remote https://github.com/breakfastquay/rubberband.git $LATEST^{} | awk '{print $1}') && sed -i -E "s/^ARG RUBBERBAND_COMMIT=.*/ARG RUBBERBAND_COMMIT=$COMMIT/" Dockerfile
+# bump: rubberband link "CHANGELOG" https://github.com/breakfastquay/rubberband/blob/default/CHANGELOG
 # bump: rubberband link "Source diff $CURRENT..$LATEST" https://github.com/breakfastquay/rubberband/compare/$CURRENT..$LATEST
-ARG RUBBERBAND_URL="https://github.com/breakfastquay/rubberband.git"
-ARG RUBBERBAND_COMMIT="b3c920a35ed1ea4da37ddd62a12d3a81278097d1"
+ARG RUBBERBAND_VERSION=2.0.0
+ARG RUBBERBAND_URL="https://breakfastquay.com/files/releases/rubberband-$RUBBERBAND_VERSION.tar.bz2"
+ARG RUBBERBAND_SHA256=eccbf0545496ce3386a2433ceec31e6576a76ed6884310e4b465003bfe260286
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
@@ -317,10 +318,10 @@ RUN \
   libdavs2: env.DAVS2_VERSION, \
   libxavs2: env.XAVS2_VERSION, \
   libmodplug: env.LIBMODPLUG_VERSION, \
-  uavs3d: env.UAVS3D_COMMIT, \
+  libuavs3d: env.UAVS3D_COMMIT, \
   libmysofa: env.LIBMYSOFA_VERSION, \
   libsamplerate: env.LIBSAMPLERATE_VERSION, \
-  rubberband: env.RUBBERBAND_COMMIT, \
+  librubberband: env.RUBBERBAND_VERSION, \
   fftw: env.FFTW_VERSION, \
   }' > /versions.json
 
@@ -556,8 +557,10 @@ RUN \
   make -j$(nproc) install
 
 RUN \
-  git clone "$RUBBERBAND_URL" && \
-  cd rubberband && git checkout $RUBBERBAND_COMMIT && \
+  wget -O rubberband.tar.bz2 "$RUBBERBAND_URL" && \
+  echo "$RUBBERBAND_SHA256  rubberband.tar.bz2" | sha256sum --status -c - && \
+  tar xf rubberband.tar.bz2 && \
+  cd rubberband-* && \
   meson -Dno_shared=true -Dfft=fftw build && \
   ninja -j$(nproc) -vC build install && \
   echo "Requires.private: fftw3 samplerate" >> /usr/local/lib/pkgconfig/rubberband.pc
