@@ -204,10 +204,9 @@ ARG LIBMYSOFA_URL="https://github.com/hoene/libmysofa/archive/refs/tags/v$LIBMYS
 ARG LIBMYSOFA_SHA256=94cb02e488de4dc0860c8d23b29d93d290bb0a004d4aa17e1642985bba158ee9
 # bump: uavs3d /UAVS3D_COMMIT=([[:xdigit:]]+)/ gitrefs:https://github.com/uavs3/uavs3d.git|re:#^refs/heads/master$#|@commit
 # bump: uavs3d after ./hashupdate Dockerfile UAVS3D $LATEST
-# bump: uavs3d after COMMIT=$(git ls-remote https://github.com/uavs3/uavs3d.git $LATEST^{} | awk '{print $1}') && sed -i -E "s/^ARG UAVS3D_COMMIT=.*/ARG UAVS3D_COMMIT=$COMMIT/" Dockerfile
 # bump: uavs3d link "Source diff $CURRENT..$LATEST" https://github.com/uavs3/uavs3d/compare/$CURRENT..$LATEST
 ARG UAVS3D_URL="https://github.com/uavs3/uavs3d.git"
-ARG UAVS3D_COMMIT=
+ARG UAVS3D_COMMIT=073fe7cc8eaef021aa4adc7b0100461e0260b70d
 # bump: rubberband /RUBBERBAND_VERSION=([\d.]+)/ https://github.com/breakfastquay/rubberband.git|^2
 # bump: rubberband after ./hashupdate Dockerfile RUBBERBAND $LATEST
 # bump: rubberband link "CHANGELOG" https://github.com/breakfastquay/rubberband/blob/default/CHANGELOG
@@ -544,7 +543,6 @@ RUN \
 RUN \
   git clone "$UAVS3D_URL" && \
   cd uavs3d && git checkout $UAVS3D_COMMIT && \
-  sed -i 's/gawk/awk/g' version.sh && \
   sed -i 's/define BIT_DEPTH 8/define BIT_DEPTH 10/' source/decore/com_def.h && \
   mkdir build/linux && cd build/linux && \
   cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=0 ../.. && \
