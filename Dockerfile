@@ -207,7 +207,7 @@ ARG LIBMYSOFA_SHA256=94cb02e488de4dc0860c8d23b29d93d290bb0a004d4aa17e1642985bba1
 # bump: uavs3d after COMMIT=$(git ls-remote https://github.com/uavs3/uavs3d.git $LATEST^{} | awk '{print $1}') && sed -i -E "s/^ARG UAVS3D_COMMIT=.*/ARG UAVS3D_COMMIT=$COMMIT/" Dockerfile
 # bump: uavs3d link "Source diff $CURRENT..$LATEST" https://github.com/uavs3/uavs3d/compare/$CURRENT..$LATEST
 ARG UAVS3D_URL="https://github.com/uavs3/uavs3d.git"
-ARG UAVS3D_COMMIT=57d20183301d4197d1c938f62f8a5911e33465d7
+ARG UAVS3D_COMMIT=
 # bump: rubberband /RUBBERBAND_VERSION=([\d.]+)/ https://github.com/breakfastquay/rubberband.git|^2
 # bump: rubberband after ./hashupdate Dockerfile RUBBERBAND $LATEST
 # bump: rubberband link "CHANGELOG" https://github.com/breakfastquay/rubberband/blob/default/CHANGELOG
