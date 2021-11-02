@@ -1,15 +1,15 @@
 #!/bin/sh
 case $(arch) in
-aarch64) echo aarch64-unknown-linux-musl;;
-armv5te) echo armv5te-unknown-linux-musleabi;;
-armv7*) echo armv7-unknown-linux-musleabi;;
-arm*) echo arm-unknown-linux-musleabi;;
-i586) echo i586-unknown-linux-musl;;
-i686) echo i686-unknown-linux-musl;;
-mips) echo mips-unknown-linux-musl;;
-mips64) echo mips64-unknown-linux-muslabi64;;
-mips64el) echo mips64el-unknown-linux-muslabi64;;
-mipsel) echo mipsel-unknown-linux-musl;;
-x86_64) echo x86_64-unknown-linux-musl;;
-*) echo missing;;
+  aarch64) echo aarch64-unknown-linux-musl;;
+  armv5te) echo armv5te-unknown-linux-musleabi;;
+  armv7*) echo armv7-unknown-linux-musleabi;;
+  arm*) echo arm-unknown-linux-musleabi;;
+  i586) echo i586-unknown-linux-musl;;
+  i686) echo i686-unknown-linux-musl;;
+  mips) echo mips-unknown-linux-musl;;
+  mips64) echo mips64-unknown-linux-muslabi64;;
+  mips64el) echo mips64el-unknown-linux-muslabi64;;
+  mipsel) echo mipsel-unknown-linux-musl;;
+  x86_64) echo x86_64-unknown-linux-musl;;
+  *) echo missing;;
 esac
