@@ -268,7 +268,7 @@ RUN apk add --no-cache \
   xxd
 
 # see comment a the top about cargo-c
-COPY --from=cargo-c /usr/local/cargo/bin/cargo-c* /usr/bin
+COPY --from=cargo-c /usr/local/cargo/bin/cargo-c* /usr/bin/
 
 RUN \
   OPENSSL_VERSION=$(pkg-config --modversion openssl) \
