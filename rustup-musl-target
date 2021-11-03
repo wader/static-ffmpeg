@@ -1,5 +1,6 @@
 #!/bin/sh
-case $(arch) in
+# this script is used in combination with rustup target to map a arch(1) name to rust musl target
+case "$1" in
   aarch64) echo aarch64-unknown-linux-musl;;
   armv5te) echo armv5te-unknown-linux-musleabi;;
   armv7*) echo armv7-unknown-linux-musleabi;;
