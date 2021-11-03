@@ -4,12 +4,13 @@
 # the builder image. Really hope to get rid of this.
 # bump: cargo-c-rust /FROM rust:([\d.]+)-bullseye AS cargo-c/ docker:rust|^1
 FROM rust:1.56.0-bullseye AS cargo-c
-COPY rustuphosttarget .
+COPY rustup-musl-target .
 RUN \
   apt-get update && \
   apt-get install -y musl-tools build-essential
-RUN rustup target add $(./rustuphosttarget)
-RUN cargo install --target=$(./rustuphosttarget) --version 0.9.5 cargo-c --features=vendored-openssl
+# install and build for same arch as build host
+RUN rustup target add $(./rustup-musl-target $(arch))
+RUN cargo install --target=$(./rustup-musl-target $(arch)) --version 0.9.5 cargo-c --features=vendored-openssl
 
 # bump: alpine /FROM alpine:([\d.]+)/ docker:alpine|^3
 # bump: alpine link "Release notes" https://alpinelinux.org/posts/Alpine-$LATEST-released.html
