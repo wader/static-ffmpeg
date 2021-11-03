@@ -278,7 +278,7 @@ RUN \
   FONTCONFIG_VERSION=$(pkg-config --modversion fontconfig)  \
   FRIBIDI_VERSION=$(pkg-config --modversion fribidi)  \
   SOXR_VERSION=$(pkg-config --modversion soxr) \
-  FFTW_VERSION=$(pkg-config --modversion fftw) \
+  FFTW_VERSION=$(pkg-config --modversion fftw3) \
   LIBSAMPLERATE_VERSION=$(pkg-config --modversion samplerate) \
   jq -n \
   '{ \
