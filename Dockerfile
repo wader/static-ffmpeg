@@ -226,8 +226,8 @@ ARG LIBGME_COMMIT=b3d158a30492181fd7c38ef795c8d4dcfd77eaa9
 # -static-libgcc is needed to make gcc not include gcc_s as "as-needed" shared library which
 # cmake will include as a implicit library.
 # other options to get hardened build (same as ffmpeg hardened)
-ARG CFLAGS="-s -O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE"
-ARG CXXFLAGS="-s -O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE"
+ARG CFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE"
+ARG CXXFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE"
 ARG LDFLAGS="-Wl,-z,relro,-z,now"
 
 RUN apk add --no-cache \
