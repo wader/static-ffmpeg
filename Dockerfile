@@ -215,6 +215,11 @@ ARG UAVS3D_COMMIT=073fe7cc8eaef021aa4adc7b0100461e0260b70d
 ARG RUBBERBAND_VERSION=2.0.0
 ARG RUBBERBAND_URL="https://breakfastquay.com/files/releases/rubberband-$RUBBERBAND_VERSION.tar.bz2"
 ARG RUBBERBAND_SHA256=eccbf0545496ce3386a2433ceec31e6576a76ed6884310e4b465003bfe260286
+# bump: libgme /LIBGME_COMMIT=([[:xdigit:]]+)/ gitrefs:https://bitbucket.org/mpyne/game-music-emu.git|re:#^refs/heads/master$#|@commit
+# bump: libgme after ./hashupdate Dockerfile LIBGME $LATEST
+# bump: libgme link "Source diff $CURRENT..$LATEST" https://bitbucket.org/mpyne/game-music-emu/branches/compare/$CURRENT..$LATEST
+ARG LIBGME_URL="https://bitbucket.org/mpyne/game-music-emu.git"
+ARG LIBGME_COMMIT=b3d158a30492181fd7c38ef795c8d4dcfd77eaa9
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
@@ -322,6 +327,7 @@ RUN \
   libmysofa: env.LIBMYSOFA_VERSION, \
   libsamplerate: env.LIBSAMPLERATE_VERSION, \
   librubberband: env.RUBBERBAND_VERSION, \
+  libgme: env.LIBGME_COMMIT, \
   fftw: env.FFTW_VERSION, \
   }' > /versions.json
 
@@ -335,8 +341,8 @@ RUN \
 RUN \
   wget -O twolame.tar.gz "$TWOLAME_URL" && \
   echo "$TWOLAME_SHA256  twolame.tar.gz" | sha256sum --status -c - && \
-  tar xf twolame.tar.gz && rm twolame.tar.gz && \
-  cd twolame-* && ./configure --disable-shared --enable-static --disable-sndfile && \
+  tar xf twolame.tar.gz && \
+  cd twolame-* && ./configure --disable-shared --enable-static --disable-sndfile --with-pic && \
   make -j$(nproc) install
 
 RUN \
@@ -518,20 +524,20 @@ RUN \
   cmake -G"Unix Makefiles" -DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release .. && \
   make -j$(nproc) install
 
-# TODO: seems to be issus with asm on musl
+# TODO: seems to be issues with asm on musl
 RUN \
   wget -O davs2.tar.gz "$DAVS2_URL" && \
   echo "$DAVS2_SHA256  davs2.tar.gz" | sha256sum --status -c - && \
   tar xf davs2.tar.gz && \
-  cd davs2-*/build/linux && ./configure --disable-asm --enable-pic && \
+  cd davs2-*/build/linux && ./configure --disable-asm --enable-pic --disable-cli && \
   make -j$(nproc) install
 
-# TODO: seems to be issus with asm on musl
+# TODO: seems to be issues with asm on musl
 RUN \
   wget -O xavs2.tar.gz "$XAVS2_URL" && \
   echo "$XAVS2_SHA256  xavs2.tar.gz" | sha256sum --status -c - && \
   tar xf xavs2.tar.gz && \
-  cd xavs2-*/build/linux && ./configure --disable-asm --enable-pic && \
+  cd xavs2-*/build/linux && ./configure --disable-asm --enable-pic --disable-cli && \
   make -j$(nproc) install
 
 RUN \
@@ -565,6 +571,13 @@ RUN \
   meson -Dno_shared=true -Dfft=fftw build && \
   ninja -j$(nproc) -vC build install && \
   echo "Requires.private: fftw3 samplerate" >> /usr/local/lib/pkgconfig/rubberband.pc
+
+RUN \
+  git clone "$LIBGME_URL" && \
+  cd game-music-emu && git checkout $LIBGME_COMMIT && \
+  mkdir build && cd build && \
+  cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DENABLE_UBSAN=OFF .. && \
+  make -j$(nproc) install
 
 # sed changes --toolchain=hardened -pie to -static-pie
 RUN \
@@ -621,27 +634,25 @@ RUN \
   --enable-libuavs3d \
   --enable-libmysofa \
   --enable-librubberband \
+  --enable-libgme \
   || (cat ffbuild/config.log ; false) \
-  && make -j$(nproc) install tools/qt-faststart \
-  && cp tools/qt-faststart /usr/local/bin
+  && make -j$(nproc) install
 
 # make sure binaries has no dependencies, is relro, pie and stack nx
 COPY checkelf /
 RUN \
   /checkelf /usr/local/bin/ffmpeg && \
-  /checkelf /usr/local/bin/ffprobe && \
-  /checkelf /usr/local/bin/qt-faststart
+  /checkelf /usr/local/bin/ffprobe
 
 FROM scratch
 LABEL maintainer="Mattias Wadman mattias.wadman@gmail.com"
-COPY --from=builder /versions.json /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /usr/local/bin/qt-faststart /
+COPY --from=builder /versions.json /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /
 COPY --from=builder /usr/local/share/doc/ffmpeg/* /doc/
 COPY --from=builder /etc/ssl/cert.pem /etc/ssl/cert.pem
 # sanity tests
 RUN ["/ffmpeg", "-version"]
 RUN ["/ffprobe", "-version"]
-RUN ["/ffmpeg", "-buildconf"]
-RUN ["/qt-faststart", "-version"]
+RUN ["/ffmpeg", "-hide_banner", "-buildconf"]
 RUN ["/ffprobe", "-i", "https://github.com/favicon.ico"]
 RUN ["/ffprobe", "-tls_verify", "1", "-ca_file", "/etc/ssl/cert.pem", "-i", "https://github.com/favicon.ico"]
 ENTRYPOINT ["/ffmpeg"]
