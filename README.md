@@ -53,7 +53,6 @@ In Dockerfile
 ```Dockerfile
 COPY --from=mwader/static-ffmpeg:4.4.1 /ffmpeg /usr/local/bin/
 COPY --from=mwader/static-ffmpeg:4.4.1 /ffprobe /usr/local/bin/
-COPY --from=mwader/static-ffmpeg:4.4.1 /qt-faststart /usr/local/bin/
 ```
 Run directly
 ```sh
