@@ -46,7 +46,7 @@ libgme
 and all native ffmpeg codecs, formats, filters etc.
 
 See [Dockerfile](Dockerfile) for versions used. In general master will have the latest stable version
-of ffmpeg and all libraries. Versions are kept up to date automatically using using [bump](https://github.com/wader/bump).
+of ffmpeg and all libraries. Versions are kept up to date automatically using [bump](https://github.com/wader/bump).
 
 ### Usage
 
