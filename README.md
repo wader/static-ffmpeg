@@ -69,11 +69,11 @@ alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --ent
 ```
 
 ### Files in the image
-`/ffmpeg` ffmpeg binary
-`/ffprobe` ffprobe binary
-`/doc` Documentation
-`/versions.json` JSON file with ffmpeg and library versions
-`/etc/ssl/cert.pem` CA certs to make `-tls_verify 1 -ca_file /etc/ssl/cert.pem` work if running image directly
+`/ffmpeg` ffmpeg binary<br>
+`/ffprobe` ffprobe binary<br>
+`/doc` Documentation<br>
+`/versions.json` JSON file with ffmpeg and library versions<br>
+`/etc/ssl/cert.pem` CA certs to make `-tls_verify 1 -ca_file /etc/ssl/cert.pem` work if running image directly<br>
 
 ### Tags
 
