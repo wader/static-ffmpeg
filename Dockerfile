@@ -14,7 +14,7 @@ RUN cargo install --target=$(./rustup-musl-target $(arch)) --version 0.9.5 cargo
 
 # bump: alpine /FROM alpine:([\d.]+)/ docker:alpine|^3
 # bump: alpine link "Release notes" https://alpinelinux.org/posts/Alpine-$LATEST-released.html
-FROM alpine:3.14.2 AS builder
+FROM alpine:3.14.3 AS builder
 
 # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|^4
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
