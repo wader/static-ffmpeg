@@ -3,7 +3,7 @@
 # using a non-musl based rust compiler (proc macro issues) and then copy it into
 # the builder image. Really hope to get rid of this.
 # bump: cargo-c-rust /FROM rust:([\d.]+)-bullseye AS cargo-c/ docker:rust|^1
-FROM rust:1.56.0-bullseye AS cargo-c
+FROM rust:1.57.0-bullseye AS cargo-c
 COPY rustup-musl-target .
 RUN \
   apt-get update && \
