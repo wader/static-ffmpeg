@@ -1,17 +1,3 @@
-# cargo-c is not in alpine main yet and seem to require rust 1.53+ (or-pattern)
-# to build. So temporary solution is to cross build a static binary for musl
-# using a non-musl based rust compiler (proc macro issues) and then copy it into
-# the builder image. Really hope to get rid of this.
-# bump: cargo-c-rust /FROM rust:([\d.]+)-bullseye AS cargo-c/ docker:rust|^1
-FROM rust:1.57.0-bullseye AS cargo-c
-COPY rustup-musl-target .
-RUN \
-  apt-get update && \
-  apt-get install -y musl-tools build-essential
-# install and build for same arch as build host
-RUN rustup target add $(./rustup-musl-target $(arch))
-RUN cargo install --target=$(./rustup-musl-target $(arch)) --version 0.9.5 cargo-c --features=vendored-openssl
-
 # bump: alpine /FROM alpine:([\d.]+)/ docker:alpine|^3
 # bump: alpine link "Release notes" https://alpinelinux.org/posts/Alpine-$LATEST-released.html
 FROM alpine:3.15.0 AS builder
@@ -273,8 +259,8 @@ RUN apk add --no-cache \
   libsamplerate-dev \
   xxd
 
-# see comment a the top about cargo-c
-COPY --from=cargo-c /usr/local/cargo/bin/cargo-c* /usr/bin/
+# debug builds a bit faster and we don't care about runtime speed
+RUN cargo install --debug --version 0.9.5 cargo-c
 
 RUN \
   OPENSSL_VERSION=$(pkg-config --modversion openssl) \
