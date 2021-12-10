@@ -475,13 +475,11 @@ RUN \
   CFLAGS="$CFLAGS -fstrength-reduce -ffast-math" ./configure && \
   make -j$(nproc) && make install
 
-# cargo fetch as it seems the cargo-c binary (see comment at top) has ssl issues sometimes
 RUN \
   wget -O rav1e.tar.gz "$RAV1E_URL" && \
   echo "$RAV1E_SHA256  rav1e.tar.gz" | sha256sum --status -c - && \
   tar xf rav1e.tar.gz && \
   cd rav1e-* && \
-  cargo fetch && \
   cargo cinstall --release
 # cargo-c/alpine rustc results in Libs.private depend on gcc_s
 # https://gitlab.alpinelinux.org/alpine/aports/-/issues/11806
