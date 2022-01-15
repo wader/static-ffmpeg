@@ -113,6 +113,7 @@ the FFmpeg project or to other projects used by this image if you find it useful
 
 ### TODOs and possible things to add
 
+* Add libplacebo
 * Add acceleration support (GPU, CUDA, ...)
 * Add *.a *.so libraries, headers and pkg-config somehow
 * Use cargo-c stable alpine package
