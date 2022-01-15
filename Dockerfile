@@ -387,7 +387,7 @@ RUN \
   wget -O x265.tar.bz2 "$X265_URL" && \
   echo "$X265_SHA256  x265.tar.bz2" | sha256sum --status -c - && \
   tar xf x265.tar.bz2 && \
-  cd multicoreware-x265_git-*/build/linux && \
+  cd x265_*/build/linux && \
   cmake -G "Unix Makefiles" -DENABLE_SHARED=OFF -DENABLE_AGGRESSIVE_CHECKS=ON -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy -DENABLE_CLI=OFF -DCMAKE_BUILD_TYPE=Release ../../source && \
   make -j$(nproc) install
 
