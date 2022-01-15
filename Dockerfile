@@ -74,7 +74,7 @@ ARG X264_VERSION=5db6aa6cab1b146e07b60cc1736a01f21da01154
 # bump: x265 link "releasenotes" https://bitbucket.org/multicoreware/x265_git/src/master/doc/reST/releasenotes.rst
 ARG X265_VERSION=3.5
 ARG X265_URL="https://bitbucket.org/multicoreware/x265_git/downloads/x265_$X265_VERSION.tar.gz"
-ARG X265_SHA256=7ebc5d2de6ce5dfefb434e422e59a0c4715fe939c784ac2f3d41af5775adc706
+ARG X265_SHA256=e70a3335cacacbba0b3a20ec6fecd6783932288ebc8163ad74bcc9606477cae8
 # bump: libwebp /LIBWEBP_VERSION=([\d.]+)/ https://github.com/webmproject/libwebp.git|*
 # bump: libwebp after ./hashupdate Dockerfile LIBWEBP $LATEST
 # bump: libwebp link "Release notes" https://github.com/webmproject/libwebp/releases/tag/v$LATEST
