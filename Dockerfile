@@ -2,7 +2,7 @@
 # bump: alpine link "Release notes" https://alpinelinux.org/posts/Alpine-$LATEST-released.html
 FROM alpine:3.15.0 AS builder
 
-# bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|^4
+# bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|^5
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
 # bump: ffmpeg link "Changelog" https://github.com/FFmpeg/FFmpeg/blob/n$LATEST/Changelog
 # bump: ffmpeg link "Source diff $CURRENT..$LATEST" https://github.com/FFmpeg/FFmpeg/compare/n$CURRENT..n$LATEST
