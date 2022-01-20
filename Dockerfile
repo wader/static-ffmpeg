@@ -198,9 +198,9 @@ ARG UAVS3D_COMMIT=e58e199ccc50163c20df114db7e3950295c3e2ed
 # bump: rubberband after ./hashupdate Dockerfile RUBBERBAND $LATEST
 # bump: rubberband link "CHANGELOG" https://github.com/breakfastquay/rubberband/blob/default/CHANGELOG
 # bump: rubberband link "Source diff $CURRENT..$LATEST" https://github.com/breakfastquay/rubberband/compare/$CURRENT..$LATEST
-ARG RUBBERBAND_VERSION=2.0.0
+ARG RUBBERBAND_VERSION=2.0.1
 ARG RUBBERBAND_URL="https://breakfastquay.com/files/releases/rubberband-$RUBBERBAND_VERSION.tar.bz2"
-ARG RUBBERBAND_SHA256=eccbf0545496ce3386a2433ceec31e6576a76ed6884310e4b465003bfe260286
+ARG RUBBERBAND_SHA256=dc1b8b775f1717b21e35a11842b00d63beaaf9255b304dee7bb0413568ad80e8
 # bump: libgme /LIBGME_COMMIT=([[:xdigit:]]+)/ gitrefs:https://bitbucket.org/mpyne/game-music-emu.git|re:#^refs/heads/master$#|@commit
 # bump: libgme after ./hashupdate Dockerfile LIBGME $LATEST
 # bump: libgme link "Source diff $CURRENT..$LATEST" https://bitbucket.org/mpyne/game-music-emu/branches/compare/$CURRENT..$LATEST
