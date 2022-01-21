@@ -219,7 +219,7 @@ ARG LDFLAGS="-Wl,-z,relro,-z,now"
 RUN apk add --no-cache \
   coreutils \
   rust cargo \
-  openssl openssl-dev openssl-libs-static \
+  openssl-dev openssl-libs-static \
   ca-certificates \
   bash \
   tar \
@@ -236,11 +236,11 @@ RUN apk add --no-cache \
   nasm \
   texinfo \
   jq \
-  zlib zlib-dev zlib-static \
-  libbz2 bzip2-dev bzip2-static \
-  libxml2 libxml2-dev \
-  expat expat-dev expat-static \
-  fontconfig fontconfig-dev fontconfig-static \
+  zlib-dev zlib-static \
+  bzip2-dev bzip2-static \
+  libxml2-dev \
+  expat-dev expat-static \
+  fontconfig-dev fontconfig-static \
   freetype freetype-dev freetype-static \
   graphite2-static \
   glib-static \
@@ -248,12 +248,12 @@ RUN apk add --no-cache \
   libjpeg-turbo libjpeg-turbo-dev \
   libpng-dev libpng-static \
   giflib giflib-dev \
-  harfbuzz harfbuzz-dev harfbuzz-static \
-  fribidi fribidi-dev fribidi-static \
-  brotli brotli-dev brotli-static \
-  soxr soxr-dev soxr-static \
+  harfbuzz-dev harfbuzz-static \
+  fribidi-dev fribidi-static \
+  brotli-dev brotli-static \
+  soxr-dev soxr-static \
   tcl \
-  numactl numactl-dev \
+  numactl-dev \
   cunit cunit-dev \
   fftw-dev \
   libsamplerate-dev \
