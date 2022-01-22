@@ -159,9 +159,9 @@ ARG SRT_SHA256=93f5f3715bd5bd522b8d65fc0d086ef2ad49db6a41ad2d7b35df2e8bd7094114
 # bump: svtav1 /SVTAV1_VERSION=([\d.]+)/ https://gitlab.com/AOMediaCodec/SVT-AV1.git|^0
 # bump: svtav1 after ./hashupdate Dockerfile SVTAV1 $LATEST
 # bump: svtav1 link "Release notes" https://gitlab.com/AOMediaCodec/SVT-AV1/-/releases/v$LATEST
-ARG SVTAV1_VERSION=0.8.7
+ARG SVTAV1_VERSION=0.9.0
 ARG SVTAV1_URL="https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/v$SVTAV1_VERSION/SVT-AV1-v$SVTAV1_VERSION.tar.bz2"
-ARG SVTAV1_SHA256=482bbe3b0f2f41b8dd0c2426c6bf5848f7306ad14ce3a10617834dbb3ab2d847
+ARG SVTAV1_SHA256=0b1db3bb4b338c48f8895d04f7be95b7f031f58139fa27c0580a750fa37ea9c5
 # bump: davs2 /DAVS2_VERSION=([\d.]+)/ https://github.com/pkuvcl/davs2.git|^1
 # bump: davs2 after ./hashupdate Dockerfile DAVS2 $LATEST
 # bump: davs2 link "Release" https://github.com/pkuvcl/davs2/releases/tag/$LATEST
