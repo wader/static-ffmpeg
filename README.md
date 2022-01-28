@@ -1,8 +1,7 @@
 ## static-ffmpeg
 
-Docker image with ffmpeg, ffprobe and qt-faststart binaries built as hardened static PIE
-binaries with no external dependencies. Can be used with any base image even
-scratch.
+Docker image with ffmpeg/ffprobe built as hardened static PIE binaries
+with no external dependencies. Can be used with any base image even scratch.
 
 Built with
 gray,
@@ -10,6 +9,7 @@ openssl,
 iconv,
 libxml2,
 libmp3lame,
+libtwolame,
 libfdk-aac,
 libvorbis,
 libopus,
@@ -19,8 +19,8 @@ libvpx,
 libx264,
 libx265,
 libwebp,
-libwavpack,
 libspeex,
+libvmaf
 libaom,
 libvidstab,
 libkvazaar,
@@ -38,39 +38,49 @@ libsrt,
 libsvtav1,
 libdavs2,
 libxavs2,
-libvmaf
-and all default native ffmpeg codecs, formats, filters etc.
+libmodplug,
+libuavs3d,
+libmysofa,
+librubberband,
+libgme
+and all native ffmpeg codecs, formats, filters etc.
+
+See [Dockerfile](Dockerfile) for versions used. In general master will have the latest stable version
+of ffmpeg and all libraries. Versions are kept up to date automatically using [bump](https://github.com/wader/bump).
 
 ### Usage
 
-Use `mwader/static-ffmpeg` from docker hub or build image yourself.
+Use `mwader/static-ffmpeg` from Docker Hub or build image yourself.
 
 In Dockerfile
 ```Dockerfile
-COPY --from=mwader/static-ffmpeg:4.4.0 /ffmpeg /usr/local/bin/
-COPY --from=mwader/static-ffmpeg:4.4.0 /ffprobe /usr/local/bin/
-COPY --from=mwader/static-ffmpeg:4.4.0 /qt-faststart /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:5.0 /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:5.0 /ffprobe /usr/local/bin/
 ```
 Run directly
 ```sh
-docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.4.0 -i file.wav file.mp3
-docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:4.4.0 -i file.wav
-docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/qt-faststart mwader/static-ffmpeg:4.4.0 file.mov out.mov
+docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:5.0 -i file.wav file.mp3
+docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:5.0 -i file.wav
 ```
 Bash alias
 ```sh
-alias ffmpeg='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:4.4.0'
-alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:4.4.0'
-alias qt-faststart='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/qt-faststart mwader/static-ffmpeg:4.4.0'
+alias ffmpeg='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:5.0'
+alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:5.0'
 ```
 
 ### Files in the image
-`/ffmpeg` ffmpeg binary  
-`/ffprobe` ffprobe binary  
-`/qt-faststart` qt-faststart binary  
-`/doc` Documentation  
-`/versions.json` JSON file with ffmpeg and library versions  
-`/etc/ssl/cert.pem` CA certs to make `-tls_verify 1 -ca_file /etc/ssl/cert.pem` work if running image directly
+`/ffmpeg` ffmpeg binary<br>
+`/ffprobe` ffprobe binary<br>
+`/doc` Documentation<br>
+`/versions.json` JSON file with ffmpeg and library versions<br>
+`/etc/ssl/cert.pem` CA certs to make `-tls_verify 1 -ca_file /etc/ssl/cert.pem` work if running image directly<br>
+
+### Tags
+
+`latest` Latest master build.
+
+`MAJOR.MINOR.PATCH[-BUILD]` Specific version of ffmpeg with the features that was in master at the time of tagging.
+`-BUILD` means that was an additional build with that version to add of fix something.
 
 ### Security
 
@@ -90,8 +100,8 @@ to TCP and redo the query but musl libc does currently not support DNS over TCP.
 
 Binaries are built with TLS support but by default ffmpeg currently do
 not do certificate verifications. To enable verification you need to run
-ffmpeg with `-tls_verify 1` and `-ca_file /path/to/cert.pem`. For alpine
-the ca file is included by default at `/etc/ssl/cert.pem` and for debian/ubuntu
+ffmpeg with `-tls_verify 1` and `-ca_file /path/to/cert.pem`. For Alpine
+the CA file is included by default at `/etc/ssl/cert.pem` and for Debian/Ubuntu
 you have to install the `ca-certificates` package which will install the file at
 `/etc/ssl/certs/ca-certificates.crt`.
 
@@ -103,7 +113,7 @@ the FFmpeg project or to other projects used by this image if you find it useful
 
 ### TODOs and possible things to add
 
-* Add libuavs3d (releases missing? https://github.com/uavs3/uavs3d/issues/11)
+* Add libplacebo
 * Add acceleration support (GPU, CUDA, ...)
 * Add *.a *.so libraries, headers and pkg-config somehow
-* Use cargo-c stable alpine package (uses edge/testing now)
+* Use cargo-c stable alpine package
