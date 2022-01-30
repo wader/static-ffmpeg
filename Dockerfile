@@ -531,13 +531,13 @@ RUN \
   cd libmodplug-* && ./configure --disable-shared --enable-static && \
   make -j$(nproc) install
 
-RUN \
-  git clone "$UAVS3D_URL" && \
-  cd uavs3d && git checkout $UAVS3D_COMMIT && \
-  sed -i 's/define BIT_DEPTH 8/define BIT_DEPTH 10/' source/decore/com_def.h && \
-  mkdir build/linux && cd build/linux && \
-  cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=0 ../.. && \
-  make -j$(nproc) install
+#RUN \
+#  git clone "$UAVS3D_URL" && \
+#  cd uavs3d && git checkout $UAVS3D_COMMIT && \
+#  sed -i 's/define BIT_DEPTH 8/define BIT_DEPTH 10/' source/decore/com_def.h && \
+#  mkdir build/linux && cd build/linux && \
+#  cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=0 ../.. && \
+#  make -j$(nproc) install
 
 RUN \
   wget -O libmysofa.tar.gz "$LIBMYSOFA_URL" && \
@@ -615,7 +615,7 @@ RUN \
   --enable-libdavs2 \
   --enable-libxavs2 \
   --enable-libmodplug \
-  --enable-libuavs3d \
+#  --enable-libuavs3d \
   --enable-libmysofa \
   --enable-librubberband \
   --enable-libgme \
