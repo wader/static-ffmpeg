@@ -364,7 +364,7 @@ RUN \
   wget -O libtheora.tar.bz2 "$THEORA_URL" && \
   echo "$THEORA_SHA256  libtheora.tar.bz2" | sha256sum --status -c - && \
   tar xf libtheora.tar.bz2 && \
-  cd libtheora-* && ./configure --disable-examples --disable-shared --enable-static && \
+  cd libtheora-* && ./configure --build=$(arch)-unknown-linux-gnu --disable-examples --disable-shared --enable-static && \
   make -j$(nproc) install
 
 RUN \
@@ -422,13 +422,13 @@ RUN \
   cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DENABLE_EXAMPLES=NO -DENABLE_TESTS=NO -DENABLE_TOOLS=NO -DCONFIG_TUNE_VMAF=1 -DENABLE_NASM=on -DCMAKE_INSTALL_LIBDIR=lib .. && \
   make -j$(nproc) install
 
-RUN \
-  wget -O vid.stab.tar.gz "$VIDSTAB_URL" && \
-  echo "$VIDSTAB_SHA256  vid.stab.tar.gz" | sha256sum --status -c - && \
-  tar xf vid.stab.tar.gz && \
-  cd vid.stab-* && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DUSE_OMP=ON . && \
-  make -j$(nproc) install
-RUN echo "Libs.private: -ldl" >> /usr/local/lib/pkgconfig/vidstab.pc
+#RUN \
+#  wget -O vid.stab.tar.gz "$VIDSTAB_URL" && \
+#  echo "$VIDSTAB_SHA256  vid.stab.tar.gz" | sha256sum --status -c - && \
+#  tar xf vid.stab.tar.gz && \
+#  cd vid.stab-* && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DUSE_OMP=ON . && \
+#  make -j$(nproc) install
+#RUN echo "Libs.private: -ldl" >> /usr/local/lib/pkgconfig/vidstab.pc
 
 RUN \
   wget -O kvazaar.tar.gz "$KVAZAAR_URL" && \
@@ -619,6 +619,7 @@ RUN \
   --enable-libmysofa \
   --enable-librubberband \
   --enable-libgme \
+  --disable-libvidstab \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install
 
