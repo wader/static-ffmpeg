@@ -422,13 +422,13 @@ RUN \
   cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DENABLE_EXAMPLES=NO -DENABLE_TESTS=NO -DENABLE_TOOLS=NO -DCONFIG_TUNE_VMAF=1 -DENABLE_NASM=on -DCMAKE_INSTALL_LIBDIR=lib .. && \
   make -j$(nproc) install
 
-#RUN \
-#  wget -O vid.stab.tar.gz "$VIDSTAB_URL" && \
-#  echo "$VIDSTAB_SHA256  vid.stab.tar.gz" | sha256sum --status -c - && \
-#  tar xf vid.stab.tar.gz && \
-#  cd vid.stab-* && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DUSE_OMP=ON . && \
-#  make -j$(nproc) install
-#RUN echo "Libs.private: -ldl" >> /usr/local/lib/pkgconfig/vidstab.pc
+RUN \
+  wget -O vid.stab.tar.gz "$VIDSTAB_URL" && \
+  echo "$VIDSTAB_SHA256  vid.stab.tar.gz" | sha256sum --status -c - && \
+  tar xf vid.stab.tar.gz && \
+  cd vid.stab-* && sed -i 's/include (FindSSE)/if(CMAKE_SYSTEM_ARCH MATCHES "amd64")\ninclude (FindSSE)\nendif()/' ./CMakeLists.txt && cmake -DCMAKE_SYSTEM_ARCH=$(arch) -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DUSE_OMP=ON . && \
+  make -j$(nproc) install
+RUN echo "Libs.private: -ldl" >> /usr/local/lib/pkgconfig/vidstab.pc
 
 RUN \
   wget -O kvazaar.tar.gz "$KVAZAAR_URL" && \
@@ -619,7 +619,6 @@ RUN \
   --enable-libmysofa \
   --enable-librubberband \
   --enable-libgme \
-  --disable-libvidstab \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install
 
