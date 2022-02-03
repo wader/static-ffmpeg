@@ -594,6 +594,7 @@ RUN \
   --disable-ffplay \
   --enable-static \
   --enable-gpl \
+  --enable-version3 \
   --enable-gray \
   --enable-nonfree \
   --enable-openssl \
