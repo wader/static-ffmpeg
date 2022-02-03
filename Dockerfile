@@ -319,7 +319,7 @@ RUN \
   libsamplerate: env.LIBSAMPLERATE_VERSION, \
   librubberband: env.RUBBERBAND_VERSION, \
   libgme: env.LIBGME_COMMIT, \
-  librtmp: env:LIBRTMP_COMMIT, \
+  librtmp: env.LIBRTMP_COMMIT, \
   fftw: env.FFTW_VERSION, \
   }' > /versions.json
 
