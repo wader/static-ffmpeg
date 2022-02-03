@@ -206,6 +206,12 @@ ARG RUBBERBAND_SHA256=b9eac027e797789ae99611c9eaeaf1c3a44cc804f9c8a0441a0d1d26f3
 # bump: libgme link "Source diff $CURRENT..$LATEST" https://bitbucket.org/mpyne/game-music-emu/branches/compare/$CURRENT..$LATEST
 ARG LIBGME_URL="https://bitbucket.org/mpyne/game-music-emu.git"
 ARG LIBGME_COMMIT=b3d158a30492181fd7c38ef795c8d4dcfd77eaa9
+# bump: opencoreamr /OPENCOREAMR_VERSION=([\d.]+)/ fetch:https://sourceforge.net/projects/opencore-amr/files/opencore-amr/|/opencore-amr-([\d.]+).tar.gz/
+# bump: opencoreamr after ./hashupdate Dockerfile OPENCOREAMR $LATEST
+# bump: opencoreamr link "ChangeLog" https://sourceforge.net/p/opencore-amr/code/ci/master/tree/ChangeLog
+ARG OPENCOREAMR_VERSION=0.1.5
+ARG OPENCOREAMR_URL="https://sourceforge.net/projects/opencore-amr/files/opencore-amr/opencore-amr-$OPENCOREAMR_VERSION.tar.gz"
+ARG OPENCOREAMR_SHA256=2c006cb9d5f651bfb5e60156dbff6af3c9d35c7bbcc9015308c0aff1e14cd341
 # bump: librtmp /LIBRTMP_COMMIT=([[:xdigit:]]+)/ gitrefs:https://git.ffmpeg.org/rtmpdump.git|re:#^refs/heads/master$#|@commit
 # bump: librtmp after ./hashupdate Dockerfile LIBRTMP $LATEST
 # bump: librtmp link "Commit diff $CURRENT..$LATEST" https://git.ffmpeg.org/gitweb/rtmpdump.git/commitdiff/$LATEST?ds=sidebyside
@@ -319,6 +325,7 @@ RUN \
   libsamplerate: env.LIBSAMPLERATE_VERSION, \
   librubberband: env.RUBBERBAND_VERSION, \
   libgme: env.LIBGME_COMMIT, \
+  libopencoreamr: env.OPENCOREAMR_VERSION, \
   librtmp: env.LIBRTMP_COMMIT, \
   fftw: env.FFTW_VERSION, \
   }' > /versions.json
@@ -570,6 +577,13 @@ RUN \
   make -j$(nproc) install
 
 RUN \
+  wget -O opencoreamr.tar.gz "$OPENCOREAMR_URL" && \
+  echo "$OPENCOREAMR_SHA256  opencoreamr.tar.gz" | sha256sum --status -c - && \
+  tar xf opencoreamr.tar.gz && \
+  cd opencore-amr-* && ./configure --enable-static --disable-shared && \
+  make -j$(nproc) install
+
+RUN \
   git clone "$LIBRTMP_URL" && \
   cd rtmpdump && git checkout $LIBRTMP_COMMIT && \
   make SYS=posix SHARED=off -j$(nproc) install
@@ -591,6 +605,7 @@ RUN \
   --disable-ffplay \
   --enable-static \
   --enable-gpl \
+  --enable-version3 \
   --enable-gray \
   --enable-nonfree \
   --enable-openssl \
@@ -630,6 +645,8 @@ RUN \
   --enable-libmysofa \
   --enable-librubberband \
   --enable-libgme \
+  --enable-libopencore-amrnb \
+  --enable-libopencore-amrwb \
   --enable-librtmp \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install
@@ -645,10 +662,12 @@ LABEL maintainer="Mattias Wadman mattias.wadman@gmail.com"
 COPY --from=builder /versions.json /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /
 COPY --from=builder /usr/local/share/doc/ffmpeg/* /doc/
 COPY --from=builder /etc/ssl/cert.pem /etc/ssl/cert.pem
+
 # sanity tests
 RUN ["/ffmpeg", "-version"]
 RUN ["/ffprobe", "-version"]
 RUN ["/ffmpeg", "-hide_banner", "-buildconf"]
 RUN ["/ffprobe", "-i", "https://github.com/favicon.ico"]
 RUN ["/ffprobe", "-tls_verify", "1", "-ca_file", "/etc/ssl/cert.pem", "-i", "https://github.com/favicon.ico"]
+
 ENTRYPOINT ["/ffmpeg"]

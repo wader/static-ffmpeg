@@ -43,6 +43,7 @@ libuavs3d,
 libmysofa,
 librubberband,
 libgme,
+libopencore,
 librtmp
 and all native ffmpeg codecs, formats, filters etc.
 
