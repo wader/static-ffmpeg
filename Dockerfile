@@ -206,6 +206,11 @@ ARG RUBBERBAND_SHA256=b9eac027e797789ae99611c9eaeaf1c3a44cc804f9c8a0441a0d1d26f3
 # bump: libgme link "Source diff $CURRENT..$LATEST" https://bitbucket.org/mpyne/game-music-emu/branches/compare/$CURRENT..$LATEST
 ARG LIBGME_URL="https://bitbucket.org/mpyne/game-music-emu.git"
 ARG LIBGME_COMMIT=b3d158a30492181fd7c38ef795c8d4dcfd77eaa9
+# bump: libgsm /LIBGSM_COMMIT=([[:xdigit:]]+)/ gitrefs:https://github.com/timothytylee/libgsm.git|re:#^refs/heads/master$#|@commit
+# bump: libgsm after ./hashupdate Dockerfile LIBGSM $LATEST
+# bump: libgsm link "Changelog" https://github.com/timothytylee/libgsm/blob/master/ChangeLog
+ARG LIBGSM_URL="https://github.com/timothytylee/libgsm.git"
+ARG LIBGSM_COMMIT=98f1708fb5e06a0dfebd58a3b40d610823db9715
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
@@ -314,6 +319,7 @@ RUN \
   libsamplerate: env.LIBSAMPLERATE_VERSION, \
   librubberband: env.RUBBERBAND_VERSION, \
   libgme: env.LIBGME_COMMIT, \
+  libgsm: env.LIBGSM_COMMIT, \
   fftw: env.FFTW_VERSION, \
   }' > /versions.json
 
@@ -563,6 +569,13 @@ RUN \
   cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DENABLE_UBSAN=OFF .. && \
   make -j$(nproc) install
 
+RUN \
+  git clone "$LIBGSM_URL" && \
+  cd libgsm && git checkout $LIBGSM_COMMIT && \
+  # special Makefile to buildinstall easier, base64 encoded
+  echo 'Q0ZMQUdTCQk9CS1hbnNpIC1wZWRhbnRpYyAtYyAtTzIgLXMgLUROZWVkRnVuY3Rpb25Qcm90b3R5cGVzPTEgLVdhbGwgLVduby1jb21tZW50IC1EU0FTUiAtRFdBVjQ5IC1ETkRFQlVHIC1JLi9pbmMKClNSQwkJPQkuL3NyYwpPQkpFQ1RTCQk9CSQoU1JDKS9hZGQubwkJXAoJCQkkKFNSQykvY29kZS5vCQlcCgkJCSQoU1JDKS9kZWJ1Zy5vCQlcCgkJCSQoU1JDKS9kZWNvZGUubwkJXAoJCQkkKFNSQykvbG9uZ190ZXJtLm8JXAoJCQkkKFNSQykvbHBjLm8JCVwKCQkJJChTUkMpL3ByZXByb2Nlc3MubwlcCgkJCSQoU1JDKS9ycGUubwkJXAoJCQkkKFNSQykvZ3NtX2Rlc3Ryb3kubwlcCgkJCSQoU1JDKS9nc21fZGVjb2RlLm8JXAoJCQkkKFNSQykvZ3NtX2VuY29kZS5vCVwKCQkJJChTUkMpL2dzbV9leHBsb2RlLm8JXAoJCQkkKFNSQykvZ3NtX2ltcGxvZGUubwlcCgkJCSQoU1JDKS9nc21fY3JlYXRlLm8JXAoJCQkkKFNSQykvZ3NtX3ByaW50Lm8JXAoJCQkkKFNSQykvZ3NtX29wdGlvbi5vCVwKCQkJJChTUkMpL3Nob3J0X3Rlcm0ubwlcCgkJCSQoU1JDKS90YWJsZS5vCgolLm86ICQoU1JDKS8lLmMKCQkJZ2NjICQoQ0ZMQUdTKSAkPwoKbGliZ3NtLmE6ICQoT0JKRUNUUykKCQkJLXJtIGxpYmdzbS5hCgkJCWFyIGNyIGxpYmdzbS5hICQoT0JKRUNUUykKCQkJcmFubGliIGxpYmdzbS5hCgppbnN0YWxsOiBsaWJnc20uYQoJCQljcCBsaWJnc20uYSAvdXNyL2xvY2FsL2xpYi8KCmNsZWFuOgoJCQlybSAtZiAkKFNSQykvKi5vICouYQoKUEhPTlk6IGxpYmdzbS5hCg==' | base64 -id > Makefile && \
+  make -j$(nproc) install
+
 # sed changes --toolchain=hardened -pie to -static-pie
 RUN \
   wget -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
@@ -619,6 +632,7 @@ RUN \
   --enable-libmysofa \
   --enable-librubberband \
   --enable-libgme \
+  --enable-libgsm \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install
 
