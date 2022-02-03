@@ -206,6 +206,11 @@ ARG RUBBERBAND_SHA256=b9eac027e797789ae99611c9eaeaf1c3a44cc804f9c8a0441a0d1d26f3
 # bump: libgme link "Source diff $CURRENT..$LATEST" https://bitbucket.org/mpyne/game-music-emu/branches/compare/$CURRENT..$LATEST
 ARG LIBGME_URL="https://bitbucket.org/mpyne/game-music-emu.git"
 ARG LIBGME_COMMIT=b3d158a30492181fd7c38ef795c8d4dcfd77eaa9
+# bump: librtmp /LIBRTMP_COMMIT=([[:xdigit:]]+)/ gitrefs:https://git.ffmpeg.org/rtmpdump.git|re:#^refs/heads/master$#|@commit
+# bump: librtmp after ./hashupdate Dockerfile LIBRTMP $LATEST
+# bump: librtmp link "Commit diff $CURRENT..$LATEST" https://git.ffmpeg.org/gitweb/rtmpdump.git/commitdiff/$LATEST?ds=sidebyside
+LIBRTMP_URL="https://git.ffmpeg.org/rtmpdump.git"
+LIBRTMP_COMMIT=f1b83c10d8beb43fcc70a6e88cf4325499f25857
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
@@ -314,6 +319,7 @@ RUN \
   libsamplerate: env.LIBSAMPLERATE_VERSION, \
   librubberband: env.RUBBERBAND_VERSION, \
   libgme: env.LIBGME_COMMIT, \
+  librtmp: env:LIBRTMP_COMMIT, \
   fftw: env.FFTW_VERSION, \
   }' > /versions.json
 
@@ -563,6 +569,11 @@ RUN \
   cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DENABLE_UBSAN=OFF .. && \
   make -j$(nproc) install
 
+RUN \
+  git clone "$LIBRTMP_URL" && \
+  cd rtmpdump && git checkout $LIBRTMP_COMMIT && \
+  make SYS=posix SHARED=off -j$(nproc) install
+
 # sed changes --toolchain=hardened -pie to -static-pie
 RUN \
   wget -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
@@ -619,6 +630,7 @@ RUN \
   --enable-libmysofa \
   --enable-librubberband \
   --enable-libgme \
+  --enable-librtmp \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install
 
