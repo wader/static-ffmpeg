@@ -1,0 +1,5 @@
+docker_login = "CHANGE_ME"
+docker_password = "CHANGE_ME"
+docker_image = "CHANGE_ME"
+repository_url = "CHANGE_ME"
+checkout = "CHANGE_ME"
