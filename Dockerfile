@@ -371,7 +371,9 @@ RUN \
   wget -O libtheora.tar.bz2 "$THEORA_URL" && \
   echo "$THEORA_SHA256  libtheora.tar.bz2" | sha256sum --status -c - && \
   tar xf libtheora.tar.bz2 && \
-  cd libtheora-* && ./configure --disable-examples --disable-shared --enable-static && \
+  # --build=$(arch)-unknown-linux-gnu helps with guessing the correct build. For some reason,
+  # build script can't guess the build type in arm64 (hardware and emulated) environment.
+  cd libtheora-* && ./configure --build=$(arch)-unknown-linux-gnu --disable-examples --disable-shared --enable-static && \
   make -j$(nproc) install
 
 RUN \
@@ -433,7 +435,11 @@ RUN \
   wget -O vid.stab.tar.gz "$VIDSTAB_URL" && \
   echo "$VIDSTAB_SHA256  vid.stab.tar.gz" | sha256sum --status -c - && \
   tar xf vid.stab.tar.gz && \
-  cd vid.stab-* && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DUSE_OMP=ON . && \
+  cd vid.stab-* && \
+  # This line workarounds the issue that happens when the image builds in emulated (buildx) arm64 environment.
+  # Since in emulated container the /proc is mounted from the host, the cmake not able to detect CPU features correctly.
+  sed -i 's/include (FindSSE)/if(CMAKE_SYSTEM_ARCH MATCHES "amd64")\ninclude (FindSSE)\nendif()/' ./CMakeLists.txt && \
+  cmake -DCMAKE_SYSTEM_ARCH=$(arch) -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DUSE_OMP=ON . && \
   make -j$(nproc) install
 RUN echo "Libs.private: -ldl" >> /usr/local/lib/pkgconfig/vidstab.pc
 
