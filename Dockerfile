@@ -538,10 +538,11 @@ RUN \
   cd libmodplug-* && ./configure --disable-shared --enable-static && \
   make -j$(nproc) install
 
+# Removes BIT_DEPTH 10 to be able to build on other platforms. 10 was overkill anyways.
 RUN \
   git clone "$UAVS3D_URL" && \
   cd uavs3d && git checkout $UAVS3D_COMMIT && \
-  sed -i 's/define BIT_DEPTH 8/define BIT_DEPTH 10/' source/decore/com_def.h && \
+#  sed -i 's/define BIT_DEPTH 8/define BIT_DEPTH 10/' source/decore/com_def.h && \
   mkdir build/linux && cd build/linux && \
   cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=0 ../.. && \
   make -j$(nproc) install
