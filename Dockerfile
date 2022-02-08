@@ -206,6 +206,12 @@ ARG RUBBERBAND_SHA256=b9eac027e797789ae99611c9eaeaf1c3a44cc804f9c8a0441a0d1d26f3
 # bump: libgme link "Source diff $CURRENT..$LATEST" https://bitbucket.org/mpyne/game-music-emu/branches/compare/$CURRENT..$LATEST
 ARG LIBGME_URL="https://bitbucket.org/mpyne/game-music-emu.git"
 ARG LIBGME_COMMIT=b3d158a30492181fd7c38ef795c8d4dcfd77eaa9
+# bump: opencoreamr /OPENCOREAMR_VERSION=([\d.]+)/ fetch:https://sourceforge.net/projects/opencore-amr/files/opencore-amr/|/opencore-amr-([\d.]+).tar.gz/
+# bump: opencoreamr after ./hashupdate Dockerfile OPENCOREAMR $LATEST
+# bump: opencoreamr link "ChangeLog" https://sourceforge.net/p/opencore-amr/code/ci/master/tree/ChangeLog
+ARG OPENCOREAMR_VERSION=0.1.5
+ARG OPENCOREAMR_URL="https://sourceforge.net/projects/opencore-amr/files/opencore-amr/opencore-amr-$OPENCOREAMR_VERSION.tar.gz"
+ARG OPENCOREAMR_SHA256=2c006cb9d5f651bfb5e60156dbff6af3c9d35c7bbcc9015308c0aff1e14cd341
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
@@ -314,6 +320,7 @@ RUN \
   libsamplerate: env.LIBSAMPLERATE_VERSION, \
   librubberband: env.RUBBERBAND_VERSION, \
   libgme: env.LIBGME_COMMIT, \
+  libopencoreamr: env.OPENCOREAMR_VERSION, \
   fftw: env.FFTW_VERSION, \
   }' > /versions.json
 
@@ -364,7 +371,9 @@ RUN \
   wget -O libtheora.tar.bz2 "$THEORA_URL" && \
   echo "$THEORA_SHA256  libtheora.tar.bz2" | sha256sum --status -c - && \
   tar xf libtheora.tar.bz2 && \
-  cd libtheora-* && ./configure --disable-examples --disable-shared --enable-static && \
+  # --build=$(arch)-unknown-linux-gnu helps with guessing the correct build. For some reason,
+  # build script can't guess the build type in arm64 (hardware and emulated) environment.
+  cd libtheora-* && ./configure --build=$(arch)-unknown-linux-gnu --disable-examples --disable-shared --enable-static && \
   make -j$(nproc) install
 
 RUN \
@@ -426,7 +435,11 @@ RUN \
   wget -O vid.stab.tar.gz "$VIDSTAB_URL" && \
   echo "$VIDSTAB_SHA256  vid.stab.tar.gz" | sha256sum --status -c - && \
   tar xf vid.stab.tar.gz && \
-  cd vid.stab-* && cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DUSE_OMP=ON . && \
+  cd vid.stab-* && \
+  # This line workarounds the issue that happens when the image builds in emulated (buildx) arm64 environment.
+  # Since in emulated container the /proc is mounted from the host, the cmake not able to detect CPU features correctly.
+  sed -i 's/include (FindSSE)/if(CMAKE_SYSTEM_ARCH MATCHES "amd64")\ninclude (FindSSE)\nendif()/' ./CMakeLists.txt && \
+  cmake -DCMAKE_SYSTEM_ARCH=$(arch) -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DUSE_OMP=ON . && \
   make -j$(nproc) install
 RUN echo "Libs.private: -ldl" >> /usr/local/lib/pkgconfig/vidstab.pc
 
@@ -531,10 +544,11 @@ RUN \
   cd libmodplug-* && ./configure --disable-shared --enable-static && \
   make -j$(nproc) install
 
+# Removes BIT_DEPTH 10 to be able to build on other platforms. 10 was overkill anyways.
 RUN \
   git clone "$UAVS3D_URL" && \
   cd uavs3d && git checkout $UAVS3D_COMMIT && \
-  sed -i 's/define BIT_DEPTH 8/define BIT_DEPTH 10/' source/decore/com_def.h && \
+#  sed -i 's/define BIT_DEPTH 8/define BIT_DEPTH 10/' source/decore/com_def.h && \
   mkdir build/linux && cd build/linux && \
   cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=0 ../.. && \
   make -j$(nproc) install
@@ -563,6 +577,13 @@ RUN \
   cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DENABLE_UBSAN=OFF .. && \
   make -j$(nproc) install
 
+RUN \
+  wget -O opencoreamr.tar.gz "$OPENCOREAMR_URL" && \
+  echo "$OPENCOREAMR_SHA256  opencoreamr.tar.gz" | sha256sum --status -c - && \
+  tar xf opencoreamr.tar.gz && \
+  cd opencore-amr-* && ./configure --enable-static --disable-shared && \
+  make -j$(nproc) install
+
 # sed changes --toolchain=hardened -pie to -static-pie
 RUN \
   wget -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
@@ -580,6 +601,7 @@ RUN \
   --disable-ffplay \
   --enable-static \
   --enable-gpl \
+  --enable-version3 \
   --enable-gray \
   --enable-nonfree \
   --enable-openssl \
@@ -619,6 +641,8 @@ RUN \
   --enable-libmysofa \
   --enable-librubberband \
   --enable-libgme \
+  --enable-libopencore-amrnb \
+  --enable-libopencore-amrwb \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install
 
@@ -633,10 +657,12 @@ LABEL maintainer="Mattias Wadman mattias.wadman@gmail.com"
 COPY --from=builder /versions.json /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /
 COPY --from=builder /usr/local/share/doc/ffmpeg/* /doc/
 COPY --from=builder /etc/ssl/cert.pem /etc/ssl/cert.pem
+
 # sanity tests
 RUN ["/ffmpeg", "-version"]
 RUN ["/ffprobe", "-version"]
 RUN ["/ffmpeg", "-hide_banner", "-buildconf"]
 RUN ["/ffprobe", "-i", "https://github.com/favicon.ico"]
 RUN ["/ffprobe", "-tls_verify", "1", "-ca_file", "/etc/ssl/cert.pem", "-i", "https://github.com/favicon.ico"]
+
 ENTRYPOINT ["/ffmpeg"]
