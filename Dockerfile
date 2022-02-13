@@ -586,9 +586,12 @@ RUN \
 RUN \
   git clone "$LIBGSM_URL" && \
   cd libgsm && git checkout $LIBGSM_COMMIT && \
-  # special Makefile to buildinstall easier, base64 encoded
-  echo 'Q0ZMQUdTCQk9CS1hbnNpIC1wZWRhbnRpYyAtYyAtTzIgLXMgLUROZWVkRnVuY3Rpb25Qcm90b3R5cGVzPTEgLVdhbGwgLVduby1jb21tZW50IC1EU0FTUiAtRFdBVjQ5IC1ETkRFQlVHIC1JLi9pbmMKClNSQwkJPQkuL3NyYwpPQkpFQ1RTCQk9CSQoU1JDKS9hZGQubwkJXAoJCQkkKFNSQykvY29kZS5vCQlcCgkJCSQoU1JDKS9kZWJ1Zy5vCQlcCgkJCSQoU1JDKS9kZWNvZGUubwkJXAoJCQkkKFNSQykvbG9uZ190ZXJtLm8JXAoJCQkkKFNSQykvbHBjLm8JCVwKCQkJJChTUkMpL3ByZXByb2Nlc3MubwlcCgkJCSQoU1JDKS9ycGUubwkJXAoJCQkkKFNSQykvZ3NtX2Rlc3Ryb3kubwlcCgkJCSQoU1JDKS9nc21fZGVjb2RlLm8JXAoJCQkkKFNSQykvZ3NtX2VuY29kZS5vCVwKCQkJJChTUkMpL2dzbV9leHBsb2RlLm8JXAoJCQkkKFNSQykvZ3NtX2ltcGxvZGUubwlcCgkJCSQoU1JDKS9nc21fY3JlYXRlLm8JXAoJCQkkKFNSQykvZ3NtX3ByaW50Lm8JXAoJCQkkKFNSQykvZ3NtX29wdGlvbi5vCVwKCQkJJChTUkMpL3Nob3J0X3Rlcm0ubwlcCgkJCSQoU1JDKS90YWJsZS5vCgolLm86ICQoU1JDKS8lLmMKCQkJZ2NjICQoQ0ZMQUdTKSAkPwoKbGliZ3NtLmE6ICQoT0JKRUNUUykKCQkJLXJtIGxpYmdzbS5hCgkJCWFyIGNyIGxpYmdzbS5hICQoT0JKRUNUUykKCQkJcmFubGliIGxpYmdzbS5hCgppbnN0YWxsOiBsaWJnc20uYQoJCQlta2RpciAtcCAvdXNyL2luY2x1ZGUvZ3NtLwoJCQljcCBpbmMvKi5oIC91c3IvaW5jbHVkZS9nc20vCgkJCWNwIGxpYmdzbS5hIC91c3IvbGliLwoKY2xlYW46CgkJCXJtIC1mICQoU1JDKS8qLm8gKi5hCgpQSE9OWTogbGliZ3NtLmEK' | base64 -d > Makefile && \
-  make -j$(nproc) install
+  # Makefile is garbage, hence use specific compile arguments and flags
+  SRC=$(echo src/*.c) && CFLAGS='-c -ansi -pedantic -O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE -s -DNeedFunctionPrototypes=1 -Wall -Wno-comment -DSASR -DWAV49 -DNDEBUG -I./inc -Wl,-z,relro,-z,now' && \
+  gcc ${CFLAGS} ${SRC} && mv *.o ./src && ar cr libgsm.a ${SRC/\.c/\.o} && ranlib libgsm.a && \
+  mkdir -p /usr/include/gsm /usr/lib && \
+  cp inc/*.h /usr/include/gsm && \
+  cp libgsm.a /usr/local/lib
 
 # sed changes --toolchain=hardened -pie to -static-pie
 RUN \
