@@ -590,7 +590,7 @@ RUN \
   SRC=$(echo src/*.c) && CFLAGS='-c -ansi -pedantic -O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE -s -DNeedFunctionPrototypes=1 -Wall -Wno-comment -DSASR -DWAV49 -DNDEBUG -I./inc -Wl,-z,relro,-z,now' && \
   gcc ${CFLAGS} ${SRC} && mv *.o ./src && ar cr libgsm.a ${SRC/\.c/\.o} && ranlib libgsm.a && \
   mkdir -p /usr/include/gsm /usr/lib && \
-  cp inc/*.h /usr/include/gsm && \
+  cp inc/*.h /usr/include/gsm /usr/include && \
   cp libgsm.a /usr/local/lib
 
 # sed changes --toolchain=hardened -pie to -static-pie
