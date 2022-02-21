@@ -212,6 +212,13 @@ ARG LIBGME_COMMIT=b3d158a30492181fd7c38ef795c8d4dcfd77eaa9
 ARG OPENCOREAMR_VERSION=0.1.5
 ARG OPENCOREAMR_URL="https://sourceforge.net/projects/opencore-amr/files/opencore-amr/opencore-amr-$OPENCOREAMR_VERSION.tar.gz"
 ARG OPENCOREAMR_SHA256=2c006cb9d5f651bfb5e60156dbff6af3c9d35c7bbcc9015308c0aff1e14cd341
+# bump: libssh /LIBSSH_VERSION=([\d.]+)/ https://gitlab.com/libssh/libssh-mirror.git|*
+# bump: libssh after ./hashupdate Dockerfile LIBSSH $LATEST
+# bump: libssh link "Source diff $CURRENT..$LATEST" https://gitlab.com/libssh/libssh-mirror/-/compare/libssh-$CURRENT...libssh-$LATEST
+# bump: libssh link "Release notes" https://gitlab.com/libssh/libssh-mirror/-/tags/libssh-$LATEST
+ARG LIBSSH_VERSION=0.9.6
+ARG LIBSSH_URL="https://gitlab.com/libssh/libssh-mirror/-/archive/libssh-$LIBSSH_VERSION/libssh-mirror-libssh-$LIBSSH_VERSION.tar.gz"
+ARG LIBSSH_SHA256=5e272d73073bde92904e520bc31c4cda535768273e5bc8dd1e398f1b4ce01b99
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
@@ -321,6 +328,7 @@ RUN \
   librubberband: env.RUBBERBAND_VERSION, \
   libgme: env.LIBGME_COMMIT, \
   libopencoreamr: env.OPENCOREAMR_VERSION, \
+  libssh: env.LIBSSH_VERSION, \
   fftw: env.FFTW_VERSION, \
   }' > /versions.json
 
@@ -397,7 +405,7 @@ RUN \
   echo "$X265_SHA256  x265.tar.bz2" | sha256sum --status -c - && \
   tar xf x265.tar.bz2 && \
   cd x265_*/build/linux && \
-  cmake -G "Unix Makefiles" -DENABLE_SHARED=OFF -DENABLE_AGGRESSIVE_CHECKS=ON -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy -DENABLE_CLI=OFF -DCMAKE_BUILD_TYPE=Release ../../source && \
+  cmake -G "Unix Makefiles" -DENABLE_SHARED=OFF -DENABLE_AGGRESSIVE_CHECKS=ON -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy -DENABLE_CLI=OFF -DENABLE_NASM=ON -DCMAKE_BUILD_TYPE=Release ../../source && \
   make -j$(nproc) install
 
 RUN \
@@ -428,7 +436,7 @@ RUN \
   git clone --depth 1 --branch v$AOM_VERSION "$AOM_URL" && \
   cd aom && test $(git rev-parse HEAD) = $AOM_COMMIT && \
   mkdir build_tmp && cd build_tmp && \
-  cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DENABLE_EXAMPLES=NO -DENABLE_TESTS=NO -DENABLE_TOOLS=NO -DCONFIG_TUNE_VMAF=1 -DENABLE_NASM=on -DCMAKE_INSTALL_LIBDIR=lib .. && \
+  cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DENABLE_EXAMPLES=NO -DENABLE_TESTS=NO -DENABLE_TOOLS=NO -DCONFIG_TUNE_VMAF=1 -DENABLE_NASM=ON -DCMAKE_INSTALL_LIBDIR=lib .. && \
   make -j$(nproc) install
 
 RUN \
@@ -498,11 +506,18 @@ RUN \
 # https://gitlab.alpinelinux.org/alpine/aports/-/issues/11806
 RUN sed -i 's/-lgcc_s//' /usr/local/lib/pkgconfig/rav1e.pc
 
+# sed to fix symbol name conflict with libssh (md5_init, md5_append, md5_finish)
+# https://github.com/Haivision/srt/issues/443
+# https://github.com/Haivision/srt/issues/1924
 RUN \
   wget -O libsrt.tar.gz "$SRT_URL" && \
   echo "$SRT_SHA256  libsrt.tar.gz" | sha256sum --status -c - && \
-  tar xf libsrt.tar.gz && \
-  cd srt-* && ./configure --enable-shared=0 --cmake-install-libdir=lib --cmake-install-includedir=include --cmake-install-bindir=bin && \
+  tar xf libsrt.tar.gz && cd srt-* && mkdir build && cd build && \
+  sed -i ../srtcore/md5.h ../srtcore/md5.cpp ../srtcore/common.cpp \
+    -e 's/md5_init/srt_md5_init/g' \
+    -e 's/md5_append/srt_md5_append/g' \
+    -e 's/md5_finish/srt_md5_finish/g' && \
+  cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_SHARED=OFF -DENABLE_APPS=OFF -DENABLE_CXX11=ON -DUSE_STATIC_LIBSTDCXX=ON -DENABLE_LOGGING=OFF -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_INCLUDEDIR=include -DCMAKE_INSTALL_BINDIR=bin .. && \
   make -j$(nproc) && make install
 
 # sed to fix symbol name conflict with vmaf, fixed in master
@@ -584,6 +599,15 @@ RUN \
   cd opencore-amr-* && ./configure --enable-static --disable-shared && \
   make -j$(nproc) install
 
+# LIBSSH_STATIC=1 is REQUIRED to link statically against libssh.a so add to pkg-config file
+RUN \
+  wget -O libssh.tar.gz "$LIBSSH_URL" && \
+  echo "$LIBSSH_SHA256  libssh.tar.gz" | sha256sum --status -c - && \
+  tar xf libssh.tar.gz && cd libssh* && mkdir build && cd build && \
+  echo -e 'Requires.private: libssl libcrypto zlib \nLibs.private: -DLIBSSH_STATIC=1 -lssh\nCflags.private: -DLIBSSH_STATIC=1 -I${CMAKE_INSTALL_FULL_INCLUDEDIR}' >> ../libssh.pc.cmake && \
+  cmake -DCMAKE_SYSTEM_ARCH=$(arch) -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Release -DPICKY_DEVELOPER=ON -DBUILD_STATIC_LIB=ON -DBUILD_SHARED_LIBS=OFF -DWITH_GSSAPI=OFF -DWITH_BLOWFISH_CIPHER=ON -DWITH_SFTP=ON -DWITH_SERVER=OFF -DWITH_ZLIB=ON -DWITH_PCAP=ON -DWITH_DEBUG_CRYPTO=OFF -DWITH_DEBUG_PACKET=OFF -DWITH_DEBUG_CALLTRACE=OFF -DUNIT_TESTING=OFF -DCLIENT_TESTING=OFF -DSERVER_TESTING=OFF -DWITH_EXAMPLES=OFF -DWITH_INTERNAL_DOC=OFF -DCMAKE_VERBOSE_MAKEFILE=ON ../ && \
+  make -j$(nproc) install
+
 # sed changes --toolchain=hardened -pie to -static-pie
 RUN \
   wget -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
@@ -643,6 +667,7 @@ RUN \
   --enable-libgme \
   --enable-libopencore-amrnb \
   --enable-libopencore-amrwb \
+  --enable-libssh \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install
 
