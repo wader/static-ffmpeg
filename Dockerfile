@@ -507,6 +507,8 @@ RUN \
 RUN sed -i 's/-lgcc_s//' /usr/local/lib/pkgconfig/rav1e.pc
 
 # sed to fix symbol name conflict with libssh (md5_init, md5_append, md5_finish)
+# https://github.com/Haivision/srt/issues/443
+# https://github.com/Haivision/srt/issues/1924
 RUN \
   wget -O libsrt.tar.gz "$SRT_URL" && \
   echo "$SRT_SHA256  libsrt.tar.gz" | sha256sum --status -c - && \
