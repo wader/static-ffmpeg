@@ -43,7 +43,8 @@ libuavs3d,
 libmysofa,
 librubberband,
 libgme,
-libopencore
+libopencore,
+libssh
 and all native ffmpeg codecs, formats, filters etc.
 
 See [Dockerfile](Dockerfile) for versions used. In general master will have the latest stable version
