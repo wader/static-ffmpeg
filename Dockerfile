@@ -219,6 +219,13 @@ ARG OPENCOREAMR_SHA256=2c006cb9d5f651bfb5e60156dbff6af3c9d35c7bbcc9015308c0aff1e
 ARG LIBSSH_VERSION=0.9.6
 ARG LIBSSH_URL="https://gitlab.com/libssh/libssh-mirror/-/archive/libssh-$LIBSSH_VERSION/libssh-mirror-libssh-$LIBSSH_VERSION.tar.gz"
 ARG LIBSSH_SHA256=5e272d73073bde92904e520bc31c4cda535768273e5bc8dd1e398f1b4ce01b99
+# bump: LIBSHINE /LIBSHINE_VERSION=([\d.]+)/ https://github.com/toots/shine.git|*
+# bump: LIBSHINE after ./hashupdate Dockerfile LIBSHINE $LATEST
+# bump: LIBSHINE link "CHANGELOG" https://github.com/toots/shine/blob/master/ChangeLog
+# bump: LIBSHINE link "Source diff $CURRENT..$LATEST" https://github.com/toots/shine/compare/$CURRENT..$LATEST
+ARG LIBSHINE_VERSION=3.1.1
+ARG LIBSHINE_URL="https://github.com/toots/shine/releases/download/$LIBSHINE_VERSION/shine-$LIBSHINE_VERSION.tar.gz"
+ARG LIBSHINE_SHA256=58e61e70128cf73f88635db495bfc17f0dde3ce9c9ac070d505a0cd75b93d384
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
@@ -329,6 +336,7 @@ RUN \
   libgme: env.LIBGME_COMMIT, \
   libopencoreamr: env.OPENCOREAMR_VERSION, \
   libssh: env.LIBSSH_VERSION, \
+  libshine: env.LIBSHINE_VERSION, \
   fftw: env.FFTW_VERSION, \
   }' > /versions.json
 
@@ -608,6 +616,13 @@ RUN \
   cmake -DCMAKE_SYSTEM_ARCH=$(arch) -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Release -DPICKY_DEVELOPER=ON -DBUILD_STATIC_LIB=ON -DBUILD_SHARED_LIBS=OFF -DWITH_GSSAPI=OFF -DWITH_BLOWFISH_CIPHER=ON -DWITH_SFTP=ON -DWITH_SERVER=OFF -DWITH_ZLIB=ON -DWITH_PCAP=ON -DWITH_DEBUG_CRYPTO=OFF -DWITH_DEBUG_PACKET=OFF -DWITH_DEBUG_CALLTRACE=OFF -DUNIT_TESTING=OFF -DCLIENT_TESTING=OFF -DSERVER_TESTING=OFF -DWITH_EXAMPLES=OFF -DWITH_INTERNAL_DOC=OFF -DCMAKE_VERBOSE_MAKEFILE=ON ../ && \
   make -j$(nproc) install
 
+RUN \
+  wget -O libshine.tar.gz "$LIBSHINE_URL" && \
+  echo "$LIBSHINE_SHA256  libshine.tar.gz" | sha256sum --status -c - && \
+  tar xf libshine.tar.gz && cd shine* && \
+  ./configure --with-pic --enable-static --disable-shared --disable-fast-install && \
+  make -j$(nproc) install
+
 # sed changes --toolchain=hardened -pie to -static-pie
 RUN \
   wget -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
@@ -668,6 +683,7 @@ RUN \
   --enable-libopencore-amrnb \
   --enable-libopencore-amrwb \
   --enable-libssh \
+  --enable-libshine \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install
 

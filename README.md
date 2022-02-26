@@ -44,7 +44,8 @@ libmysofa,
 librubberband,
 libgme,
 libopencore,
-libssh
+libssh,
+libshine
 and all native ffmpeg codecs, formats, filters etc.
 
 See [Dockerfile](Dockerfile) for versions used. In general master will have the latest stable version
