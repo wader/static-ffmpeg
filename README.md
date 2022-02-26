@@ -5,48 +5,48 @@ with no external dependencies. Can be used with any base image even scratch.
 
 Built with the following statically-linked libraries:
 
+- fontconfig
 - gray
-- OpenSSL
 - iconv
-- libxml2
-- libmp3lame
-- libtwolame
+- libaom
+- libass
+- libdav1d
+- libdavs2
 - libfdk-aac
-- libvorbis
-- libopus
+- libfreetype
+- libfribidi
+- libgme
+- libkvazaar
 - libmodplug
+- libmodplug
+- libmp3lame
+- libmysofa
+- libopencore
+- libopenjpeg
+- libopus
+- librav1e
+- librubberband
+- libshine
+- libsoxr
+- libspeex
+- libsrt
+- libssh
+- libsvtav1
 - libtheora
+- libtwolame
+- libuavs3d
+- libvidstab
+- libvmaf
+- libvorbis
 - libvpx
+- libwebp
 - libx264
 - libx265
-- libwebp
-- libspeex
-- libvmaf
-- libaom
-- libvidstab
-- libkvazaar
-- libfreetype
-- fontconfig
-- libfribidi
-- libass
-- libzimg
-- libsoxr
-- libopenjpeg
-- libdav1d
-- libxvid
-- librav1e
-- libsrt
-- libsvtav1
-- libdavs2
 - libxavs2
-- libmodplug
-- libuavs3d
-- libmysofa
-- librubberband
-- libgme
-- libopencore
-- libssh
-- libshine
+- libxml2
+- libxvid
+- libzimg
+- openssl
 
 and all native [FFmpeg](https://ffmpeg.org) codecs, formats, filters etc.
 
@@ -109,10 +109,10 @@ to TCP and redo the query but [musl libc](https://www.musl-libc.org) does not cu
 
 Binaries are built with TLS support but, by default, [FFmpeg](https://ffmpeg.org) currently do
 not do certificate verification. To enable verification you need to run
-[FFmpeg](https://ffmpeg.org) with `-tls_verify 1` and `-ca_file /path/to/cert.pem`. For Alpine Linux
-the CA file is included by default at `/etc/ssl/cert.pem` and for Debian/Ubuntu
-you have to install the `ca-certificates` package which will install the file at
-`/etc/ssl/certs/ca-certificates.crt`.
+[FFmpeg](https://ffmpeg.org) with `-tls_verify 1` and `-ca_file /path/to/cert.pem`.
+
+- Alpine Linux at `/etc/ssl/cert.pem`
+- Debian/Ubuntu install the `ca-certificates` package at it will be available at `/etc/ssl/certs/ca-certificates.crt`.
 
 ### Contribute
 
@@ -125,7 +125,7 @@ usage and potential distribution of such.
 
 ### TODOs and possible things to add
 
-* Add libplacebo, shiny, chromaprint, gsm, rtmp, etc. ...
-* Add acceleration support (GPU, CUDA, ...)
-* Add *.a *.so libraries, headers and pkg-config somehow
-* Use cargo-c stable Alpine package
+- Add libplacebo, shiny, chromaprint, gsm, rtmp, etc. ...
+- Add acceleration support (GPU, CUDA, ...)
+- Add *.a *.so libraries, headers and pkg-config somehow
+- Use cargo-c stable Alpine package
