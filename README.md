@@ -125,7 +125,7 @@ usage and potential distribution of such.
 
 ### TODOs and possible things to add
 
-- Add libplacebo, shiny, chromaprint, gsm, rtmp, etc. ...
+- Add libplacebo, chromaprint, gsm, rtmp, etc. ...
 - Add acceleration support (GPU, CUDA, ...)
 - Add *.a *.so libraries, headers and pkg-config somehow
 - Use cargo-c stable Alpine package
