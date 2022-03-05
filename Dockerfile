@@ -50,8 +50,8 @@ RUN apk add --no-cache \
 # -static-libgcc is needed to make gcc not include gcc_s as "as-needed" shared library which
 # cmake will include as a implicit library.
 # other options to get hardened build (same as ffmpeg hardened)
-ARG CFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE"
-ARG CXXFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIE"
+ARG CFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIC"
+ARG CXXFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIC"
 ARG LDFLAGS="-Wl,-z,relro,-z,now"
 
 # debug builds a bit faster and we don't care about runtime speed
@@ -155,6 +155,24 @@ RUN \
   mkdir build && cd build && \
   cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DENABLE_UBSAN=OFF .. && \
   make -j$(nproc) install
+
+# bump: libgsm /LIBGSM_COMMIT=([[:xdigit:]]+)/ gitrefs:https://github.com/timothytylee/libgsm.git|re:#^refs/heads/master$#|@commit
+# bump: libgsm after ./hashupdate Dockerfile LIBGSM $LATEST
+# bump: libgsm link "Changelog" https://github.com/timothytylee/libgsm/blob/master/ChangeLog
+ARG LIBGSM_URL="https://github.com/timothytylee/libgsm.git"
+ARG LIBGSM_COMMIT=98f1708fb5e06a0dfebd58a3b40d610823db9715
+RUN \
+  git clone "$LIBGSM_URL" && \
+  cd libgsm && git checkout $LIBGSM_COMMIT && \
+  # Makefile is garbage, hence use specific compile arguments and flags
+  # no need to build toast cli tool \
+  rm src/toast* && \
+  SRC=$(echo src/*.c) && \
+  gcc ${CFLAGS} -c -ansi -pedantic -s -DNeedFunctionPrototypes=1 -Wall -Wno-comment -DSASR -DWAV49 -DNDEBUG -I./inc ${SRC} && \
+  ar cr libgsm.a *.o && ranlib libgsm.a && \
+  mkdir -p /usr/local/include/gsm && \
+  cp inc/*.h /usr/local/include/gsm && \
+  cp libgsm.a /usr/local/lib
 
 # bump: kvazaar /KVAZAAR_VERSION=([\d.]+)/ https://github.com/ultravideo/kvazaar.git|^2
 # bump: kvazaar after ./hashupdate Dockerfile KVAZAAR $LATEST
@@ -595,6 +613,7 @@ RUN \
   --enable-libfreetype \
   --enable-libfribidi \
   --enable-libgme \
+  --enable-libgsm \
   --enable-libkvazaar \
   --enable-libmodplug \
   --enable-libmp3lame \
@@ -653,6 +672,7 @@ RUN \
   libfreetype: env.FREETYPE_VERSION, \
   libfribidi: env.FRIBIDI_VERSION, \
   libgme: env.LIBGME_COMMIT, \
+  libgsm: env.LIBGSM_COMMIT, \
   libkvazaar: env.KVAZAAR_VERSION, \
   libmodplug: env.LIBMODPLUG_VERSION, \
   libmp3lame: env.MP3LAME_VERSION, \
