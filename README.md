@@ -10,6 +10,7 @@ Built with the following statically-linked libraries:
 - iconv
 - libaom
 - libass
+- libbluray
 - libdav1d
 - libdavs2
 - libfdk-aac
