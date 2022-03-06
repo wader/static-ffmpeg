@@ -571,6 +571,7 @@ RUN \
   echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum --status -c - && \
   tar xf ffmpeg.tar.bz2 && \
   cd ffmpeg-* && \
+  echo -n "$FFMPEG_VERSION-static *** https://github.com/wader/static-ffmpeg" > VERSION && \
   sed -i 's/add_ldexeflags -fPIE -pie/add_ldexeflags -fPIE -static-pie/' configure && \
   ./configure \
   --pkg-config-flags="--static" \
@@ -580,6 +581,10 @@ RUN \
   --disable-debug \
   --disable-shared \
   --disable-ffplay \
+  --disable-manpages \
+  --disable-podpages \
+  --disable-large-tests \
+  --enable-small \
   --enable-static \
   --enable-gpl \
   --enable-version3 \
