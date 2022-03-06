@@ -17,6 +17,7 @@ Built with the following statically-linked libraries:
 - libfreetype
 - libfribidi
 - libgme
+- libgsm
 - libkvazaar
 - libmodplug
 - libmodplug
@@ -126,7 +127,7 @@ usage and potential distribution of such.
 
 ### TODOs and possible things to add
 
-- Add libplacebo, chromaprint, gsm, rtmp, etc. ...
+- Add libplacebo, chromaprint, rtmp, etc. ...
 - Add acceleration support (GPU, CUDA, ...)
 - Add *.a *.so libraries, headers and pkg-config somehow
 - Use cargo-c stable Alpine package
