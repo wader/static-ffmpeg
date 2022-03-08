@@ -102,6 +102,19 @@ RUN \
   cd libass-* && ./configure --disable-shared --enable-static && \
   make -j$(nproc) && make install
 
+# bump: libbluray /LIBBLURAY_VERSION=([\d.]+)/ https://code.videolan.org/videolan/libbluray.git|*
+# bump: libbluray after ./hashupdate Dockerfile LIBBLURAY $LATEST
+# bump: libbluray link "Release notes" https://code.videolan.org/videolan/libbluray/-/tags/$LATEST
+ARG LIBBLURAY_VERSION=1.3.1
+ARG LIBBLURAY_URL="https://code.videolan.org/videolan/libbluray/-/archive/$LIBBLURAY_VERSION/libbluray-$LIBBLURAY_VERSION.tar.gz"
+ARG LIBBLURAY_SHA256=7d0c5caab06b7f01730ef22fe42c10aca104e542af0381637e1b26f0ab0f6824
+RUN \
+  wget -O libbluray.tar.gz "$LIBBLURAY_URL" && \
+  echo "$LIBBLURAY_SHA256  libbluray.tar.gz" | sha256sum --status -c - && \
+  tar xf libbluray.tar.gz &&  cd libbluray-* && git clone https://code.videolan.org/videolan/libudfread.git contrib/libudfread && \
+  autoreconf -fiv && ./configure --with-pic --disable-doxygen-doc --disable-doxygen-dot --enable-static --disable-shared --disable-examples --disable-bdjava-jar && \
+  make -j$(nproc) install
+
 # bump: dav1d /DAV1D_VERSION=([\d.]+)/ https://code.videolan.org/videolan/dav1d.git|*
 # bump: dav1d after ./hashupdate Dockerfile DAV1D $LATEST
 # bump: dav1d link "Release notes" https://code.videolan.org/videolan/dav1d/-/tags/$LATEST
@@ -607,6 +620,7 @@ RUN \
   --enable-iconv \
   --enable-libaom \
   --enable-libass \
+  --enable-libbluray \
   --enable-libdav1d \
   --enable-libdavs2 \
   --enable-libfdk-aac \
@@ -667,6 +681,7 @@ RUN \
   fontconfig: env.FONTCONFIG_VERSION, \
   libaom: env.AOM_VERSION, \
   libass: env.LIBASS_VERSION, \
+  libbluray: env.LIBBLURAY_VERSION, \
   libdav1d: env.DAV1D_VERSION, \
   libdavs2: env.DAVS2_VERSION, \
   libfreetype: env.FREETYPE_VERSION, \
