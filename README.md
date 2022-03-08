@@ -127,6 +127,7 @@ usage and potential distribution of such.
 
 ### TODOs and possible things to add
 
+- Add https://github.com/mpeg5/xevd https://github.com/mpeg5/xeve if and when in stable
 - Add libplacebo, chromaprint, rtmp, etc. ...
 - Add acceleration support (GPU, CUDA, ...)
 - Add *.a *.so libraries, headers and pkg-config somehow
