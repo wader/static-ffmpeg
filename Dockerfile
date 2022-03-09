@@ -383,18 +383,11 @@ RUN \
 ARG SVTAV1_VERSION=0.9.1
 ARG SVTAV1_URL="https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/v$SVTAV1_VERSION/SVT-AV1-v$SVTAV1_VERSION.tar.bz2"
 ARG SVTAV1_SHA256=1432c79e6ec5a5bee8a2d4dfafbf6f97911277dad3a720a3157bf52c94873de6
-# sed to fix symbol name conflict with vmaf, fixed in master
-# https://gitlab.com/AOMediaCodec/SVT-AV1/-/commit/75af3e6f9241f5df07ffa8c67281a9eff9a476ad
 RUN \
   wget -O svtav1.tar.bz2 "$SVTAV1_URL" && \
   echo "$SVTAV1_SHA256  svtav1.tar.bz2" | sha256sum --status -c - && \
   tar xf svtav1.tar.bz2 && \
   cd SVT-AV1-* && \
-  sed -i 's/picture_copy(/svt_av1_picture_copy(/g' \
-    Source/Lib/Common/Codec/EbPictureOperators.c \
-    Source/Lib/Common/Codec/EbPictureOperators.h \
-    Source/Lib/Encoder/Codec/EbFullLoop.c \
-    Source/Lib/Encoder/Codec/EbProductCodingLoop.c && \
   cd Build && \
   cmake -G"Unix Makefiles" -DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release .. && \
   make -j$(nproc) install
