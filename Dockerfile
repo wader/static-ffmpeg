@@ -590,6 +590,9 @@ ARG FFMPEG_VERSION=5.0
 ARG FFMPEG_URL="https://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.bz2"
 ARG FFMPEG_SHA256=c0130b8db2c763430fd1c6905288d61bc44ee0548ad5fcd2dfd650b88432bed9
 # sed changes --toolchain=hardened -pie to -static-pie
+# extra ldflags stack-size=2097152 is to increase default stack size from 128KB (musl default) to something
+# more similar to glibc (2MB). This fixing segfault with libaom-av1 and libsvtav1 as they seems to pass
+# large things on the stack.
 RUN \
   wget -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
   echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum --status -c - && \
@@ -599,7 +602,7 @@ RUN \
   ./configure \
   --pkg-config-flags="--static" \
   --extra-cflags="-fopenmp" \
-  --extra-ldflags="-fopenmp" \
+  --extra-ldflags="-fopenmp -Wl,-z,stack-size=2097152" \
   --toolchain=hardened \
   --disable-debug \
   --disable-shared \
@@ -731,7 +734,11 @@ COPY --from=builder /etc/ssl/cert.pem /etc/ssl/cert.pem
 RUN ["/ffmpeg", "-version"]
 RUN ["/ffprobe", "-version"]
 RUN ["/ffmpeg", "-hide_banner", "-buildconf"]
+# stack size
+RUN ["/ffmpeg", "-f", "lavfi", "-i", "testsrc", "-c:v", "libsvtav1", "-t", "100ms", "-f", "null", "-"]
+# dns
 RUN ["/ffprobe", "-i", "https://github.com/favicon.ico"]
+# tls/https certs
 RUN ["/ffprobe", "-tls_verify", "1", "-ca_file", "/etc/ssl/cert.pem", "-i", "https://github.com/favicon.ico"]
 
 ENTRYPOINT ["/ffmpeg"]
