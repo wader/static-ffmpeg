@@ -132,9 +132,9 @@ RUN \
 # bump: davs2 after ./hashupdate Dockerfile DAVS2 $LATEST
 # bump: davs2 link "Release" https://github.com/pkuvcl/davs2/releases/tag/$LATEST
 # bump: davs2 link "Source diff $CURRENT..$LATEST" https://github.com/pkuvcl/davs2/compare/v$CURRENT..v$LATEST
-ARG DAVS2_VERSION=1.6
+ARG DAVS2_VERSION=1.7
 ARG DAVS2_URL="https://github.com/pkuvcl/davs2/archive/refs/tags/$DAVS2_VERSION.tar.gz"
-ARG DAVS2_SHA256=de93800f016cbaf08cb40184a8069050dc625da5240a528155137052d1cf81c8
+ARG DAVS2_SHA256=b697d0b376a1c7f7eda3a4cc6d29707c8154c4774358303653f0a9727f923cc8
 # TODO: seems to be issues with asm on musl
 RUN \
   wget -O davs2.tar.gz "$DAVS2_URL" && \
