@@ -1,6 +1,6 @@
 # bump: alpine /FROM alpine:([\d.]+)/ docker:alpine|^3
 # bump: alpine link "Release notes" https://alpinelinux.org/posts/Alpine-$LATEST-released.html
-FROM alpine:3.15.2 AS builder
+FROM alpine:3.15.3 AS builder
 
 RUN apk add --no-cache \
   coreutils \
