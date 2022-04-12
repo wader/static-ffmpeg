@@ -62,9 +62,9 @@ RUN cargo install --debug --version 0.9.5 cargo-c
 # bump: vmaf after ./hashupdate Dockerfile VMAF $LATEST
 # bump: vmaf link "Release" https://github.com/Netflix/vmaf/releases/tag/v$LATEST
 # bump: vmaf link "Source diff $CURRENT..$LATEST" https://github.com/Netflix/vmaf/compare/v$CURRENT..v$LATEST
-ARG VMAF_VERSION=2.3.0
+ARG VMAF_VERSION=2.3.1
 ARG VMAF_URL="https://github.com/Netflix/vmaf/archive/refs/tags/v$VMAF_VERSION.tar.gz"
-ARG VMAF_SHA256=d8dcc83f8e9686e6855da4c33d8c373f1735d87294edbd86ed662ba2f2f89277
+ARG VMAF_SHA256=8d60b1ddab043ada25ff11ced821da6e0c37fd7730dd81c24f1fc12be7293ef2
 RUN \
   wget -O vmaf.tar.gz "$VMAF_URL" && \
   echo "$VMAF_SHA256  vmaf.tar.gz" | sha256sum --status -c - && \
