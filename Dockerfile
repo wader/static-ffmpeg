@@ -572,9 +572,9 @@ RUN \
 # bump: zimg /ZIMG_VERSION=([\d.]+)/ https://github.com/sekrit-twc/zimg.git|*
 # bump: zimg after ./hashupdate Dockerfile ZIMG $LATEST
 # bump: zimg link "ChangeLog" https://github.com/sekrit-twc/zimg/blob/master/ChangeLog
-ARG ZIMG_VERSION=3.0.3
+ARG ZIMG_VERSION=3.0.4
 ARG ZIMG_URL="https://github.com/sekrit-twc/zimg/archive/release-$ZIMG_VERSION.tar.gz"
-ARG ZIMG_SHA256=5e002992bfe8b9d2867fdc9266dc84faca46f0bfd931acc2ae0124972b6170a7
+ARG ZIMG_SHA256=219d1bc6b7fde1355d72c9b406ebd730a4aed9c21da779660f0a4c851243e32f
 RUN \
   wget -O zimg.tar.gz "$ZIMG_URL" && \
   echo "$ZIMG_SHA256  zimg.tar.gz" | sha256sum --status -c - && \
