@@ -127,8 +127,10 @@ usage and potential distribution of such.
 
 ### TODOs and possible things to add
 
-- Add https://github.com/mpeg5/xevd https://github.com/mpeg5/xeve if and when in stable
 - Add libplacebo, chromaprint, rtmp, etc. ...
+- Add lcms2 support once in stable
+- Add libjxl support once in stable
+- Add xeve/xevd support once in stable
 - Add acceleration support (GPU, CUDA, ...)
 - Add *.a *.so libraries, headers and pkg-config somehow
 - Use cargo-c stable Alpine package
