@@ -26,6 +26,7 @@ Built with the following statically-linked libraries:
 - libopencore
 - libopenjpeg
 - libopus
+- librabbitmq
 - librav1e
 - librubberband
 - libshine

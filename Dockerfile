@@ -582,6 +582,28 @@ RUN \
   cd zimg-* && ./autogen.sh && ./configure --disable-shared --enable-static && \
   make -j$(nproc) install
 
+# bump: librabbitmq /LIBRABBITMQ_VERSION=([\d.]+)/ https://github.com/alanxz/rabbitmq-c.git|*
+# bump: librabbitmq after ./hashupdate Dockerfile LIBRABBITMQ $LATEST
+# bump: librabbitmq link "ChangeLog" https://github.com/alanxz/rabbitmq-c/blob/master/ChangeLog
+ARG LIBRABBITMQ_VERSION=0.11.0
+ARG LIBRABBITMQ_URL="https://github.com/alanxz/rabbitmq-c/archive/refs/tags/v$LIBRABBITMQ_VERSION.tar.gz"
+ARG LIBRABBITMQ_SHA256=437d45e0e35c18cf3e59bcfe5dfe37566547eb121e69fca64b98f5d2c1c2d424
+RUN \
+  wget -O rabbitmq-c.tar.gz "$LIBRABBITMQ_URL" && \
+  echo "$LIBRABBITMQ_SHA256  rabbitmq-c.tar.gz" | sha256sum --status -c - && \
+  tar xfz rabbitmq-c.tar.gz && \
+  cd rabbitmq-c-* && mkdir build && cd build && \
+  cmake \
+    -GNinja \
+    -DBUILD_EXAMPLES=OFF \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DBUILD_STATIC_LIBS=ON \
+    -DCMAKE_INSTALL_PREFIX=/usr/local \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    .. \
+  && cmake --build . --config Release --target install
+
+
 # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|^5
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
 # bump: ffmpeg link "Changelog" https://github.com/FFmpeg/FFmpeg/blob/n$LATEST/Changelog
@@ -632,6 +654,7 @@ RUN \
   --enable-libopencore-amrwb \
   --enable-libopenjpeg \
   --enable-libopus \
+  --enable-librabbitmq \
   --enable-librav1e \
   --enable-librubberband \
   --enable-libshine \
@@ -692,6 +715,7 @@ RUN \
   libopencoreamr: env.OPENCOREAMR_VERSION, \
   libopenjpeg: env.OPENJPEG_VERSION, \
   libopus: env.OPUS_VERSION, \
+  librabbitmq: env.LIBRABBITMQ_VERSION, \
   librav1e: env.RAV1E_VERSION, \
   librubberband: env.RUBBERBAND_VERSION, \
   libsamplerate: env.LIBSAMPLERATE_VERSION, \
