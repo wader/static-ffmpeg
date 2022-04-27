@@ -281,6 +281,27 @@ RUN \
   cd opus-* && ./configure --disable-shared --enable-static --disable-extra-programs && \
   make -j$(nproc) install
 
+# bump: librabbitmq /LIBRABBITMQ_VERSION=([\d.]+)/ https://github.com/alanxz/rabbitmq-c.git|*
+# bump: librabbitmq after ./hashupdate Dockerfile LIBRABBITMQ $LATEST
+# bump: librabbitmq link "ChangeLog" https://github.com/alanxz/rabbitmq-c/blob/master/ChangeLog
+ARG LIBRABBITMQ_VERSION=0.11.0
+ARG LIBRABBITMQ_URL="https://github.com/alanxz/rabbitmq-c/archive/refs/tags/v$LIBRABBITMQ_VERSION.tar.gz"
+ARG LIBRABBITMQ_SHA256=437d45e0e35c18cf3e59bcfe5dfe37566547eb121e69fca64b98f5d2c1c2d424
+RUN \
+  wget -O rabbitmq-c.tar.gz "$LIBRABBITMQ_URL" && \
+  echo "$LIBRABBITMQ_SHA256  rabbitmq-c.tar.gz" | sha256sum --status -c - && \
+  tar xfz rabbitmq-c.tar.gz && \
+  cd rabbitmq-c-* && mkdir build && cd build && \
+  cmake \
+    -GNinja \
+    -DBUILD_EXAMPLES=OFF \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DBUILD_STATIC_LIBS=ON \
+    -DCMAKE_INSTALL_PREFIX=/usr/local \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    .. \
+  && cmake --build . --config Release --target install
+
 # bump: rav1e /RAV1E_VERSION=([\d.]+)/ https://github.com/xiph/rav1e.git|/\d+\./|*
 # bump: rav1e after ./hashupdate Dockerfile RAV1E $LATEST
 # bump: rav1e link "Release notes" https://github.com/xiph/rav1e/releases/tag/v$LATEST
@@ -581,28 +602,6 @@ RUN \
   tar xf zimg.tar.gz && \
   cd zimg-* && ./autogen.sh && ./configure --disable-shared --enable-static && \
   make -j$(nproc) install
-
-# bump: librabbitmq /LIBRABBITMQ_VERSION=([\d.]+)/ https://github.com/alanxz/rabbitmq-c.git|*
-# bump: librabbitmq after ./hashupdate Dockerfile LIBRABBITMQ $LATEST
-# bump: librabbitmq link "ChangeLog" https://github.com/alanxz/rabbitmq-c/blob/master/ChangeLog
-ARG LIBRABBITMQ_VERSION=0.11.0
-ARG LIBRABBITMQ_URL="https://github.com/alanxz/rabbitmq-c/archive/refs/tags/v$LIBRABBITMQ_VERSION.tar.gz"
-ARG LIBRABBITMQ_SHA256=437d45e0e35c18cf3e59bcfe5dfe37566547eb121e69fca64b98f5d2c1c2d424
-RUN \
-  wget -O rabbitmq-c.tar.gz "$LIBRABBITMQ_URL" && \
-  echo "$LIBRABBITMQ_SHA256  rabbitmq-c.tar.gz" | sha256sum --status -c - && \
-  tar xfz rabbitmq-c.tar.gz && \
-  cd rabbitmq-c-* && mkdir build && cd build && \
-  cmake \
-    -GNinja \
-    -DBUILD_EXAMPLES=OFF \
-    -DBUILD_SHARED_LIBS=OFF \
-    -DBUILD_STATIC_LIBS=ON \
-    -DCMAKE_INSTALL_PREFIX=/usr/local \
-    -DCMAKE_INSTALL_LIBDIR=lib \
-    .. \
-  && cmake --build . --config Release --target install
-
 
 # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|^5
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
