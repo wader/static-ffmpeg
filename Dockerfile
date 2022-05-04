@@ -299,8 +299,9 @@ RUN \
     -DBUILD_STATIC_LIBS=ON \
     -DCMAKE_INSTALL_PREFIX=/usr/local \
     -DCMAKE_INSTALL_LIBDIR=lib \
+    -DCMAKE_BUILD_TYPE=Release \
     .. \
-  && cmake --build . --config Release --target install
+  && cmake --build --target install .
 
 # bump: rav1e /RAV1E_VERSION=([\d.]+)/ https://github.com/xiph/rav1e.git|/\d+\./|*
 # bump: rav1e after ./hashupdate Dockerfile RAV1E $LATEST
