@@ -278,9 +278,9 @@ RUN \
 # bump: openjpeg /OPENJPEG_VERSION=([\d.]+)/ https://github.com/uclouvain/openjpeg.git|*
 # bump: openjpeg after ./hashupdate Dockerfile OPENJPEG $LATEST
 # bump: openjpeg link "CHANGELOG" https://github.com/uclouvain/openjpeg/blob/master/CHANGELOG.md
-ARG OPENJPEG_VERSION=2.4.0
+ARG OPENJPEG_VERSION=2.5.0
 ARG OPENJPEG_URL="https://github.com/uclouvain/openjpeg/archive/v$OPENJPEG_VERSION.tar.gz"
-ARG OPENJPEG_SHA256=8702ba68b442657f11aaeb2b338443ca8d5fb95b0d845757968a7be31ef7f16d
+ARG OPENJPEG_SHA256=0333806d6adecc6f7a91243b2b839ff4d2053823634d4f6ed7a59bc87409122a
 RUN \
   wget -O openjpeg.tar.gz "$OPENJPEG_URL" && \
   echo "$OPENJPEG_SHA256  openjpeg.tar.gz" | sha256sum --status -c - && \
