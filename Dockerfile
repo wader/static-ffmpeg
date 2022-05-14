@@ -10,16 +10,12 @@ RUN apk add --no-cache \
   bash \
   tar \
   build-base \
-  autoconf \
-  automake \
+  autoconf automake \
   libtool \
   diffutils \
-  cmake \
-  meson \
-  ninja \
+  cmake meson ninja \
   git \
-  yasm \
-  nasm \
+  yasm nasm \
   texinfo \
   jq \
   zlib-dev zlib-static \
@@ -50,8 +46,8 @@ RUN apk add --no-cache \
 # -static-libgcc is needed to make gcc not include gcc_s as "as-needed" shared library which
 # cmake will include as a implicit library.
 # other options to get hardened build (same as ffmpeg hardened)
-ARG CFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIC"
-ARG CXXFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIC"
+ARG CFLAGS="-O3 -s -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIC"
+ARG CXXFLAGS="-O3 -s -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIC"
 ARG LDFLAGS="-Wl,-z,relro,-z,now"
 
 # debug builds a bit faster and we don't care about runtime speed
@@ -86,7 +82,19 @@ RUN \
   git clone --depth 1 --branch v$AOM_VERSION "$AOM_URL" && \
   cd aom && test $(git rev-parse HEAD) = $AOM_COMMIT && \
   mkdir build_tmp && cd build_tmp && \
-  cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DENABLE_EXAMPLES=NO -DENABLE_TESTS=NO -DENABLE_TOOLS=NO -DCONFIG_TUNE_VMAF=1 -DENABLE_NASM=ON -DCMAKE_INSTALL_LIBDIR=lib .. && \
+  cmake \
+    -G"Unix Makefiles" \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DENABLE_EXAMPLES=NO \
+    -DENABLE_DOCS=NO \
+    -DENABLE_TESTS=NO \
+    -DENABLE_TOOLS=NO \
+    -DCONFIG_TUNE_VMAF=1 \
+    -DENABLE_NASM=ON \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    .. && \
   make -j$(nproc) install
 
 # bump: libass /LIBASS_VERSION=([\d.]+)/ https://github.com/libass/libass.git|*
@@ -140,7 +148,7 @@ RUN \
   wget -O davs2.tar.gz "$DAVS2_URL" && \
   echo "$DAVS2_SHA256  davs2.tar.gz" | sha256sum --status -c - && \
   tar xf davs2.tar.gz && \
-  cd davs2-*/build/linux && ./configure --disable-asm --enable-pic --disable-cli && \
+  cd davs2-*/build/linux && ./configure --disable-asm --enable-pic --enable-strip --disable-cli && \
   make -j$(nproc) install
 
 # bump: fdk-aac /FDK_AAC_VERSION=([\d.]+)/ https://github.com/mstorsjo/fdk-aac.git|*
@@ -166,7 +174,13 @@ RUN \
   git clone "$LIBGME_URL" && \
   cd game-music-emu && git checkout $LIBGME_COMMIT && \
   mkdir build && cd build && \
-  cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DENABLE_UBSAN=OFF .. && \
+  cmake \
+    -G"Unix Makefiles" \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DENABLE_UBSAN=OFF \
+    .. && \
   make -j$(nproc) install
 
 # bump: libgsm /LIBGSM_COMMIT=([[:xdigit:]]+)/ gitrefs:https://github.com/timothytylee/libgsm.git|re:#^refs/heads/master$#|@commit
@@ -238,7 +252,14 @@ RUN \
   echo "$LIBMYSOFA_SHA256  libmysofa.tar.gz" | sha256sum --status -c - && \
   tar xf libmysofa.tar.gz && \
   cd libmysofa-*/build && \
-  cmake -G"Unix Makefiles" -DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release .. && \
+  cmake \
+    -G"Unix Makefiles" \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_TESTS=OFF \
+    .. && \
   make -j$(nproc) install
 
 # bump: opencoreamr /OPENCOREAMR_VERSION=([\d.]+)/ fetch:https://sourceforge.net/projects/opencore-amr/files/opencore-amr/|/opencore-amr-([\d.]+).tar.gz/
@@ -264,7 +285,17 @@ RUN \
   wget -O openjpeg.tar.gz "$OPENJPEG_URL" && \
   echo "$OPENJPEG_SHA256  openjpeg.tar.gz" | sha256sum --status -c - && \
   tar xf openjpeg.tar.gz && \
-  cd openjpeg-* && cmake -G "Unix Makefiles" -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DBUILD_PKGCONFIG_FILES=ON -DBUILD_CODEC=OFF -DWITH_ASTYLE=OFF -DBUILD_TESTING=OFF && \
+  cd openjpeg-* && mkdir build && cd build && \
+  cmake \
+    -G"Unix Makefiles" \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DBUILD_PKGCONFIG_FILES=ON \
+    -DBUILD_CODEC=OFF \
+    -DWITH_ASTYLE=OFF \
+    -DBUILD_TESTING=OFF \
+    .. && \
   make -j$(nproc) install
 
 # bump: opus /OPUS_VERSION=([\d.]+)/ https://github.com/xiph/opus.git|^1
@@ -278,7 +309,7 @@ RUN \
   wget -O opus.tar.gz "$OPUS_URL" && \
   echo "$OPUS_SHA256  opus.tar.gz" | sha256sum --status -c - && \
   tar xf opus.tar.gz && \
-  cd opus-* && ./configure --disable-shared --enable-static --disable-extra-programs && \
+  cd opus-* && ./configure --disable-shared --enable-static --disable-extra-programs --disable-doc && \
   make -j$(nproc) install
 
 # bump: librabbitmq /LIBRABBITMQ_VERSION=([\d.]+)/ https://github.com/alanxz/rabbitmq-c.git|*
@@ -293,14 +324,20 @@ RUN \
   tar xfz rabbitmq-c.tar.gz && \
   cd rabbitmq-c-* && mkdir build && cd build && \
   cmake \
-    -GNinja \
+    -G"Unix Makefiles" \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DBUILD_EXAMPLES=OFF \
     -DBUILD_SHARED_LIBS=OFF \
     -DBUILD_STATIC_LIBS=ON \
     -DCMAKE_INSTALL_PREFIX=/usr/local \
     -DCMAKE_INSTALL_LIBDIR=lib \
-    .. \
-  && cmake --build . --config Release --target install
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_TESTS=OFF \
+    -DBUILD_TOOLS=OFF \
+    -DBUILD_TOOLS_DOCS=OFF \
+    -DRUN_SYSTEM_TESTS=OFF \
+    .. && \
+  make -j$(nproc) install
 
 # bump: rav1e /RAV1E_VERSION=([\d.]+)/ https://github.com/xiph/rav1e.git|/\d+\./|*
 # bump: rav1e after ./hashupdate Dockerfile RAV1E $LATEST
@@ -330,7 +367,7 @@ RUN \
   echo "$RUBBERBAND_SHA256  rubberband.tar.bz2" | sha256sum --status -c - && \
   tar xf rubberband.tar.bz2 && \
   cd rubberband-* && \
-  meson -Dno_shared=true -Dfft=fftw build && \
+  meson -Ddefault_library=static -Dfft=fftw -Dresampler=libsamplerate build && \
   ninja -j$(nproc) -vC build install && \
   echo "Requires.private: fftw3 samplerate" >> /usr/local/lib/pkgconfig/rubberband.pc
 
@@ -379,7 +416,19 @@ RUN \
     -e 's/md5_init/srt_md5_init/g' \
     -e 's/md5_append/srt_md5_append/g' \
     -e 's/md5_finish/srt_md5_finish/g' && \
-  cmake -DCMAKE_BUILD_TYPE=Release -DENABLE_SHARED=OFF -DENABLE_APPS=OFF -DENABLE_CXX11=ON -DUSE_STATIC_LIBSTDCXX=ON -DENABLE_LOGGING=OFF -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_INSTALL_INCLUDEDIR=include -DCMAKE_INSTALL_BINDIR=bin .. && \
+  cmake \
+    -G"Unix Makefiles" \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DENABLE_SHARED=OFF \
+    -DENABLE_APPS=OFF \
+    -DENABLE_CXX11=ON \
+    -DUSE_STATIC_LIBSTDCXX=ON \
+    -DENABLE_LOGGING=OFF \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DCMAKE_INSTALL_INCLUDEDIR=include \
+    -DCMAKE_INSTALL_BINDIR=bin \
+    .. && \
   make -j$(nproc) && make install
 
 # bump: libssh /LIBSSH_VERSION=([\d.]+)/ https://gitlab.com/libssh/libssh-mirror.git|*
@@ -395,7 +444,30 @@ RUN \
   echo "$LIBSSH_SHA256  libssh.tar.gz" | sha256sum --status -c - && \
   tar xf libssh.tar.gz && cd libssh* && mkdir build && cd build && \
   echo -e 'Requires.private: libssl libcrypto zlib \nLibs.private: -DLIBSSH_STATIC=1 -lssh\nCflags.private: -DLIBSSH_STATIC=1 -I${CMAKE_INSTALL_FULL_INCLUDEDIR}' >> ../libssh.pc.cmake && \
-  cmake -DCMAKE_SYSTEM_ARCH=$(arch) -DCMAKE_INSTALL_LIBDIR=lib -DCMAKE_BUILD_TYPE=Release -DPICKY_DEVELOPER=ON -DBUILD_STATIC_LIB=ON -DBUILD_SHARED_LIBS=OFF -DWITH_GSSAPI=OFF -DWITH_BLOWFISH_CIPHER=ON -DWITH_SFTP=ON -DWITH_SERVER=OFF -DWITH_ZLIB=ON -DWITH_PCAP=ON -DWITH_DEBUG_CRYPTO=OFF -DWITH_DEBUG_PACKET=OFF -DWITH_DEBUG_CALLTRACE=OFF -DUNIT_TESTING=OFF -DCLIENT_TESTING=OFF -DSERVER_TESTING=OFF -DWITH_EXAMPLES=OFF -DWITH_INTERNAL_DOC=OFF -DCMAKE_VERBOSE_MAKEFILE=ON ../ && \
+  cmake \
+    -G"Unix Makefiles" \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DCMAKE_SYSTEM_ARCH=$(arch) \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DPICKY_DEVELOPER=ON \
+    -DBUILD_STATIC_LIB=ON \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DWITH_GSSAPI=OFF \
+    -DWITH_BLOWFISH_CIPHER=ON \
+    -DWITH_SFTP=ON \
+    -DWITH_SERVER=OFF \
+    -DWITH_ZLIB=ON \
+    -DWITH_PCAP=ON \
+    -DWITH_DEBUG_CRYPTO=OFF \
+    -DWITH_DEBUG_PACKET=OFF \
+    -DWITH_DEBUG_CALLTRACE=OFF \
+    -DUNIT_TESTING=OFF \
+    -DCLIENT_TESTING=OFF \
+    -DSERVER_TESTING=OFF \
+    -DWITH_EXAMPLES=OFF \
+    -DWITH_INTERNAL_DOC=OFF \
+    .. && \
   make -j$(nproc) install
 
 # bump: svtav1 /SVTAV1_VERSION=([\d.]+)/ https://gitlab.com/AOMediaCodec/SVT-AV1.git|*
@@ -408,9 +480,14 @@ RUN \
   wget -O svtav1.tar.bz2 "$SVTAV1_URL" && \
   echo "$SVTAV1_SHA256  svtav1.tar.bz2" | sha256sum --status -c - && \
   tar xf svtav1.tar.bz2 && \
-  cd SVT-AV1-* && \
-  cd Build && \
-  cmake -G"Unix Makefiles" -DCMAKE_INSTALL_LIBDIR=lib -DBUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release .. && \
+  cd SVT-AV1-*/Build && \
+  cmake \
+    -G"Unix Makefiles" \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DCMAKE_BUILD_TYPE=Release \
+    .. && \
   make -j$(nproc) install
 
 # has to be before theora
@@ -468,7 +545,12 @@ RUN \
   cd uavs3d && git checkout $UAVS3D_COMMIT && \
 #  sed -i 's/define BIT_DEPTH 8/define BIT_DEPTH 10/' source/decore/com_def.h && \
   mkdir build/linux && cd build/linux && \
-  cmake -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=0 ../.. && \
+  cmake \
+    -G"Unix Makefiles" \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=OFF \
+    ../.. && \
   make -j$(nproc) install
 
 # bump: vid.stab /VIDSTAB_VERSION=([\d.]+)/ https://github.com/georgmartius/vid.stab.git|*
@@ -481,11 +563,18 @@ RUN \
   wget -O vid.stab.tar.gz "$VIDSTAB_URL" && \
   echo "$VIDSTAB_SHA256  vid.stab.tar.gz" | sha256sum --status -c - && \
   tar xf vid.stab.tar.gz && \
-  cd vid.stab-* && \
+  cd vid.stab-* && mkdir build && cd build && \
   # This line workarounds the issue that happens when the image builds in emulated (buildx) arm64 environment.
   # Since in emulated container the /proc is mounted from the host, the cmake not able to detect CPU features correctly.
-  sed -i 's/include (FindSSE)/if(CMAKE_SYSTEM_ARCH MATCHES "amd64")\ninclude (FindSSE)\nendif()/' ./CMakeLists.txt && \
-  cmake -DCMAKE_SYSTEM_ARCH=$(arch) -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DUSE_OMP=ON . && \
+  sed -i 's/include (FindSSE)/if(CMAKE_SYSTEM_ARCH MATCHES "amd64")\ninclude (FindSSE)\nendif()/' ../CMakeLists.txt && \
+  cmake \
+    -G"Unix Makefiles" \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DCMAKE_SYSTEM_ARCH=$(arch) \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DUSE_OMP=ON \
+    .. && \
   make -j$(nproc) install
 RUN echo "Libs.private: -ldl" >> /usr/local/lib/pkgconfig/vidstab.pc
 
@@ -557,7 +646,16 @@ RUN \
   echo "$X265_SHA256  x265.tar.bz2" | sha256sum --status -c - && \
   tar xf x265.tar.bz2 && \
   cd x265_*/build/linux && \
-  cmake -G "Unix Makefiles" -DENABLE_SHARED=OFF -DENABLE_AGGRESSIVE_CHECKS=ON -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy -DENABLE_CLI=OFF -DENABLE_NASM=ON -DCMAKE_BUILD_TYPE=Release ../../source && \
+  cmake \
+    -G"Unix Makefiles" \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DENABLE_SHARED=OFF \
+    -DENABLE_AGGRESSIVE_CHECKS=ON \
+    -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy \
+    -DENABLE_CLI=OFF \
+    -DENABLE_NASM=ON \
+    -DCMAKE_BUILD_TYPE=Release \
+    ../../source && \
   make -j$(nproc) install
 
 # bump: xavs2 /XAVS2_VERSION=([\d.]+)/ https://github.com/pkuvcl/xavs2.git|^1
