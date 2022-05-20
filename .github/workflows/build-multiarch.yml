@@ -31,6 +31,7 @@ jobs:
     uses: pldin601/common-workflows/.github/workflows/build-multiarch-on-aws-spots.yml@v1.0.0
     with:
       DOCKER_IMAGE_TAG: ${{ needs.tag.outputs.TAG }}
+      DOCKER_IMAGE_NAME: "mwader/static-ffmpeg-multi-test"
       WORKFLOW_CHECKOUT: v1.0.0 # Should be equal to the ref used in "uses" expression.
       AWS_REGION: us-east-1
       AWS_EC2_INSTANCE_SIZE: xlarge
