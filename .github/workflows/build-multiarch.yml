@@ -28,10 +28,12 @@ jobs:
     needs:
       - tag
     name: Build
-    uses: pldin601/common-workflows/.github/workflows/build-multiarch-on-aws-spots.yml@main
+    uses: pldin601/common-workflows/.github/workflows/build-multiarch-on-aws-spots.yml@v1.0.0
     with:
       DOCKER_IMAGE_TAG: ${{ needs.tag.outputs.TAG }}
-      WORKFLOW_CHECKOUT: main # Should be equal to the ref used in "uses" expression.
+      WORKFLOW_CHECKOUT: v1.0.0 # Should be equal to the ref used in "uses" expression.
+      AWS_REGION: us-east-1
+      AWS_EC2_INSTANCE_SIZE: xlarge
     secrets:
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
