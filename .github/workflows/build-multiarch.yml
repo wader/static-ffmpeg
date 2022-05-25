@@ -31,7 +31,7 @@ jobs:
     uses: pldin601/build-multiarch-on-aws-spots/.github/workflows/build-multiarch-on-aws-spots.yml@86a651b724d18cc289c046018e23cad7c79c77ee
     with:
       DOCKER_IMAGE_TAG: ${{ needs.tag.outputs.TAG }}
-      DOCKER_IMAGE_NAME: "mwader/static-ffmpeg-multi-test"
+      DOCKER_IMAGE_NAME: "mwader/static-ffmpeg"
       WORKFLOW_CHECKOUT: 86a651b724d18cc289c046018e23cad7c79c77ee
       AWS_REGION: eu-central-1
       AWS_EC2_INSTANCE_SIZE: xlarge
