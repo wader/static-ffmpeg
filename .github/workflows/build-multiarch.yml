@@ -28,11 +28,11 @@ jobs:
     needs:
       - tag
     name: Build
-    uses: pldin601/build-multiarch-on-aws-spots/.github/workflows/build-multiarch-on-aws-spots.yml@86a651b724d18cc289c046018e23cad7c79c77ee
+    uses: pldin601/build-multiarch-on-aws-spots/.github/workflows/build-multiarch-on-aws-spots.yml@ecd64cb2d8aa85f93686f350040113c9d574c393
     with:
       DOCKER_IMAGE_TAG: ${{ needs.tag.outputs.TAG }}
       DOCKER_IMAGE_NAME: "mwader/static-ffmpeg"
-      WORKFLOW_CHECKOUT: 86a651b724d18cc289c046018e23cad7c79c77ee
+      WORKFLOW_CHECKOUT: ecd64cb2d8aa85f93686f350040113c9d574c393
       AWS_REGION: eu-central-1
       AWS_EC2_INSTANCE_SIZE: xlarge
     secrets:
