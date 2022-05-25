@@ -3,6 +3,8 @@
 Docker image with [FFmpeg/FFprobe](https://ffmpeg.org) built as hardened, static PIE binaries
 with no external dependencies. Can be used with any base image even scratch.
 
+Since version 5.0.1-3 dockerhub images are multi-arch amd64 and arm64 images.
+
 Built with the following statically-linked libraries:
 
 - fontconfig
@@ -116,6 +118,10 @@ not do certificate verification. To enable verification you need to run
 
 - Alpine Linux at `/etc/ssl/cert.pem`
 - Debian/Ubuntu install the `ca-certificates` package at it will be available at `/etc/ssl/certs/ca-certificates.crt`.
+
+### Dockerhub images
+
+Multi-arch dockerhub images are built using [pldin601/build-multiarch-on-aws-spots](https://github.com/pldin601/build-multiarch-on-aws-spots). See [build-multiarch.yml](.github/workflows/build-multiarch.yml) for config. Thanks to [@pldin601](https://github.com/pldin601) for making this possible.
 
 ### Contribute
 
