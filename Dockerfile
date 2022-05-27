@@ -856,7 +856,7 @@ COPY --from=builder /etc/ssl/cert.pem /etc/ssl/cert.pem
 
 # clamp all files into one layer
 FROM scratch AS final2
-COPY --from=final1 /* /
+COPY --from=final1 / /
 
 # do tests in own target to skip layers in the final image
 FROM final2
