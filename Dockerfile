@@ -359,6 +359,21 @@ RUN \
 # https://gitlab.alpinelinux.org/alpine/aports/-/issues/11806
 RUN sed -i 's/-lgcc_s//' /usr/local/lib/pkgconfig/rav1e.pc
 
+# bump: librtmp /LIBRTMP_COMMIT=([[:xdigit:]]+)/ gitrefs:https://git.ffmpeg.org/rtmpdump.git|re:#^refs/heads/master$#|@commit
+# bump: librtmp after ./hashupdate Dockerfile LIBRTMP $LATEST
+# bump: librtmp link "Commit diff $CURRENT..$LATEST" https://git.ffmpeg.org/gitweb/rtmpdump.git/commitdiff/$LATEST?ds=sidebyside
+ARG LIBRTMP_URL="https://git.ffmpeg.org/rtmpdump.git"
+ARG LIBRTMP_COMMIT=f1b83c10d8beb43fcc70a6e88cf4325499f25857
+RUN \
+  git clone "$LIBRTMP_URL" && \
+  cd rtmpdump && git checkout $LIBRTMP_COMMIT && \
+  # Patch/port librtmp to openssl 1.1
+  for _dlp in dh.h handshake.h hashswf.c; do \
+    wget $WGET_OPTS https://raw.githubusercontent.com/microsoft/vcpkg/38bb87c5571555f1a4f64cb4ed9d2be0017f9fc1/ports/librtmp/${_dlp%.*}.patch; \
+    patch librtmp/${_dlp} < ${_dlp%.*}.patch; \
+  done && \
+  make SYS=posix SHARED=off -j$(nproc) install
+
 # bump: rubberband /RUBBERBAND_VERSION=([\d.]+)/ https://github.com/breakfastquay/rubberband.git|^2
 # bump: rubberband after ./hashupdate Dockerfile RUBBERBAND $LATEST
 # bump: rubberband link "CHANGELOG" https://github.com/breakfastquay/rubberband/blob/default/CHANGELOG
@@ -757,6 +772,7 @@ RUN \
   --enable-libopus \
   --enable-librabbitmq \
   --enable-librav1e \
+  --enable-librtmp \
   --enable-librubberband \
   --enable-libshine \
   --enable-libsoxr \
@@ -818,6 +834,7 @@ RUN \
   libopus: env.OPUS_VERSION, \
   librabbitmq: env.LIBRABBITMQ_VERSION, \
   librav1e: env.RAV1E_VERSION, \
+  librtmp: env.LIBRTMP_COMMIT, \
   librubberband: env.RUBBERBAND_VERSION, \
   libsamplerate: env.LIBSAMPLERATE_VERSION, \
   libshine: env.LIBSHINE_VERSION, \
