@@ -141,7 +141,7 @@ usage and potential distribution of such.
 
 ### TODOs and possible things to add
 
-- Add libplacebo, chromaprint, rtmp, etc. ...
+- Add libplacebo, chromaprint, etc. ...
 - Add lcms2 support once in stable
 - Add libjxl support once in stable
 - Add xeve/xevd support once in stable
