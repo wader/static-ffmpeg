@@ -30,6 +30,7 @@ Built with the following statically-linked libraries:
 - libopus
 - librabbitmq
 - librav1e
+- librtmp
 - librubberband
 - libshine
 - libsoxr
