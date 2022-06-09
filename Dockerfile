@@ -173,7 +173,7 @@ RUN \
 # bump: libgme after ./hashupdate Dockerfile LIBGME $LATEST
 # bump: libgme link "Source diff $CURRENT..$LATEST" https://bitbucket.org/mpyne/game-music-emu/branches/compare/$CURRENT..$LATEST
 ARG LIBGME_URL="https://bitbucket.org/mpyne/game-music-emu.git"
-ARG LIBGME_COMMIT=7a9367cd8608fc2d9be5d32489559f64000e3824
+ARG LIBGME_COMMIT=d39b0bce47f66074c6aa85202b8cb4642fa77b78
 RUN \
   git clone "$LIBGME_URL" && \
   cd game-music-emu && git checkout $LIBGME_COMMIT && \
