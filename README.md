@@ -22,7 +22,6 @@ Built with the following statically-linked libraries:
 - libgsm
 - libkvazaar
 - libmodplug
-- libmodplug
 - libmp3lame
 - libmysofa
 - libopencore
@@ -103,12 +102,12 @@ Binaries are built with various hardening features but it's *still a good idea t
 as non-root even when used inside a container*, especially so if running on input files that
 you don't control.
 
-### Known issues and ticks
+### Known issues and tricks
 
 #### Quickly see what versions an image was build with
 
 ```
-docker run --rm <image> -v quiet -f data -i versions.json -map 0:0 -c text -f data -
+docker run --rm mwader/static-ffmpeg -v quiet -f data -i versions.json -map 0:0 -c text -f data -
 ```
 
 #### I see `Name does not resolve` errors for hosts that should resolve
