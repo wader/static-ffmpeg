@@ -421,9 +421,9 @@ RUN \
 # bump: srt /SRT_VERSION=([\d.]+)/ https://github.com/Haivision/srt.git|^1
 # bump: srt after ./hashupdate Dockerfile SRT $LATEST
 # bump: srt link "Release notes" https://github.com/Haivision/srt/releases/tag/v$LATEST
-ARG SRT_VERSION=1.4.4
+ARG SRT_VERSION=1.5.0
 ARG SRT_URL="https://github.com/Haivision/srt/archive/v$SRT_VERSION.tar.gz"
-ARG SRT_SHA256=93f5f3715bd5bd522b8d65fc0d086ef2ad49db6a41ad2d7b35df2e8bd7094114
+ARG SRT_SHA256=99e3625a6285b3b429af26abb1ec0a4bd0072db144bc4d617a83154d99a5dd1e
 # sed to fix symbol name conflict with libssh (md5_init, md5_append, md5_finish)
 # https://github.com/Haivision/srt/issues/443
 # https://github.com/Haivision/srt/issues/1924
