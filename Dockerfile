@@ -408,9 +408,9 @@ RUN \
 # bump: speex after ./hashupdate Dockerfile SPEEX $LATEST
 # bump: speex link "ChangeLog" https://github.com/xiph/speex//blob/master/ChangeLog
 # bump: speex link "Source diff $CURRENT..$LATEST" https://github.com/xiph/speex/compare/$CURRENT..$LATEST
-ARG SPEEX_VERSION=1.2.0
+ARG SPEEX_VERSION=1.2.1
 ARG SPEEX_URL="https://github.com/xiph/speex/archive/Speex-$SPEEX_VERSION.tar.gz"
-ARG SPEEX_SHA256=4781a30d3a501abc59a4266f9bbf8b1da66fd509bef014697dc3f61e406b990c
+ARG SPEEX_SHA256=beaf2642e81a822eaade4d9ebf92e1678f301abfc74a29159c4e721ee70fdce0
 RUN \
   wget $WGET_OPTS -O speex.tar.gz "$SPEEX_URL" && \
   echo "$SPEEX_SHA256  speex.tar.gz" | sha256sum --status -c - && \
