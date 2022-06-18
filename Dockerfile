@@ -79,9 +79,9 @@ RUN  sed -i 's/-lvmaf /-lvmaf -lstdc++ /' /usr/local/lib/pkgconfig/libvmaf.pc
 # bump: aom after ./hashupdate Dockerfile AOM $LATEST
 # bump: aom after COMMIT=$(git ls-remote https://aomedia.googlesource.com/aom v$LATEST^{} | awk '{print $1}') && sed -i -E "s/^ARG AOM_COMMIT=.*/ARG AOM_COMMIT=$COMMIT/" Dockerfile
 # bump: aom link "CHANGELOG" https://aomedia.googlesource.com/aom/+/refs/tags/v$LATEST/CHANGELOG
-ARG AOM_VERSION=3.3.0
+ARG AOM_VERSION=3.4.0
 ARG AOM_URL="https://aomedia.googlesource.com/aom"
-ARG AOM_COMMIT=87460cef80fb03def7d97df1b47bad5432e5e2e4
+ARG AOM_COMMIT=fc430c57c7b0307b4c5ffb686cd90b3c010d08d2
 RUN \
   git clone --depth 1 --branch v$AOM_VERSION "$AOM_URL" && \
   cd aom && test $(git rev-parse HEAD) = $AOM_COMMIT && \
