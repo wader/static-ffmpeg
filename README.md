@@ -13,6 +13,7 @@ Built with the following statically-linked libraries:
 - libaom
 - libass
 - libbluray
+- libcaca
 - libdav1d
 - libdavs2
 - libfdk-aac

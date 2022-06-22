@@ -40,6 +40,7 @@ RUN apk add --no-cache \
   cunit cunit-dev \
   fftw-dev \
   libsamplerate-dev \
+  libcaca-dev libcaca-static \
   xxd
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
@@ -756,6 +757,7 @@ RUN \
   --enable-libaom \
   --enable-libass \
   --enable-libbluray \
+  --enable-libcaca \
   --enable-libdav1d \
   --enable-libdavs2 \
   --enable-libfdk-aac \
@@ -809,6 +811,7 @@ RUN \
   LIBXML2_VERSION=$(pkg-config --modversion libxml-2.0) \
   OPENSSL_VERSION=$(pkg-config --modversion openssl) \
   SOXR_VERSION=$(pkg-config --modversion soxr) \
+  CACA_VERSION=$(pkg-config --modversion caca) \
   jq -n \
   '{ \
   expat: env.EXPAT_VERSION, \
@@ -819,6 +822,7 @@ RUN \
   libaom: env.AOM_VERSION, \
   libass: env.LIBASS_VERSION, \
   libbluray: env.LIBBLURAY_VERSION, \
+  libcaca: env.CACA_VERSION, \
   libdav1d: env.DAV1D_VERSION, \
   libdavs2: env.DAVS2_VERSION, \
   libfreetype: env.FREETYPE_VERSION, \
