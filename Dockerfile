@@ -558,7 +558,7 @@ RUN \
 # bump: uavs3d after ./hashupdate Dockerfile UAVS3D $LATEST
 # bump: uavs3d link "Source diff $CURRENT..$LATEST" https://github.com/uavs3/uavs3d/compare/$CURRENT..$LATEST
 ARG UAVS3D_URL="https://github.com/uavs3/uavs3d.git"
-ARG UAVS3D_COMMIT=2536e3f71d62b89bc6b8df7c29d00c719f934ad9
+ARG UAVS3D_COMMIT=818a0cb719c0cd012f21ad0b9c5d83669e36f861
 # Removes BIT_DEPTH 10 to be able to build on other platforms. 10 was overkill anyways.
 RUN \
   git clone "$UAVS3D_URL" && \
