@@ -117,9 +117,9 @@ RUN \
 # bump: libbluray /LIBBLURAY_VERSION=([\d.]+)/ https://code.videolan.org/videolan/libbluray.git|*
 # bump: libbluray after ./hashupdate Dockerfile LIBBLURAY $LATEST
 # bump: libbluray link "ChangeLog" https://code.videolan.org/videolan/libbluray/-/blob/master/ChangeLog
-ARG LIBBLURAY_VERSION=1.3.1
+ARG LIBBLURAY_VERSION=1.3.2
 ARG LIBBLURAY_URL="https://code.videolan.org/videolan/libbluray/-/archive/$LIBBLURAY_VERSION/libbluray-$LIBBLURAY_VERSION.tar.gz"
-ARG LIBBLURAY_SHA256=7d0c5caab06b7f01730ef22fe42c10aca104e542af0381637e1b26f0ab0f6824
+ARG LIBBLURAY_SHA256=b428713f28d953db88288ef7f853b68562316ddde05be6da7db2a9c4d3190029
 RUN \
   wget $WGET_OPTS -O libbluray.tar.gz "$LIBBLURAY_URL" && \
   echo "$LIBBLURAY_SHA256  libbluray.tar.gz" | sha256sum --status -c - && \
