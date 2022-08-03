@@ -872,12 +872,6 @@ COPY --from=builder /versions.json /usr/local/bin/ffmpeg /usr/local/bin/ffprobe 
 COPY --from=builder /usr/local/share/doc/ffmpeg/* /doc/
 COPY --from=builder /etc/ssl/cert.pem /etc/ssl/cert.pem
 
-# clamp all files into one layer
-FROM scratch AS final2
-COPY --from=final1 / /
-
-# do tests in own target to skip layers in the final image
-FROM final2
 # sanity tests
 RUN ["/ffmpeg", "-version"]
 RUN ["/ffprobe", "-version"]
@@ -888,6 +882,10 @@ RUN ["/ffmpeg", "-f", "lavfi", "-i", "testsrc", "-c:v", "libsvtav1", "-t", "100m
 RUN ["/ffprobe", "-i", "https://github.com/favicon.ico"]
 # tls/https certs
 RUN ["/ffprobe", "-tls_verify", "1", "-ca_file", "/etc/ssl/cert.pem", "-i", "https://github.com/favicon.ico"]
+
+# clamp all files into one layer
+FROM scratch AS final2
+COPY --from=final1 / /
 
 FROM final2
 LABEL maintainer="Mattias Wadman mattias.wadman@gmail.com"
