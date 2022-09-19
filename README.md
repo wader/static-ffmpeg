@@ -46,7 +46,7 @@ Built with the following statically-linked libraries:
 - libvpx
 - libwebp
 - libx264
-- libx265
+- libx265 (multilib with support for 10 and 12 bits)
 - libxavs2
 - libxml2
 - libxvid
