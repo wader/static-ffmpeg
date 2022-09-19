@@ -664,6 +664,8 @@ ARG X265_URL="https://bitbucket.org/multicoreware/x265_git/get/$X265_VERSION.tar
 # https://bitbucket.org/multicoreware/x265_git/issues/559/warnings-when-assembling-with-nasm-215
 # TODO: remove 'sed' hack when upstream (x265) fixes the issue and adds '-DPIC' to ARM_ARGS
 # https://bitbucket.org/multicoreware/x265_git/issues/619/missing-dpic-for-arm-causes-link-error-on
+# CMAKEFLAGS issue
+# https://bitbucket.org/multicoreware/x265_git/issues/620/support-passing-cmake-flags-to-multilibsh
 RUN \
   wget $WGET_OPTS -O x265_git.tar.bz2 "$X265_URL" && \
   echo "$X265_SHA256  x265_git.tar.bz2" | sha256sum --status -c - && \

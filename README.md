@@ -65,20 +65,20 @@ Use `mwader/static-ffmpeg` from Docker Hub or build image yourself.
 
 In Dockerfile
 ```Dockerfile
-COPY --from=mwader/static-ffmpeg:5.1.1 /ffmpeg /usr/local/bin/
-COPY --from=mwader/static-ffmpeg:5.1.1 /ffprobe /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:5.1.1-1 /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:5.1.1-1 /ffprobe /usr/local/bin/
 ```
 
 Run directly
 ```sh
-docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:5.1.1 -i file.wav file.mp3
-docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:5.1.1 -i file.wav
+docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:5.1.1-1 -i file.wav file.mp3
+docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:5.1.1-1 -i file.wav
 ```
 
 As a shell/Bash alias
 ```sh
-alias ffmpeg='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:5.1.1'
-alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:5.1.1'
+alias ffmpeg='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:5.1.1-1'
+alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:5.1.1-1'
 ```
 
 ### Files in the image
