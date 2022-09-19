@@ -653,30 +653,29 @@ RUN \
   ./configure --enable-pic --enable-static --disable-cli --disable-lavf --disable-swscale && \
   make -j$(nproc) install
 
-# bump: x265 /X265_VERSION=([\d.]+)/ https://bitbucket.org/multicoreware/x265_git.git|^3
+# x265 release is over 1 years old and master branch has a lot of fixes and improvements, so we checkout commit so no hash is needed
+# bump: x265 /X265_VERSION=([[:xdigit:]]+)/ gitrefs:https://bitbucket.org/multicoreware/x265_git.git|re:#^refs/heads/master$#|@commit
 # bump: x265 after ./hashupdate Dockerfile X265 $LATEST
-# bump: x265 link "releasenotes" https://bitbucket.org/multicoreware/x265_git/src/master/doc/reST/releasenotes.rst
-ARG X265_VERSION=3.5
-ARG X265_URL="https://bitbucket.org/multicoreware/x265_git/downloads/x265_$X265_VERSION.tar.gz"
-ARG X265_SHA256=e70a3335cacacbba0b3a20ec6fecd6783932288ebc8163ad74bcc9606477cae8
+# bump: x265 link "Source diff $CURRENT..$LATEST" https://bitbucket.org/multicoreware/x265_git/branches/compare/$LATEST..$CURRENT#diff
+ARG X265_VERSION=931178347b3f73e40798fd5180209654536bbaa5
+ARG X265_SHA256=eb07c919a62d4a6724b44427844c214ab7ddf57c85b3ccf3f2b8111763ac2966
+ARG X265_URL="https://bitbucket.org/multicoreware/x265_git/get/$X265_VERSION.tar.bz2"
 # -w-macro-params-legacy to not log lots of asm warnings
 # https://bitbucket.org/multicoreware/x265_git/issues/559/warnings-when-assembling-with-nasm-215
+# TODO: remove 'sed' hack when upstream (x265) fixes the issue and adds '-DPIC' to ARM_ARGS
+# https://bitbucket.org/multicoreware/x265_git/issues/619/missing-dpic-for-arm-causes-link-error-on
 RUN \
-  wget $WGET_OPTS -O x265.tar.bz2 "$X265_URL" && \
-  echo "$X265_SHA256  x265.tar.bz2" | sha256sum --status -c - && \
-  tar xf x265.tar.bz2 && \
-  cd x265_*/build/linux && \
-  cmake \
-    -G"Unix Makefiles" \
-    -DCMAKE_VERBOSE_MAKEFILE=ON \
-    -DENABLE_SHARED=OFF \
-    -DENABLE_AGGRESSIVE_CHECKS=ON \
-    -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy \
-    -DENABLE_CLI=OFF \
-    -DENABLE_NASM=ON \
-    -DCMAKE_BUILD_TYPE=Release \
-    ../../source && \
-  make -j$(nproc) install
+  wget $WGET_OPTS -O x265_git.tar.bz2 "$X265_URL" && \
+  echo "$X265_SHA256  x265_git.tar.bz2" | sha256sum --status -c - && \
+  tar xf x265_git.tar.bz2 && \
+  cd multicoreware-x265_git-*/build/linux && \
+  sed -i '/^cmake / s/$/ -G "Unix Makefiles" ${CMAKEFLAGS}/' ./multilib.sh && \
+  sed -i 's/ -DENABLE_SHARED=OFF//g' ./multilib.sh && \
+  sed -i 's/set(ARM_ARGS -fPIC -flax-vector-conversions)/set(ARM_ARGS -DPIC -fPIC -flax-vector-conversions)/' ../../source/CMakeLists.txt && \
+  MAKEFLAGS="-j$(nproc)" \
+  CMAKEFLAGS="-DENABLE_SHARED=OFF -DCMAKE_VERBOSE_MAKEFILE=ON -DENABLE_AGGRESSIVE_CHECKS=ON -DCMAKE_ASM_NASM_FLAGS=-w-macro-params-legacy -DENABLE_NASM=ON -DCMAKE_BUILD_TYPE=Release" \
+  ./multilib.sh && \
+  make -C 8bit -j$(nproc) install
 
 # bump: xavs2 /XAVS2_VERSION=([\d.]+)/ https://github.com/pkuvcl/xavs2.git|^1
 # bump: xavs2 after ./hashupdate Dockerfile XAVS2 $LATEST
