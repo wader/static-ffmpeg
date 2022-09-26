@@ -424,17 +424,10 @@ RUN \
 ARG SRT_VERSION=1.5.1
 ARG SRT_URL="https://github.com/Haivision/srt/archive/v$SRT_VERSION.tar.gz"
 ARG SRT_SHA256=af891e7a7ffab61aa76b296982038b3159da690f69ade7c119f445d924b3cf53
-# sed to fix symbol name conflict with libssh (md5_init, md5_append, md5_finish)
-# https://github.com/Haivision/srt/issues/443
-# https://github.com/Haivision/srt/issues/1924
 RUN \
   wget $WGET_OPTS -O libsrt.tar.gz "$SRT_URL" && \
   echo "$SRT_SHA256  libsrt.tar.gz" | sha256sum --status -c - && \
   tar xf libsrt.tar.gz && cd srt-* && mkdir build && cd build && \
-  sed -i ../srtcore/md5.h ../srtcore/md5.cpp ../srtcore/common.cpp \
-    -e 's/md5_init/srt_md5_init/g' \
-    -e 's/md5_append/srt_md5_append/g' \
-    -e 's/md5_finish/srt_md5_finish/g' && \
   cmake \
     -G"Unix Makefiles" \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
