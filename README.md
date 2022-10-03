@@ -11,6 +11,7 @@ Built with the following statically-linked libraries:
 - gray
 - iconv
 - libaom
+- libaribb24
 - libass
 - libbluray
 - libdav1d
