@@ -101,6 +101,22 @@ RUN \
     .. && \
   make -j$(nproc) install
 
+# bump: libaribb24 /LIBARIBB24_VERSION=([\d.]+)/ https://github.com/nkoriyama/aribb24.git|*
+# bump: libaribb24 after ./hashupdate Dockerfile LIBARIBB24 $LATEST
+# bump: libaribb24 link "Release notes" https://github.com/nkoriyama/aribb24/releases/tag/$LATEST
+ARG LIBARIBB24_VERSION=1.0.3
+ARG LIBARIBB24_URL="https://github.com/nkoriyama/aribb24/archive/v$LIBARIBB24_VERSION.tar.gz"
+ARG LIBARIBB24_SHA256=f61560738926e57f9173510389634d8c06cabedfa857db4b28fb7704707ff128
+RUN \
+  wget $WGET_OPTS -O libaribb24.tar.gz ${LIBARIBB24_URL} && \
+  echo "$LIBARIBB24_SHA256  libaribb24.tar.gz" | sha256sum --status -c - && \
+  mkdir libaribb24 && \
+  tar xf libaribb24.tar.gz -C libaribb24 --strip-components=1 && \
+  cd libaribb24 && \
+  autoreconf -fiv && \
+  ./configure --enable-static --disable-shared && \
+  make -j$(nproc) && make install
+
 # bump: libass /LIBASS_VERSION=([\d.]+)/ https://github.com/libass/libass.git|*
 # bump: libass after ./hashupdate Dockerfile LIBASS $LATEST
 # bump: libass link "Release notes" https://github.com/libass/libass/releases/tag/$LATEST
@@ -748,6 +764,7 @@ RUN \
   --enable-gray \
   --enable-iconv \
   --enable-libaom \
+  --enable-libaribb24 \
   --enable-libass \
   --enable-libbluray \
   --enable-libdav1d \
@@ -811,6 +828,7 @@ RUN \
   fftw: env.FFTW_VERSION, \
   fontconfig: env.FONTCONFIG_VERSION, \
   libaom: env.AOM_VERSION, \
+  libaribb24: env.LIBARIBB24_VERSION, \
   libass: env.LIBASS_VERSION, \
   libbluray: env.LIBBLURAY_VERSION, \
   libdav1d: env.DAV1D_VERSION, \
