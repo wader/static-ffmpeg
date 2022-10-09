@@ -262,7 +262,7 @@ RUN \
 
 # bump: libmysofa /LIBMYSOFA_VERSION=([\d.]+)/ https://github.com/hoene/libmysofa.git|^1
 # bump: libmysofa after ./hashupdate Dockerfile LIBMYSOFA $LATEST
-# bump: libmysofa link "Release" https://github.com/hoene/libmysofa/releases/tag/$LATEST
+# bump: libmysofa link "Release" https://github.com/hoene/libmysofa/releases/tag/v$LATEST
 # bump: libmysofa link "Source diff $CURRENT..$LATEST" https://github.com/hoene/libmysofa/compare/v$CURRENT..v$LATEST
 ARG LIBMYSOFA_VERSION=1.3.1
 ARG LIBMYSOFA_URL="https://github.com/hoene/libmysofa/archive/refs/tags/v$LIBMYSOFA_VERSION.tar.gz"
