@@ -40,6 +40,8 @@ RUN apk add --no-cache \
   cunit cunit-dev \
   fftw-dev \
   libsamplerate-dev \
+  vo-amrwbenc-dev vo-amrwbenc-static \
+  snappy snappy-dev snappy-static \
   xxd
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
@@ -787,6 +789,7 @@ RUN \
   --enable-librtmp \
   --enable-librubberband \
   --enable-libshine \
+  --enable-libsnappy \
   --enable-libsoxr \
   --enable-libspeex \
   --enable-libsrt \
@@ -797,6 +800,7 @@ RUN \
   --enable-libuavs3d \
   --enable-libvidstab \
   --enable-libvmaf \
+  --enable-libvo-amrwbenc \
   --enable-libvorbis \
   --enable-libvpx \
   --enable-libwebp \
@@ -820,6 +824,8 @@ RUN \
   LIBXML2_VERSION=$(pkg-config --modversion libxml-2.0) \
   OPENSSL_VERSION=$(pkg-config --modversion openssl) \
   SOXR_VERSION=$(pkg-config --modversion soxr) \
+  LIBVO_AMRWBENC_VERSION=$(pkg-config --modversion vo-amrwbenc) \
+  SNAPPY_VERSION=$(apk info -a snappy | head -n1 | awk '{print $1}' | sed -e 's/snappy-//') \
   jq -n \
   '{ \
   expat: env.EXPAT_VERSION, \
@@ -841,7 +847,7 @@ RUN \
   libmodplug: env.LIBMODPLUG_VERSION, \
   libmp3lame: env.MP3LAME_VERSION, \
   libmysofa: env.LIBMYSOFA_VERSION, \
-  libogg: env.LIBOGG_VERSION, \
+  libogg: env.OGG_VERSION, \
   libopencoreamr: env.OPENCOREAMR_VERSION, \
   libopenjpeg: env.OPENJPEG_VERSION, \
   libopus: env.OPUS_VERSION, \
@@ -852,6 +858,7 @@ RUN \
   libsamplerate: env.LIBSAMPLERATE_VERSION, \
   libshine: env.LIBSHINE_VERSION, \
   libsoxr: env.SOXR_VERSION, \
+  libsnappy: env.SNAPPY_VERSION, \
   libspeex: env.SPEEX_VERSION, \
   libsrt: env.SRT_VERSION, \
   libssh: env.LIBSSH_VERSION, \
@@ -861,6 +868,7 @@ RUN \
   libuavs3d: env.UAVS3D_COMMIT, \
   libvidstab: env.VIDSTAB_VERSION, \
   libvmaf: env.VMAF_VERSION, \
+  libvo_amrwbenc: env.LIBVO_AMRWBENC_VERSION, \
   libvorbis: env.VORBIS_VERSION, \
   libvpx: env.VPX_VERSION, \
   libwebp: env.LIBWEBP_VERSION, \

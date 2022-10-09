@@ -33,6 +33,7 @@ Built with the following statically-linked libraries:
 - librtmp
 - librubberband
 - libshine
+- libsnappy
 - libsoxr
 - libspeex
 - libsrt
@@ -43,6 +44,7 @@ Built with the following statically-linked libraries:
 - libuavs3d
 - libvidstab
 - libvmaf
+- libvo-amrwbenc
 - libvorbis
 - libvpx
 - libwebp
