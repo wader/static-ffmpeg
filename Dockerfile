@@ -668,8 +668,8 @@ RUN \
 # bump: x265 /X265_VERSION=([[:xdigit:]]+)/ gitrefs:https://bitbucket.org/multicoreware/x265_git.git|re:#^refs/heads/master$#|@commit
 # bump: x265 after ./hashupdate Dockerfile X265 $LATEST
 # bump: x265 link "Source diff $CURRENT..$LATEST" https://bitbucket.org/multicoreware/x265_git/branches/compare/$LATEST..$CURRENT#diff
-ARG X265_VERSION=795122c3140189101b0594a53639dfc451a27d4f
-ARG X265_SHA256=7ea8ca0f7b0e19cc9bf150836e0e78aa4802a5d2afd85a98c6f1a5a87f8b1fb2
+ARG X265_VERSION=49ab9e83b0de7394ff785cfd1c2c82eb8f148889
+ARG X265_SHA256=a54a9ded70063cb69b80bf11955ca3c33947a713439d0ac1a9e14ef6b2922bc9
 ARG X265_URL="https://bitbucket.org/multicoreware/x265_git/get/$X265_VERSION.tar.bz2"
 # -w-macro-params-legacy to not log lots of asm warnings
 # https://bitbucket.org/multicoreware/x265_git/issues/559/warnings-when-assembling-with-nasm-215
