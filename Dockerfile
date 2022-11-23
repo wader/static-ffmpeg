@@ -39,7 +39,7 @@ RUN apk add --no-cache \
   numactl-dev \
   cunit cunit-dev \
   fftw-dev \
-  libsamplerate-dev \
+  libsamplerate-dev libsamplerate-static \
   vo-amrwbenc-dev vo-amrwbenc-static \
   snappy snappy-dev snappy-static \
   xxd \
