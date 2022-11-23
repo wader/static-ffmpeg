@@ -1,6 +1,6 @@
 # bump: alpine /FROM alpine:([\d.]+)/ docker:alpine|^3
 # bump: alpine link "Release notes" https://alpinelinux.org/posts/Alpine-$LATEST-released.html
-FROM alpine:3.17 AS builder
+FROM alpine:3.17.0 AS builder
 
 RUN apk add --no-cache \
   coreutils \
@@ -42,7 +42,8 @@ RUN apk add --no-cache \
   libsamplerate-dev \
   vo-amrwbenc-dev vo-amrwbenc-static \
   snappy snappy-dev snappy-static \
-  xxd
+  xxd \
+  xz-dev xz-static
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
