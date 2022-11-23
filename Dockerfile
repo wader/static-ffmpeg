@@ -1,11 +1,11 @@
 # bump: alpine /FROM alpine:([\d.]+)/ docker:alpine|^3
 # bump: alpine link "Release notes" https://alpinelinux.org/posts/Alpine-$LATEST-released.html
-FROM alpine:3.16.3 AS builder
+FROM alpine:3.17.0 AS builder
 
 RUN apk add --no-cache \
   coreutils \
   wget \
-  rust cargo \
+  rust cargo cargo-c \
   openssl-dev openssl-libs-static \
   ca-certificates \
   bash \
@@ -21,7 +21,7 @@ RUN apk add --no-cache \
   jq \
   zlib-dev zlib-static \
   bzip2-dev bzip2-static \
-  libxml2-dev \
+  libxml2-dev libxml2-static \
   expat-dev expat-static \
   fontconfig-dev fontconfig-static \
   freetype freetype-dev freetype-static \
@@ -39,10 +39,11 @@ RUN apk add --no-cache \
   numactl-dev \
   cunit cunit-dev \
   fftw-dev \
-  libsamplerate-dev \
+  libsamplerate-dev libsamplerate-static \
   vo-amrwbenc-dev vo-amrwbenc-static \
   snappy snappy-dev snappy-static \
-  xxd
+  xxd \
+  xz-dev xz-static
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
@@ -55,9 +56,6 @@ ARG LDFLAGS="-Wl,-z,relro,-z,now"
 
 # retry dns and some http codes that might be transient errors
 ARG WGET_OPTS="--retry-on-host-error --retry-on-http-error=429,500,502,503"
-
-# debug builds a bit faster and we don't care about runtime speed
-RUN cargo install --debug --version 0.9.5 cargo-c
 
 # before aom as libvmaf uses it
 # bump: vmaf /VMAF_VERSION=([\d.]+)/ https://github.com/Netflix/vmaf.git|*
@@ -364,6 +362,8 @@ RUN \
 # bump: rav1e /RAV1E_VERSION=([\d.]+)/ https://github.com/xiph/rav1e.git|/\d+\./|*
 # bump: rav1e after ./hashupdate Dockerfile RAV1E $LATEST
 # bump: rav1e link "Release notes" https://github.com/xiph/rav1e/releases/tag/v$LATEST
+# RUSTFLAGS need to fix gcc_s
+# https://gitlab.alpinelinux.org/alpine/aports/-/issues/11806
 ARG RAV1E_VERSION=0.5.1
 ARG RAV1E_URL="https://github.com/xiph/rav1e/archive/v$RAV1E_VERSION.tar.gz"
 ARG RAV1E_SHA256=7b3060e8305e47f10b79f3a3b3b6adc3a56d7a58b2cb14e86951cc28e1b089fd
@@ -372,10 +372,7 @@ RUN \
   echo "$RAV1E_SHA256  rav1e.tar.gz" | sha256sum --status -c - && \
   tar xf rav1e.tar.gz && \
   cd rav1e-* && \
-  cargo cinstall --release
-# cargo-c/alpine rustc results in Libs.private depend on gcc_s
-# https://gitlab.alpinelinux.org/alpine/aports/-/issues/11806
-RUN sed -i 's/-lgcc_s//' /usr/local/lib/pkgconfig/rav1e.pc
+  RUSTFLAGS="-C target-feature=+crt-static" cargo cinstall --release
 
 # bump: librtmp /LIBRTMP_COMMIT=([[:xdigit:]]+)/ gitrefs:https://git.ffmpeg.org/rtmpdump.git|re:#^refs/heads/master$#|@commit
 # bump: librtmp after ./hashupdate Dockerfile LIBRTMP $LATEST
@@ -470,6 +467,7 @@ ARG LIBSSH_VERSION=0.10.4
 ARG LIBSSH_URL="https://gitlab.com/libssh/libssh-mirror/-/archive/libssh-$LIBSSH_VERSION/libssh-mirror-libssh-$LIBSSH_VERSION.tar.gz"
 ARG LIBSSH_SHA256=0644d73d4dcb8171c465334dba891b0965311f9ec66b1987805c2882afa0cc58
 # LIBSSH_STATIC=1 is REQUIRED to link statically against libssh.a so add to pkg-config file
+# make does not -j as it seems to be shaky, libssh.a used before created
 RUN \
   wget $WGET_OPTS -O libssh.tar.gz "$LIBSSH_URL" && \
   echo "$LIBSSH_SHA256  libssh.tar.gz" | sha256sum --status -c - && \
@@ -499,7 +497,7 @@ RUN \
     -DWITH_EXAMPLES=OFF \
     -DWITH_INTERNAL_DOC=OFF \
     .. && \
-  make -j$(nproc) install
+  make install
 
 # bump: svtav1 /SVTAV1_VERSION=([\d.]+)/ https://gitlab.com/AOMediaCodec/SVT-AV1.git|*
 # bump: svtav1 after ./hashupdate Dockerfile SVTAV1 $LATEST
