@@ -5,7 +5,7 @@ FROM alpine:3.17 AS builder
 RUN apk add --no-cache \
   coreutils \
   wget \
-  rust cargo \
+  rust cargo cargo-c \
   openssl-dev openssl-libs-static \
   ca-certificates \
   bash \
@@ -55,9 +55,6 @@ ARG LDFLAGS="-Wl,-z,relro,-z,now"
 
 # retry dns and some http codes that might be transient errors
 ARG WGET_OPTS="--retry-on-host-error --retry-on-http-error=429,500,502,503"
-
-# debug builds a bit faster and we don't care about runtime speed
-RUN cargo install --debug --version 0.9.5 cargo-c
 
 # before aom as libvmaf uses it
 # bump: vmaf /VMAF_VERSION=([\d.]+)/ https://github.com/Netflix/vmaf.git|*
@@ -364,6 +361,8 @@ RUN \
 # bump: rav1e /RAV1E_VERSION=([\d.]+)/ https://github.com/xiph/rav1e.git|/\d+\./|*
 # bump: rav1e after ./hashupdate Dockerfile RAV1E $LATEST
 # bump: rav1e link "Release notes" https://github.com/xiph/rav1e/releases/tag/v$LATEST
+# RUSTFLAGS need to fix gcc_s
+# https://gitlab.alpinelinux.org/alpine/aports/-/issues/11806
 ARG RAV1E_VERSION=0.5.1
 ARG RAV1E_URL="https://github.com/xiph/rav1e/archive/v$RAV1E_VERSION.tar.gz"
 ARG RAV1E_SHA256=7b3060e8305e47f10b79f3a3b3b6adc3a56d7a58b2cb14e86951cc28e1b089fd
@@ -372,10 +371,7 @@ RUN \
   echo "$RAV1E_SHA256  rav1e.tar.gz" | sha256sum --status -c - && \
   tar xf rav1e.tar.gz && \
   cd rav1e-* && \
-  cargo cinstall --release
-# cargo-c/alpine rustc results in Libs.private depend on gcc_s
-# https://gitlab.alpinelinux.org/alpine/aports/-/issues/11806
-RUN sed -i 's/-lgcc_s//' /usr/local/lib/pkgconfig/rav1e.pc
+  RUSTFLAGS="-C target-feature=+crt-static" cargo cinstall --release
 
 # bump: librtmp /LIBRTMP_COMMIT=([[:xdigit:]]+)/ gitrefs:https://git.ffmpeg.org/rtmpdump.git|re:#^refs/heads/master$#|@commit
 # bump: librtmp after ./hashupdate Dockerfile LIBRTMP $LATEST
