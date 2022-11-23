@@ -21,7 +21,7 @@ RUN apk add --no-cache \
   jq \
   zlib-dev zlib-static \
   bzip2-dev bzip2-static \
-  libxml2-dev \
+  libxml2-dev libxml2-static \
   expat-dev expat-static \
   fontconfig-dev fontconfig-static \
   freetype freetype-dev freetype-static \
