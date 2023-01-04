@@ -224,9 +224,9 @@ RUN \
 # bump: kvazaar /KVAZAAR_VERSION=([\d.]+)/ https://github.com/ultravideo/kvazaar.git|^2
 # bump: kvazaar after ./hashupdate Dockerfile KVAZAAR $LATEST
 # bump: kvazaar link "Release notes" https://github.com/ultravideo/kvazaar/releases/tag/v$LATEST
-ARG KVAZAAR_VERSION=2.1.0
+ARG KVAZAAR_VERSION=2.2.0
 ARG KVAZAAR_URL="https://github.com/ultravideo/kvazaar/archive/v$KVAZAAR_VERSION.tar.gz"
-ARG KVAZAAR_SHA256=bbdd3112182e5660a1c339e30677f871b6eac1e5b4ff1292ee1ae38ecbe11029
+ARG KVAZAAR_SHA256=df21f327318d530fe7f2ec65ccabf400690791ebad726d8b785c243506f0e446
 RUN \
   wget $WGET_OPTS -O kvazaar.tar.gz "$KVAZAAR_URL" && \
   echo "$KVAZAAR_SHA256  kvazaar.tar.gz" | sha256sum --status -c - && \
