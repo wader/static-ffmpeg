@@ -57,6 +57,11 @@ ARG LDFLAGS="-Wl,-z,relro,-z,now"
 # retry dns and some http codes that might be transient errors
 ARG WGET_OPTS="--retry-on-host-error --retry-on-http-error=429,500,502,503"
 
+# workaround for https://github.com/pkgconf/pkgconf/issues/268
+# link order somehow ends up reversed for libbrotlidec and libbrotlicommon with pkgconf 1.9.4 but not 1.9.3
+# adding libbrotlicommon directly to freetype2 required libraries seems to fix it
+RUN sed -i 's/libbrotlidec/libbrotlidec, libbrotlicommon/' /usr/lib/pkgconfig/freetype2.pc
+
 # before aom as libvmaf uses it
 # bump: vmaf /VMAF_VERSION=([\d.]+)/ https://github.com/Netflix/vmaf.git|*
 # bump: vmaf after ./hashupdate Dockerfile VMAF $LATEST
@@ -72,7 +77,7 @@ RUN \
   cd vmaf-*/libvmaf && meson build --buildtype=release -Ddefault_library=static -Dbuilt_in_models=true -Denable_tests=false -Denable_docs=false -Denable_avx512=true -Denable_float=true && \
   ninja -j$(nproc) -vC build install
 # extra libs stdc++ is for vmaf https://github.com/Netflix/vmaf/issues/788
-RUN  sed -i 's/-lvmaf /-lvmaf -lstdc++ /' /usr/local/lib/pkgconfig/libvmaf.pc
+RUN sed -i 's/-lvmaf /-lvmaf -lstdc++ /' /usr/local/lib/pkgconfig/libvmaf.pc
 
 # build after libvmaf
 # bump: aom /AOM_VERSION=([\d.]+)/ git:https://aomedia.googlesource.com/aom|*
