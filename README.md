@@ -10,6 +10,7 @@ Built with the following statically-linked libraries:
 - fontconfig
 - gray
 - iconv
+- lcms2
 - libaom
 - libaribb24
 - libass
@@ -144,7 +145,6 @@ usage and potential distribution of such.
 ### TODOs and possible things to add
 
 - Add libplacebo, chromaprint, etc. ...
-- Add lcms2 support once in stable
 - Add libjxl support once in stable
 - Add xeve/xevd support once in stable
 - Add acceleration support (GPU, CUDA, ...)
