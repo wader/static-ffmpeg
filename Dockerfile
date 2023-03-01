@@ -35,6 +35,7 @@ RUN apk add --no-cache \
   fribidi-dev fribidi-static \
   brotli-dev brotli-static \
   soxr-dev soxr-static \
+  lcms2 lcms2-dev \
   tcl \
   numactl-dev \
   cunit cunit-dev \
@@ -765,6 +766,7 @@ RUN \
   --enable-fontconfig \
   --enable-gray \
   --enable-iconv \
+  --enable-lcms2 \
   --enable-libaom \
   --enable-libaribb24 \
   --enable-libass \
@@ -822,6 +824,7 @@ RUN \
   FRIBIDI_VERSION=$(pkg-config --modversion fribidi)  \
   LIBSAMPLERATE_VERSION=$(pkg-config --modversion samplerate) \
   LIBXML2_VERSION=$(pkg-config --modversion libxml-2.0) \
+  LCMS2_VERSION=$(pkg-config --modversion lcms2) \
   OPENSSL_VERSION=$(pkg-config --modversion openssl) \
   SOXR_VERSION=$(pkg-config --modversion soxr) \
   LIBVO_AMRWBENC_VERSION=$(pkg-config --modversion vo-amrwbenc) \
@@ -833,6 +836,7 @@ RUN \
   ffmpeg: env.FFMPEG_VERSION, \
   fftw: env.FFTW_VERSION, \
   fontconfig: env.FONTCONFIG_VERSION, \
+  lcms2: env.LCMS2_VERSION, \
   libaom: env.AOM_VERSION, \
   libaribb24: env.LIBARIBB24_VERSION, \
   libass: env.LIBASS_VERSION, \
