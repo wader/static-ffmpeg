@@ -591,9 +591,9 @@ RUN \
 # bump: vid.stab /VIDSTAB_VERSION=([\d.]+)/ https://github.com/georgmartius/vid.stab.git|*
 # bump: vid.stab after ./hashupdate Dockerfile VIDSTAB $LATEST
 # bump: vid.stab link "Changelog" https://github.com/georgmartius/vid.stab/blob/master/Changelog
-ARG VIDSTAB_VERSION=1.1.0
+ARG VIDSTAB_VERSION=1.1.1
 ARG VIDSTAB_URL="https://github.com/georgmartius/vid.stab/archive/v$VIDSTAB_VERSION.tar.gz"
-ARG VIDSTAB_SHA256=14d2a053e56edad4f397be0cb3ef8eb1ec3150404ce99a426c4eb641861dc0bb
+ARG VIDSTAB_SHA256=9001b6df73933555e56deac19a0f225aae152abbc0e97dc70034814a1943f3d4
 RUN \
   wget $WGET_OPTS -O vid.stab.tar.gz "$VIDSTAB_URL" && \
   echo "$VIDSTAB_SHA256  vid.stab.tar.gz" | sha256sum --status -c - && \
