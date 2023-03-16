@@ -63,6 +63,8 @@ ARG WGET_OPTS="--retry-on-host-error --retry-on-http-error=429,500,502,503"
 # adding libbrotlicommon directly to freetype2 required libraries seems to fix it
 RUN sed -i 's/libbrotlidec/libbrotlidec, libbrotlicommon/' /usr/lib/pkgconfig/freetype2.pc
 
+RUN mkdir -p /patches/ffmpeg
+
 # before aom as libvmaf uses it
 # bump: vmaf /VMAF_VERSION=([\d.]+)/ https://github.com/Netflix/vmaf.git|*
 # bump: vmaf after ./hashupdate Dockerfile VMAF $LATEST
@@ -82,7 +84,6 @@ RUN sed -i 's/-lvmaf /-lvmaf -lstdc++ /' /usr/local/lib/pkgconfig/libvmaf.pc
 
 # build after libvmaf
 # bump: aom /AOM_VERSION=([\d.]+)/ git:https://aomedia.googlesource.com/aom|*
-# bump: aom after ./hashupdate Dockerfile AOM $LATEST
 # bump: aom after COMMIT=$(git ls-remote https://aomedia.googlesource.com/aom v$LATEST^{} | awk '{print $1}') && sed -i -E "s/^ARG AOM_COMMIT=.*/ARG AOM_COMMIT=$COMMIT/" Dockerfile
 # bump: aom link "CHANGELOG" https://aomedia.googlesource.com/aom/+/refs/tags/v$LATEST/CHANGELOG
 ARG AOM_VERSION=3.6.0
@@ -192,7 +193,6 @@ RUN \
   make -j$(nproc) install
 
 # bump: libgme /LIBGME_COMMIT=([[:xdigit:]]+)/ gitrefs:https://bitbucket.org/mpyne/game-music-emu.git|re:#^refs/heads/master$#|@commit
-# bump: libgme after ./hashupdate Dockerfile LIBGME $LATEST
 # bump: libgme link "Source diff $CURRENT..$LATEST" https://bitbucket.org/mpyne/game-music-emu/branches/compare/$CURRENT..$LATEST
 ARG LIBGME_URL="https://bitbucket.org/mpyne/game-music-emu.git"
 ARG LIBGME_COMMIT=6cd4bdb69be304f58c9253fb08b8362f541b3b4b
@@ -210,7 +210,6 @@ RUN \
   make -j$(nproc) install
 
 # bump: libgsm /LIBGSM_COMMIT=([[:xdigit:]]+)/ gitrefs:https://github.com/timothytylee/libgsm.git|re:#^refs/heads/master$#|@commit
-# bump: libgsm after ./hashupdate Dockerfile LIBGSM $LATEST
 # bump: libgsm link "Changelog" https://github.com/timothytylee/libgsm/blob/master/ChangeLog
 ARG LIBGSM_URL="https://github.com/timothytylee/libgsm.git"
 ARG LIBGSM_COMMIT=98f1708fb5e06a0dfebd58a3b40d610823db9715
@@ -381,7 +380,6 @@ RUN \
   RUSTFLAGS="-C target-feature=+crt-static" cargo cinstall --release
 
 # bump: librtmp /LIBRTMP_COMMIT=([[:xdigit:]]+)/ gitrefs:https://git.ffmpeg.org/rtmpdump.git|re:#^refs/heads/master$#|@commit
-# bump: librtmp after ./hashupdate Dockerfile LIBRTMP $LATEST
 # bump: librtmp link "Commit diff $CURRENT..$LATEST" https://git.ffmpeg.org/gitweb/rtmpdump.git/commitdiff/$LATEST?ds=sidebyside
 ARG LIBRTMP_URL="https://git.ffmpeg.org/rtmpdump.git"
 ARG LIBRTMP_COMMIT=f1b83c10d8beb43fcc70a6e88cf4325499f25857
@@ -525,6 +523,26 @@ RUN \
     .. && \
   make -j$(nproc) install
 
+ARG SVTVP9_URL="https://github.com/OpenVisualCloud/SVT-VP9.git"
+# needs commit after thread create segfault fix https://github.com/OpenVisualCloud/SVT-VP9/pull/164
+# bump: libsvtvp9 /SVTVP9_COMMIT=([[:xdigit:]]+)/ gitrefs:https://github.com/OpenVisualCloud/SVT-VP9.git|re:#^refs/heads/master$#|@commit
+# bump: libsvtvp9 link "Source diff $CURRENT..$LATEST" https://github.com/OpenVisualCloud/SVT-VP9/compare/$CURRENT..$LATEST
+ARG SVTVP9_COMMIT=15bd454a0ce53d1432a4f8a89df08774a26237e3
+RUN wget -O /patches/ffmpeg/master-0001-Add-ability-for-ffmpeg-to-run-svt-vp9.patch https://raw.githubusercontent.com/OpenVisualCloud/SVT-VP9/$SVTVP9_COMMIT/ffmpeg_plugin/master-0001-Add-ability-for-ffmpeg-to-run-svt-vp9.patch
+RUN \
+  git clone "$SVTVP9_URL" && \
+  cd SVT-VP9 && \
+  git checkout $SVTVP9_COMMIT && \
+  cd Build && \
+  cmake \
+    -G"Unix Makefiles" \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DCMAKE_BUILD_TYPE=Release \
+    .. && \
+  make -j$(nproc) && make install
+
 # has to be before theora
 # bump: ogg /OGG_VERSION=([\d.]+)/ https://github.com/xiph/ogg.git|*
 # bump: ogg after ./hashupdate Dockerfile OGG $LATEST
@@ -570,7 +588,6 @@ RUN \
   make -j$(nproc) install
 
 # bump: uavs3d /UAVS3D_COMMIT=([[:xdigit:]]+)/ gitrefs:https://github.com/uavs3/uavs3d.git|re:#^refs/heads/master$#|@commit
-# bump: uavs3d after ./hashupdate Dockerfile UAVS3D $LATEST
 # bump: uavs3d link "Source diff $CURRENT..$LATEST" https://github.com/uavs3/uavs3d/compare/$CURRENT..$LATEST
 ARG UAVS3D_URL="https://github.com/uavs3/uavs3d.git"
 ARG UAVS3D_COMMIT=1fd04917cff50fac72ae23e45f82ca6fd9130bd8
@@ -750,6 +767,8 @@ RUN \
   echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum --status -c - && \
   tar xf ffmpeg.tar.bz2 && \
   cd ffmpeg-* && \
+  (test "$(echo /patches/ffmpeg/*.patch)" = "/patches/ffmpeg/*.patch" && true || \
+    for f in /patches/ffmpeg/*.patch ; do echo "$f" && patch -p1 < "$f" || exit 1; done) && \
   sed -i 's/add_ldexeflags -fPIE -pie/add_ldexeflags -fPIE -static-pie/' configure && \
   ./configure \
   --pkg-config-flags="--static" \
@@ -797,6 +816,7 @@ RUN \
   --enable-libsrt \
   --enable-libssh \
   --enable-libsvtav1 \
+  --enable-libsvtvp9 \
   --enable-libtheora \
   --enable-libtwolame \
   --enable-libuavs3d \
@@ -867,6 +887,7 @@ RUN \
   libsrt: env.SRT_VERSION, \
   libssh: env.LIBSSH_VERSION, \
   libsvtav1: env.SVTAV1_VERSION, \
+  libsvtvp9: env.SVTVP9_COMMIT, \
   libtheora: env.THEORA_VERSION, \
   libtwolame: env.TWOLAME_VERSION, \
   libuavs3d: env.UAVS3D_COMMIT, \

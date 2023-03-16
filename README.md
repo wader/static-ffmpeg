@@ -40,6 +40,7 @@ Built with the following statically-linked libraries:
 - libsrt
 - libssh
 - libsvtav1
+- libsvtvp9
 - libtheora
 - libtwolame
 - libuavs3d
