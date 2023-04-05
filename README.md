@@ -108,6 +108,13 @@ you don't control.
 
 ### Known issues and tricks
 
+#### Copy out binaries from image
+
+This will copy `ffmpeg` and `ffprobe` to the current directory:
+```
+docker run --rm -v "$PWD:/out" $(echo -e 'FROM alpine\nCOPY --from=mwader/static-ffmpeg:latest /ff* /\nENTRYPOINT cp /ff* /out' | docker build -q -)
+```
+
 #### Quickly see what versions an image was build with
 
 ```
