@@ -370,9 +370,9 @@ RUN \
 # bump: rav1e link "Release notes" https://github.com/xiph/rav1e/releases/tag/v$LATEST
 # RUSTFLAGS need to fix gcc_s
 # https://gitlab.alpinelinux.org/alpine/aports/-/issues/11806
-ARG RAV1E_VERSION=0.6.3
+ARG RAV1E_VERSION=0.6.4
 ARG RAV1E_URL="https://github.com/xiph/rav1e/archive/v$RAV1E_VERSION.tar.gz"
-ARG RAV1E_SHA256=660a243dd9ee3104c0844a7af819b406193a7726614a032324557f81bb2bebaa
+ARG RAV1E_SHA256=33aaab7c57822ebda9070ace90a8161dbadf8971f73b53d4db885e8b5566a039
 RUN \
   wget $WGET_OPTS -O rav1e.tar.gz "$RAV1E_URL" && \
   echo "$RAV1E_SHA256  rav1e.tar.gz" | sha256sum --status -c - && \
