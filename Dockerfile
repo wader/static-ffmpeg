@@ -469,9 +469,9 @@ RUN \
 # bump: libssh after ./hashupdate Dockerfile LIBSSH $LATEST
 # bump: libssh link "Source diff $CURRENT..$LATEST" https://gitlab.com/libssh/libssh-mirror/-/compare/libssh-$CURRENT...libssh-$LATEST
 # bump: libssh link "Release notes" https://gitlab.com/libssh/libssh-mirror/-/tags/libssh-$LATEST
-ARG LIBSSH_VERSION=0.10.4
+ARG LIBSSH_VERSION=0.10.5
 ARG LIBSSH_URL="https://gitlab.com/libssh/libssh-mirror/-/archive/libssh-$LIBSSH_VERSION/libssh-mirror-libssh-$LIBSSH_VERSION.tar.gz"
-ARG LIBSSH_SHA256=0644d73d4dcb8171c465334dba891b0965311f9ec66b1987805c2882afa0cc58
+ARG LIBSSH_SHA256=6cc403619d35b3ebdb42e712e70240b54ba51cd9bb88214e9d16ed19ef6ab103
 # LIBSSH_STATIC=1 is REQUIRED to link statically against libssh.a so add to pkg-config file
 # make does not -j as it seems to be shaky, libssh.a used before created
 RUN \
