@@ -35,7 +35,6 @@ RUN apk add --no-cache \
   fribidi-dev fribidi-static \
   brotli-dev brotli-static \
   soxr-dev soxr-static \
-  lcms2 lcms2-dev \
   tcl \
   numactl-dev \
   cunit cunit-dev \
@@ -264,6 +263,20 @@ RUN \
   echo "$MP3LAME_SHA256  lame.tar.gz" | sha256sum --status -c - && \
   tar xf lame.tar.gz && \
   cd lame-* && ./configure --disable-shared --enable-static --enable-nasm --disable-gtktest --disable-cpml --disable-frontend && \
+  make -j$(nproc) install
+
+# bump: lcms2 /LCMS2_VERSION=([\d.]+)/ https://github.com/mm2/Little-CMS.git|^2
+# bump: lcms2 after ./hashupdate Dockerfile LCMS2 $LATEST
+# bump: lcms2 link "Release" https://github.com/mm2/Little-CMS/releases/tag/lcms$LATEST
+ARG LCMS2_VERSION=2.15
+ARG LCMS2_URL="https://github.com/mm2/Little-CMS/releases/download/lcms$LCMS2_VERSION/lcms2-$LCMS2_VERSION.tar.gz"
+ARG LCMS2_SHA256=b20cbcbd0f503433be2a4e81462106fa61050a35074dc24a4e356792d971ab39
+RUN \
+  wget -O lcms2.tar.gz "$LCMS2_URL" && \
+  echo "$LCMS2_SHA256  lcms2.tar.gz" | sha256sum --status -c - && \
+  tar xfz lcms2.tar.gz && \
+  cd lcms2-* && \
+  ./autogen.sh && ./configure --enable-static --disable-shared && \
   make -j$(nproc) install
 
 # bump: libmysofa /LIBMYSOFA_VERSION=([\d.]+)/ https://github.com/hoene/libmysofa.git|^1
@@ -824,7 +837,6 @@ RUN \
   FRIBIDI_VERSION=$(pkg-config --modversion fribidi)  \
   LIBSAMPLERATE_VERSION=$(pkg-config --modversion samplerate) \
   LIBXML2_VERSION=$(pkg-config --modversion libxml-2.0) \
-  LCMS2_VERSION=$(pkg-config --modversion lcms2) \
   OPENSSL_VERSION=$(pkg-config --modversion openssl) \
   SOXR_VERSION=$(pkg-config --modversion soxr) \
   LIBVO_AMRWBENC_VERSION=$(pkg-config --modversion vo-amrwbenc) \
