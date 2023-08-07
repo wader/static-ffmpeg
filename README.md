@@ -108,7 +108,7 @@ you don't control.
 
 ### Known issues and tricks
 
-#### arm64 built
+#### Multi-arch and arm64
 
 Since version 5.0.1-3 dockerhub images are multi-arch amd64 and arm64 images.
 
