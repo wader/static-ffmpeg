@@ -688,6 +688,7 @@ RUN \
 ARG X265_VERSION=a55e7566a5bef8b4d36d8fed50d596ebcb47e34e
 ARG X265_SHA256=351fa81c9eb6ee3a37131fef835e9fc170d099312d17282fa61b2ceb5571816f
 ARG X265_URL="https://bitbucket.org/multicoreware/x265_git/get/$X265_VERSION.tar.bz2"
+COPY 36785eac984d808d69b5221e84db29103d0b8048.patch 38cf1c379b5af08856bb2fdd65f65a1f99384886.patch /
 # -w-macro-params-legacy to not log lots of asm warnings
 # https://bitbucket.org/multicoreware/x265_git/issues/559/warnings-when-assembling-with-nasm-215
 # CMAKEFLAGS issue
@@ -696,7 +697,10 @@ RUN \
   wget $WGET_OPTS -O x265_git.tar.bz2 "$X265_URL" && \
   echo "$X265_SHA256  x265_git.tar.bz2" | sha256sum --status -c - && \
   tar xf x265_git.tar.bz2 && \
-  cd multicoreware-x265_git-*/build/linux && \
+  cd multicoreware-x265_git-* && \
+  patch -p1 < /36785eac984d808d69b5221e84db29103d0b8048.patch && \
+  patch -p1 < /38cf1c379b5af08856bb2fdd65f65a1f99384886.patch && \
+  cd build/linux && \
   sed -i '/^cmake / s/$/ -G "Unix Makefiles" ${CMAKEFLAGS}/' ./multilib.sh && \
   sed -i 's/ -DENABLE_SHARED=OFF//g' ./multilib.sh && \
   MAKEFLAGS="-j$(nproc)" \

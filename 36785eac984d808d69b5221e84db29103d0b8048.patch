@@ -1,0 +1,39 @@
+commit 36785eac984d808d69b5221e84db29103d0b8048
+Author: Min Chen <min.chen@multicorewareinc.com>
+Date:   Sat Apr 1 09:11:08 2023 +0530
+
+    Fix build error in MacOS aarch64
+    
+    tested on mac2.metal aws instance
+    
+    Signed-off-by: maheshpittala <mahesh@multicorewareinc.com>
+
+diff --git a/source/common/aarch64/asm.S b/source/common/aarch64/asm.S
+index 2506f50aa..cff069058 100644
+--- a/source/common/aarch64/asm.S
++++ b/source/common/aarch64/asm.S
+@@ -64,6 +64,11 @@
+ #endif
+ #endif
+ 
++#define GLUE(a, b) a ## b
++#define JOIN(a, b) GLUE(a, b)
++
++#define PFX_C(name)        JOIN(JOIN(JOIN(EXTERN_ASM, X265_NS), _), name)
++
+ #ifdef __APPLE__
+ .macro endfunc
+ ELF .size \name, . - \name
+diff --git a/source/common/aarch64/pixel-util.S b/source/common/aarch64/pixel-util.S
+index fba9a90d5..0e85c8792 100644
+--- a/source/common/aarch64/pixel-util.S
++++ b/source/common/aarch64/pixel-util.S
+@@ -2407,7 +2407,7 @@ function PFX(costCoeffNxN_neon)
+     // x5 - scanFlagMask
+     // x6 - baseCtx
+     mov             x0, #0
+-    movrel          x1, x265_entropyStateBits
++    movrel          x1, PFX_C(entropyStateBits)
+     mov             x4, #0
+     mov             x11, #0
+     movi            v31.16b, #0

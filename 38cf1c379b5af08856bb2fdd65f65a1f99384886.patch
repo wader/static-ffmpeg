@@ -1,0 +1,25 @@
+commit 38cf1c379b5af08856bb2fdd65f65a1f99384886
+Author: Fangrui Song <maskray@google.com>
+Date:   Mon Feb 20 15:20:59 2023 +0530
+
+    replace ldr pseudo-instruction with adrp+add.
+    
+    Signed-off-by: maheshpittala <mahesh@multicorewareinc.com>
+
+diff --git a/source/common/aarch64/asm.S b/source/common/aarch64/asm.S
+index 399c37cf2..2506f50aa 100644
+--- a/source/common/aarch64/asm.S
++++ b/source/common/aarch64/asm.S
+@@ -130,11 +130,9 @@ ELF     .size   \name, . - \name
+         adrp            \rd, \val+(\offset)
+         add             \rd, \rd, :lo12:\val+(\offset)
+   .endif
+-#elif defined(PIC)
++#else
+         adrp            \rd, \val+(\offset)
+         add             \rd, \rd, :lo12:\val+(\offset)
+-#else
+-        ldr             \rd, =\val+\offset
+ #endif
+ .endm
+ 
