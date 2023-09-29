@@ -772,7 +772,7 @@ RUN \
   --disable-ffplay \
   --enable-static \
   --enable-gpl \
-    --enable-version3 \
+  --enable-version3 \
   $FDKAAC_FLAGS \
   --enable-fontconfig \
   --enable-gray \
