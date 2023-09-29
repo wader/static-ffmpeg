@@ -44,7 +44,7 @@ alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --ent
 - libbluray
 - libdav1d
 - libdavs2
-- libfdk-aac
+- libfdk-aac (only if explicitly enabled during build, [see below](#libfdk-aac))
 - libfreetype
 - libfribidi
 - libgme
@@ -105,6 +105,12 @@ alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --ent
 Binaries are built with various hardening features but it's *still a good idea to run them
 as non-root even when used inside a container*, especially so if running on input files that
 you don't control.
+
+### libfdk-aac
+Due to license issues the docker image does not include libfdk-aac by default. A docker image including libfdk-aac can be built by passing a non empty value to the build-arg `ENABLE_FDKAAC`, example below.
+```
+docker build --build-arg ENABLE_FDKAAC=1 . -t my-ffmpeg-static:latest
+```
 
 ### Known issues and tricks
 
