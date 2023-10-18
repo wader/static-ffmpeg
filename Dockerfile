@@ -1,6 +1,6 @@
 # bump: alpine /FROM alpine:([\d.]+)/ docker:alpine|^3
 # bump: alpine link "Release notes" https://alpinelinux.org/posts/Alpine-$LATEST-released.html
-FROM alpine:3.18.4 AS builder
+FROM alpine:3.18.3 AS builder
 
 RUN apk add --no-cache \
   coreutils \
@@ -390,7 +390,8 @@ RUN \
   echo "$RAV1E_SHA256  rav1e.tar.gz" | sha256sum --status -c - && \
   tar xf rav1e.tar.gz && \
   cd rav1e-* && \
-  RUSTFLAGS="-C target-feature=+crt-static" cargo cinstall --release
+  cargo fetch --verbose && \
+  RUSTFLAGS="-C target-feature=+crt-static" cargo -v cinstall --release
 
 # bump: librtmp /LIBRTMP_COMMIT=([[:xdigit:]]+)/ gitrefs:https://git.ffmpeg.org/rtmpdump.git|re:#^refs/heads/master$#|@commit
 # bump: librtmp after ./hashupdate Dockerfile LIBRTMP $LATEST
