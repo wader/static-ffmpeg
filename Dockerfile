@@ -70,5 +70,5 @@ RUN \
   cd rav1e-* && \
   if [ "$(uname -m)" != "x86_64" ] ; then sleep 100000000 ; fi && \
   cargo fetch --verbose && \
-  RUSTFLAGS="-C target-feature=+crt-static" cargo -v cinstall --release
+  CARGO_LOG=trace CARGO_HTTP_DEBUG=1 RUSTFLAGS="-C target-feature=+crt-static" cargo -v cinstall --release
 
