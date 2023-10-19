@@ -1,6 +1,6 @@
 # bump: alpine /FROM alpine:([\d.]+)/ docker:alpine|^3
 # bump: alpine link "Release notes" https://alpinelinux.org/posts/Alpine-$LATEST-released.html
-FROM alpine:3.18.4 AS builder
+FROM alpine:3.18.3 AS builder
 
 RUN apk add --no-cache \
   coreutils \
@@ -68,7 +68,6 @@ RUN \
   echo "$RAV1E_SHA256  rav1e.tar.gz" | sha256sum --status -c - && \
   tar xf rav1e.tar.gz && \
   cd rav1e-* && \
-  if [ "$(uname -m)" != "x86_64" ] ; then sleep 100000000 ; fi && \
   cargo fetch --verbose && \
-  CARGO_LOG=trace CARGO_HTTP_DEBUG=1 RUSTFLAGS="-C target-feature=+crt-static" cargo -v cinstall --release
+  CARGO_LOG=trace CARGO_HTTP_DEBUG=true RUSTFLAGS="-C target-feature=+crt-static" cargo -v cinstall --release
 
