@@ -69,5 +69,5 @@ RUN \
   tar xf rav1e.tar.gz && \
   cd rav1e-* && \
   cargo fetch --verbose && \
-  CARGO_HTTP_MULTIPLEXING=false CARGO_LOG=trace CARGO_HTTP_DEBUG=true RUSTFLAGS="-C target-feature=+crt-static" cargo -v cinstall --release
+  CARGO_NET_GIT_FETCH_WITH_CLI=true CARGO_HTTP_MULTIPLEXING=false CARGO_LOG=trace CARGO_HTTP_DEBUG=true RUSTFLAGS="-C target-feature=+crt-static" cargo -v cinstall --release
 
