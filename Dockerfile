@@ -191,11 +191,11 @@ RUN \
   cd fdk-aac-* && ./autogen.sh && ./configure --disable-shared --enable-static && \
   make -j$(nproc) install
 
-# bump: libgme /LIBGME_COMMIT=([[:xdigit:]]+)/ gitrefs:https://bitbucket.org/mpyne/game-music-emu.git|re:#^refs/heads/master$#|@commit
+# bump: libgme /LIBGME_COMMIT=([[:xdigit:]]+)/ gitrefs:https://github.com/libgme/game-music-emu.git|re:#^refs/heads/master$#|@commit
 # bump: libgme after ./hashupdate Dockerfile LIBGME $LATEST
-# bump: libgme link "Source diff $CURRENT..$LATEST" https://bitbucket.org/mpyne/game-music-emu/branches/compare/$CURRENT..$LATEST
-ARG LIBGME_URL="https://bitbucket.org/mpyne/game-music-emu.git"
-ARG LIBGME_COMMIT=c15c87f5543a43e7cd70fdf0b7dc149957effc52
+# bump: libgme link "Source diff $CURRENT..$LATEST" https://github.com/libgme/game-music-emu/compare/$CURRENT..v$LATEST
+ARG LIBGME_URL="https://github.com/libgme/game-music-emu.git"
+ARG LIBGME_COMMIT=ac3822fd1265b7d7e00ab8def44b17961cb83917
 RUN \
   git clone "$LIBGME_URL" && \
   cd game-music-emu && git checkout $LIBGME_COMMIT && \
