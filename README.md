@@ -67,6 +67,7 @@ alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --ent
 - libsrt
 - libssh
 - libsvtav1
+- libsvtvp9
 - libtheora
 - libtwolame
 - libuavs3d
