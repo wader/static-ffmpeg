@@ -133,9 +133,8 @@ docker run --rm mwader/static-ffmpeg -v quiet -f data -i versions.json -map 0:0 
 
 #### I see `Name does not resolve` errors for hosts that should resolve
 
-This could happen if the hostname resolve to more IP-addresses than can fit in [DNS UDP packet](https://www.rfc-editor.org/rfc/rfc791)
-(probably 512 bytes) causing the response to be truncated. Usually clients should then switch
-to TCP and redo the query but [musl libc](https://www.musl-libc.org) does not currently support [DNS over TCP](https://wiki.musl-libc.org/functional-differences-from-glibc.html#Name-Resolver/DNS).
+This could happen if the hostname resolve to more IP-addresses than can fit in [DNS UDP packet](https://www.rfc-editor.org/rfc/rfc791) (probably 512 bytes) causing the response to be truncated. Usually clients should then switch to TCP and redo the query.
+This should only be a problem with version 6.0-1 or earlier of this image that uses [musl libc](https://www.musl-libc.org) 1.2.3 or older.
 
 ### TLS
 
