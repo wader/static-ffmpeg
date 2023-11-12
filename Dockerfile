@@ -747,9 +747,9 @@ RUN \
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
 # bump: ffmpeg link "Changelog" https://github.com/FFmpeg/FFmpeg/blob/n$LATEST/Changelog
 # bump: ffmpeg link "Source diff $CURRENT..$LATEST" https://github.com/FFmpeg/FFmpeg/compare/n$CURRENT..n$LATEST
-ARG FFMPEG_VERSION=6.0.1
+ARG FFMPEG_VERSION=6.1
 ARG FFMPEG_URL="https://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.bz2"
-ARG FFMPEG_SHA256=2c6e294569d1ba8e99cbf1acbe49e060a23454228a540a0f45d679d72ec69a06
+ARG FFMPEG_SHA256=eb7da3de7dd3ce48a9946ab447a7346bd11a3a85e6efb8f2c2ce637e7f547611
 ARG ENABLE_FDKAAC=
 # sed changes --toolchain=hardened -pie to -static-pie
 # extra ldflags stack-size=2097152 is to increase default stack size from 128KB (musl default) to something
