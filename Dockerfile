@@ -68,5 +68,5 @@ RUN \
   echo "$RAV1E_SHA256  rav1e.tar.gz" | sha256sum --status -c - && \
   tar xf rav1e.tar.gz && \
   cd rav1e-* && \
-  RUSTFLAGS="-C target-feature=+crt-static" cargo -v cinstall --release
+  CARGO_REGISTRIES_CRATES_IO_PROTOCOL="sparse" RUSTFLAGS="-C target-feature=+crt-static" cargo -v cinstall --release
 
