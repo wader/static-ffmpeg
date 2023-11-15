@@ -57,6 +57,9 @@ ARG LDFLAGS="-Wl,-z,relro,-z,now"
 # retry dns and some http codes that might be transient errors
 ARG WGET_OPTS="--retry-on-host-error --retry-on-http-error=429,500,502,503"
 
+# --no-same-owner as we don't care about uid/gid even if we run as root. fixes invalid gid/uid issue.
+ARG TAR_OPTS="--no-same-owner --extract --file"
+
 # workaround for https://github.com/pkgconf/pkgconf/issues/268
 # link order somehow ends up reversed for libbrotlidec and libbrotlicommon with pkgconf 1.9.4 but not 1.9.3
 # should be fixed in pkgconf 2.0
@@ -74,7 +77,7 @@ ARG VMAF_SHA256=8d60b1ddab043ada25ff11ced821da6e0c37fd7730dd81c24f1fc12be7293ef2
 RUN \
   wget $WGET_OPTS -O vmaf.tar.gz "$VMAF_URL" && \
   echo "$VMAF_SHA256  vmaf.tar.gz" | sha256sum --status -c - && \
-  tar xf vmaf.tar.gz && \
+  tar $TAR_OPTS vmaf.tar.gz && \
   cd vmaf-*/libvmaf && meson build --buildtype=release -Ddefault_library=static -Dbuilt_in_models=true -Denable_tests=false -Denable_docs=false -Denable_avx512=true -Denable_float=true && \
   ninja -j$(nproc) -vC build install
 # extra libs stdc++ is for vmaf https://github.com/Netflix/vmaf/issues/788
@@ -117,7 +120,7 @@ RUN \
   wget $WGET_OPTS -O libaribb24.tar.gz ${LIBARIBB24_URL} && \
   echo "$LIBARIBB24_SHA256  libaribb24.tar.gz" | sha256sum --status -c - && \
   mkdir libaribb24 && \
-  tar xf libaribb24.tar.gz -C libaribb24 --strip-components=1 && \
+  tar $TAR_OPTS libaribb24.tar.gz -C libaribb24 --strip-components=1 && \
   cd libaribb24 && \
   autoreconf -fiv && \
   ./configure --enable-static --disable-shared && \
@@ -132,7 +135,7 @@ ARG LIBASS_SHA256=d653be97198a0543c69111122173c41a99e0b91426f9e17f06a858982c2fb0
 RUN \
   wget $WGET_OPTS -O libass.tar.gz "$LIBASS_URL" && \
   echo "$LIBASS_SHA256  libass.tar.gz" | sha256sum --status -c - && \
-  tar xf libass.tar.gz && \
+  tar $TAR_OPTS libass.tar.gz && \
   cd libass-* && ./configure --disable-shared --enable-static && \
   make -j$(nproc) && make install
 
@@ -145,7 +148,7 @@ ARG LIBBLURAY_SHA256=9820df5c3e87777be116ca225ad7ee026a3ff42b2447c7fe641910fb23a
 RUN \
   wget $WGET_OPTS -O libbluray.tar.gz "$LIBBLURAY_URL" && \
   echo "$LIBBLURAY_SHA256  libbluray.tar.gz" | sha256sum --status -c - && \
-  tar xf libbluray.tar.gz &&  cd libbluray-* && git clone https://code.videolan.org/videolan/libudfread.git contrib/libudfread && \
+  tar $TAR_OPTS libbluray.tar.gz &&  cd libbluray-* && git clone https://code.videolan.org/videolan/libudfread.git contrib/libudfread && \
   autoreconf -fiv && ./configure --with-pic --disable-doxygen-doc --disable-doxygen-dot --enable-static --disable-shared --disable-examples --disable-bdjava-jar && \
   make -j$(nproc) install
 
@@ -158,7 +161,7 @@ ARG DAV1D_SHA256=1b3e75433dd69eb88ff3190ed1b1707ca5b9f43260b6348c551455c885eaab3
 RUN \
   wget $WGET_OPTS -O dav1d.tar.gz "$DAV1D_URL" && \
   echo "$DAV1D_SHA256  dav1d.tar.gz" | sha256sum --status -c - && \
-  tar xf dav1d.tar.gz && \
+  tar $TAR_OPTS dav1d.tar.gz && \
   cd dav1d-* && meson build --buildtype release -Ddefault_library=static && \
   ninja -j$(nproc) -C build install
 
@@ -173,7 +176,7 @@ ARG DAVS2_SHA256=b697d0b376a1c7f7eda3a4cc6d29707c8154c4774358303653f0a9727f923cc
 RUN \
   wget $WGET_OPTS -O davs2.tar.gz "$DAVS2_URL" && \
   echo "$DAVS2_SHA256  davs2.tar.gz" | sha256sum --status -c - && \
-  tar xf davs2.tar.gz && \
+  tar $TAR_OPTS davs2.tar.gz && \
   cd davs2-*/build/linux && ./configure --disable-asm --enable-pic --enable-strip --disable-cli && \
   make -j$(nproc) install
 
@@ -187,7 +190,7 @@ ARG FDK_AAC_SHA256=7812b4f0cf66acda0d0fe4302545339517e702af7674dd04e5fe22a5ade16
 RUN \
   wget $WGET_OPTS -O fdk-aac.tar.gz "$FDK_AAC_URL" && \
   echo "$FDK_AAC_SHA256  fdk-aac.tar.gz" | sha256sum --status -c - && \
-  tar xf fdk-aac.tar.gz && \
+  tar $TAR_OPTS fdk-aac.tar.gz && \
   cd fdk-aac-* && ./autogen.sh && ./configure --disable-shared --enable-static && \
   make -j$(nproc) install
 
@@ -236,7 +239,7 @@ ARG KVAZAAR_SHA256=df21f327318d530fe7f2ec65ccabf400690791ebad726d8b785c243506f0e
 RUN \
   wget $WGET_OPTS -O kvazaar.tar.gz "$KVAZAAR_URL" && \
   echo "$KVAZAAR_SHA256  kvazaar.tar.gz" | sha256sum --status -c - && \
-  tar xf kvazaar.tar.gz && \
+  tar $TAR_OPTS kvazaar.tar.gz && \
   cd kvazaar-* && ./autogen.sh && ./configure --disable-shared --enable-static && \
   make -j$(nproc) install
 
@@ -249,7 +252,7 @@ ARG LIBMODPLUG_SHA256=457ca5a6c179656d66c01505c0d95fafaead4329b9dbaa0f997d00a350
 RUN \
   wget $WGET_OPTS -O libmodplug.tar.gz "$LIBMODPLUG_URL" && \
   echo "$LIBMODPLUG_SHA256  libmodplug.tar.gz" | sha256sum --status -c - && \
-  tar xf libmodplug.tar.gz && \
+  tar $TAR_OPTS libmodplug.tar.gz && \
   cd libmodplug-* && ./configure --disable-shared --enable-static && \
   make -j$(nproc) install
 
@@ -262,7 +265,7 @@ ARG MP3LAME_SHA256=ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1d
 RUN \
   wget $WGET_OPTS -O lame.tar.gz "$MP3LAME_URL" && \
   echo "$MP3LAME_SHA256  lame.tar.gz" | sha256sum --status -c - && \
-  tar xf lame.tar.gz && \
+  tar $TAR_OPTS lame.tar.gz && \
   cd lame-* && ./configure --disable-shared --enable-static --enable-nasm --disable-gtktest --disable-cpml --disable-frontend && \
   make -j$(nproc) install
 
@@ -290,7 +293,7 @@ ARG LIBMYSOFA_SHA256=6c5224562895977e87698a64cb7031361803d136057bba35ed4979b69ab
 RUN \
   wget $WGET_OPTS -O libmysofa.tar.gz "$LIBMYSOFA_URL" && \
   echo "$LIBMYSOFA_SHA256  libmysofa.tar.gz" | sha256sum --status -c - && \
-  tar xf libmysofa.tar.gz && \
+  tar $TAR_OPTS libmysofa.tar.gz && \
   cd libmysofa-*/build && \
   cmake \
     -G"Unix Makefiles" \
@@ -311,7 +314,7 @@ ARG OPENCOREAMR_SHA256=483eb4061088e2b34b358e47540b5d495a96cd468e361050fae615b18
 RUN \
   wget $WGET_OPTS -O opencoreamr.tar.gz "$OPENCOREAMR_URL" && \
   echo "$OPENCOREAMR_SHA256  opencoreamr.tar.gz" | sha256sum --status -c - && \
-  tar xf opencoreamr.tar.gz && \
+  tar $TAR_OPTS opencoreamr.tar.gz && \
   cd opencore-amr-* && ./configure --enable-static --disable-shared && \
   make -j$(nproc) install
 
@@ -324,7 +327,7 @@ ARG OPENJPEG_SHA256=0333806d6adecc6f7a91243b2b839ff4d2053823634d4f6ed7a59bc87409
 RUN \
   wget $WGET_OPTS -O openjpeg.tar.gz "$OPENJPEG_URL" && \
   echo "$OPENJPEG_SHA256  openjpeg.tar.gz" | sha256sum --status -c - && \
-  tar xf openjpeg.tar.gz && \
+  tar $TAR_OPTS openjpeg.tar.gz && \
   cd openjpeg-* && mkdir build && cd build && \
   cmake \
     -G"Unix Makefiles" \
@@ -348,7 +351,7 @@ ARG OPUS_SHA256=c9b32b4253be5ae63d1ff16eea06b94b5f0f2951b7a02aceef58e3a3ce49c51f
 RUN \
   wget $WGET_OPTS -O opus.tar.gz "$OPUS_URL" && \
   echo "$OPUS_SHA256  opus.tar.gz" | sha256sum --status -c - && \
-  tar xf opus.tar.gz && \
+  tar $TAR_OPTS opus.tar.gz && \
   cd opus-* && ./configure --disable-shared --enable-static --disable-extra-programs --disable-doc && \
   make -j$(nproc) install
 
@@ -388,7 +391,7 @@ ARG RAV1E_SHA256=723696e93acbe03666213fbc559044f3cae5b8b888b2ddae667402403cff51e
 RUN \
   wget $WGET_OPTS -O rav1e.tar.gz "$RAV1E_URL" && \
   echo "$RAV1E_SHA256  rav1e.tar.gz" | sha256sum --status -c - && \
-  tar xf rav1e.tar.gz && \
+  tar $TAR_OPTS rav1e.tar.gz && \
   cd rav1e-* && \
   # workaround weird cargo problem when on aws (?) weirdly alpine edge seems to work
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL="sparse" \
@@ -419,7 +422,7 @@ ARG RUBBERBAND_SHA256=b9eac027e797789ae99611c9eaeaf1c3a44cc804f9c8a0441a0d1d26f3
 RUN \
   wget $WGET_OPTS -O rubberband.tar.bz2 "$RUBBERBAND_URL" && \
   echo "$RUBBERBAND_SHA256  rubberband.tar.bz2" | sha256sum --status -c - && \
-  tar xf rubberband.tar.bz2 && \
+  tar $TAR_OPTS rubberband.tar.bz2 && \
   cd rubberband-* && \
   meson -Ddefault_library=static -Dfft=fftw -Dresampler=libsamplerate build && \
   ninja -j$(nproc) -vC build install && \
@@ -435,7 +438,7 @@ ARG LIBSHINE_SHA256=58e61e70128cf73f88635db495bfc17f0dde3ce9c9ac070d505a0cd75b93
 RUN \
   wget $WGET_OPTS -O libshine.tar.gz "$LIBSHINE_URL" && \
   echo "$LIBSHINE_SHA256  libshine.tar.gz" | sha256sum --status -c - && \
-  tar xf libshine.tar.gz && cd shine* && \
+  tar $TAR_OPTS libshine.tar.gz && cd shine* && \
   ./configure --with-pic --enable-static --disable-shared --disable-fast-install && \
   make -j$(nproc) install
 
@@ -449,7 +452,7 @@ ARG SPEEX_SHA256=beaf2642e81a822eaade4d9ebf92e1678f301abfc74a29159c4e721ee70fdce
 RUN \
   wget $WGET_OPTS -O speex.tar.gz "$SPEEX_URL" && \
   echo "$SPEEX_SHA256  speex.tar.gz" | sha256sum --status -c - && \
-  tar xf speex.tar.gz && \
+  tar $TAR_OPTS speex.tar.gz && \
   cd speex-Speex-* && ./autogen.sh && ./configure --disable-shared --enable-static && \
   make -j$(nproc) install
 
@@ -462,7 +465,7 @@ ARG SRT_SHA256=befaeb16f628c46387b898df02bc6fba84868e86a6f6d8294755375b9932d777
 RUN \
   wget $WGET_OPTS -O libsrt.tar.gz "$SRT_URL" && \
   echo "$SRT_SHA256  libsrt.tar.gz" | sha256sum --status -c - && \
-  tar xf libsrt.tar.gz && cd srt-* && mkdir build && cd build && \
+  tar $TAR_OPTS libsrt.tar.gz && cd srt-* && mkdir build && cd build && \
   cmake \
     -G"Unix Makefiles" \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
@@ -491,7 +494,7 @@ ARG LIBSSH_SHA256=6cc403619d35b3ebdb42e712e70240b54ba51cd9bb88214e9d16ed19ef6ab1
 RUN \
   wget $WGET_OPTS -O libssh.tar.gz "$LIBSSH_URL" && \
   echo "$LIBSSH_SHA256  libssh.tar.gz" | sha256sum --status -c - && \
-  tar xf libssh.tar.gz && cd libssh* && mkdir build && cd build && \
+  tar $TAR_OPTS libssh.tar.gz && cd libssh* && mkdir build && cd build && \
   echo -e 'Requires.private: libssl libcrypto zlib \nLibs.private: -DLIBSSH_STATIC=1 -lssh\nCflags.private: -DLIBSSH_STATIC=1 -I${CMAKE_INSTALL_FULL_INCLUDEDIR}' >> ../libssh.pc.cmake && \
   cmake \
     -G"Unix Makefiles" \
@@ -528,7 +531,7 @@ ARG SVTAV1_SHA256=e7995dfc8774f301ac94367a2e5d266dc855cf62ee3d39a635f3a014708e98
 RUN \
   wget $WGET_OPTS -O svtav1.tar.bz2 "$SVTAV1_URL" && \
   echo "$SVTAV1_SHA256  svtav1.tar.bz2" | sha256sum --status -c - && \
-  tar xf svtav1.tar.bz2 && \
+  tar $TAR_OPTS svtav1.tar.bz2 && \
   cd SVT-AV1-*/Build && \
   cmake \
     -G"Unix Makefiles" \
@@ -550,7 +553,7 @@ ARG OGG_SHA256=0eb4b4b9420a0f51db142ba3f9c64b333f826532dc0f48c6410ae51f4799b664
 RUN \
   wget $WGET_OPTS -O libogg.tar.gz "$OGG_URL" && \
   echo "$OGG_SHA256  libogg.tar.gz" | sha256sum --status -c - && \
-  tar xf libogg.tar.gz && \
+  tar $TAR_OPTS libogg.tar.gz && \
   cd libogg-* && ./configure --disable-shared --enable-static && \
   make -j$(nproc) install
 
@@ -564,7 +567,7 @@ ARG THEORA_SHA256=b6ae1ee2fa3d42ac489287d3ec34c5885730b1296f0801ae577a35193d3aff
 RUN \
   wget $WGET_OPTS -O libtheora.tar.bz2 "$THEORA_URL" && \
   echo "$THEORA_SHA256  libtheora.tar.bz2" | sha256sum --status -c - && \
-  tar xf libtheora.tar.bz2 && \
+  tar $TAR_OPTS libtheora.tar.bz2 && \
   # --build=$(arch)-unknown-linux-gnu helps with guessing the correct build. For some reason,
   # build script can't guess the build type in arm64 (hardware and emulated) environment.
   cd libtheora-* && ./configure --build=$(arch)-unknown-linux-gnu --disable-examples --disable-oggtest --disable-shared --enable-static && \
@@ -579,7 +582,7 @@ ARG TWOLAME_SHA256=cc35424f6019a88c6f52570b63e1baf50f62963a3eac52a03a800bb070d7c
 RUN \
   wget $WGET_OPTS -O twolame.tar.gz "$TWOLAME_URL" && \
   echo "$TWOLAME_SHA256  twolame.tar.gz" | sha256sum --status -c - && \
-  tar xf twolame.tar.gz && \
+  tar $TAR_OPTS twolame.tar.gz && \
   cd twolame-* && ./configure --disable-shared --enable-static --disable-sndfile --with-pic && \
   make -j$(nproc) install
 
@@ -610,7 +613,7 @@ ARG VIDSTAB_SHA256=9001b6df73933555e56deac19a0f225aae152abbc0e97dc70034814a1943f
 RUN \
   wget $WGET_OPTS -O vid.stab.tar.gz "$VIDSTAB_URL" && \
   echo "$VIDSTAB_SHA256  vid.stab.tar.gz" | sha256sum --status -c - && \
-  tar xf vid.stab.tar.gz && \
+  tar $TAR_OPTS vid.stab.tar.gz && \
   cd vid.stab-* && mkdir build && cd build && \
   # This line workarounds the issue that happens when the image builds in emulated (buildx) arm64 environment.
   # Since in emulated container the /proc is mounted from the host, the cmake not able to detect CPU features correctly.
@@ -636,7 +639,7 @@ ARG VORBIS_SHA256=0e982409a9c3fc82ee06e08205b1355e5c6aa4c36bca58146ef399621b0ce5
 RUN \
   wget $WGET_OPTS -O libvorbis.tar.gz "$VORBIS_URL" && \
   echo "$VORBIS_SHA256  libvorbis.tar.gz" | sha256sum --status -c - && \
-  tar xf libvorbis.tar.gz && \
+  tar $TAR_OPTS libvorbis.tar.gz && \
   cd libvorbis-* && ./configure --disable-shared --enable-static --disable-oggtest && \
   make -j$(nproc) install
 
@@ -650,7 +653,7 @@ ARG VPX_SHA256=00dae80465567272abd077f59355f95ac91d7809a2d3006f9ace2637dd429d14
 RUN \
   wget $WGET_OPTS -O libvpx.tar.gz "$VPX_URL" && \
   echo "$VPX_SHA256  libvpx.tar.gz" | sha256sum --status -c - && \
-  tar xf libvpx.tar.gz && \
+  tar $TAR_OPTS libvpx.tar.gz && \
   cd libvpx-* && ./configure --enable-static --enable-vp9-highbitdepth --disable-shared --disable-unit-tests --disable-examples && \
   make -j$(nproc) install
 
@@ -664,7 +667,7 @@ ARG LIBWEBP_SHA256=c2c2f521fa468e3c5949ab698c2da410f5dce1c5e99f5ad9e70e0e8446b86
 RUN \
   wget $WGET_OPTS -O libwebp.tar.gz "$LIBWEBP_URL" && \
   echo "$LIBWEBP_SHA256  libwebp.tar.gz" | sha256sum --status -c - && \
-  tar xf libwebp.tar.gz && \
+  tar $TAR_OPTS libwebp.tar.gz && \
   cd libwebp-* && ./autogen.sh && ./configure --disable-shared --enable-static --with-pic --enable-libwebpmux --disable-libwebpextras --disable-libwebpdemux --disable-sdl --disable-gl --disable-png --disable-jpeg --disable-tiff --disable-gif && \
   make -j$(nproc) install
 
@@ -693,7 +696,7 @@ ARG X265_URL="https://bitbucket.org/multicoreware/x265_git/get/$X265_VERSION.tar
 RUN \
   wget $WGET_OPTS -O x265_git.tar.bz2 "$X265_URL" && \
   echo "$X265_SHA256  x265_git.tar.bz2" | sha256sum --status -c - && \
-  tar xf x265_git.tar.bz2 && \
+  tar $TAR_OPTS x265_git.tar.bz2 && \
   cd multicoreware-x265_git-*/build/linux && \
   sed -i '/^cmake / s/$/ -G "Unix Makefiles" ${CMAKEFLAGS}/' ./multilib.sh && \
   sed -i 's/ -DENABLE_SHARED=OFF//g' ./multilib.sh && \
@@ -713,7 +716,7 @@ ARG XAVS2_SHA256=1e6d731cd64cb2a8940a0a3fd24f9c2ac3bb39357d802432a47bc20bad52c6c
 RUN \
   wget $WGET_OPTS -O xavs2.tar.gz "$XAVS2_URL" && \
   echo "$XAVS2_SHA256  xavs2.tar.gz" | sha256sum --status -c - && \
-  tar xf xavs2.tar.gz && \
+  tar $TAR_OPTS xavs2.tar.gz && \
   cd xavs2-*/build/linux && ./configure --disable-asm --enable-pic --disable-cli && \
   make -j$(nproc) install
 
@@ -727,7 +730,7 @@ ARG XVID_SHA256=abbdcbd39555691dd1c9b4d08f0a031376a3b211652c0d8b3b8aa9be1303ce2d
 RUN \
   wget $WGET_OPTS -O libxvid.tar.gz "$XVID_URL" && \
   echo "$XVID_SHA256  libxvid.tar.gz" | sha256sum --status -c - && \
-  tar xf libxvid.tar.gz && \
+  tar $TAR_OPTS libxvid.tar.gz && \
   cd xvidcore/build/generic && \
   CFLAGS="$CFLAGS -fstrength-reduce -ffast-math" ./configure && \
   make -j$(nproc) && make install
@@ -741,7 +744,7 @@ ARG ZIMG_SHA256=a9a0226bf85e0d83c41a8ebe4e3e690e1348682f6a2a7838f1b8cbff1b799bcf
 RUN \
   wget $WGET_OPTS -O zimg.tar.gz "$ZIMG_URL" && \
   echo "$ZIMG_SHA256  zimg.tar.gz" | sha256sum --status -c - && \
-  tar xf zimg.tar.gz && \
+  tar $TAR_OPTS zimg.tar.gz && \
   cd zimg-* && ./autogen.sh && ./configure --disable-shared --enable-static && \
   make -j$(nproc) install
 
@@ -760,7 +763,7 @@ ARG ENABLE_FDKAAC=
 RUN \
   wget $WGET_OPTS -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
   echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum --status -c - && \
-  tar xf ffmpeg.tar.bz2 && \
+  tar $TAR_OPTS ffmpeg.tar.bz2 && \
   FDKAAC_FLAGS=$(if [[ -n "$ENABLE_FDKAAC" ]] ;then echo " --enable-libfdk-aac --enable-nonfree " ;else echo ""; fi) && \
   cd ffmpeg-* && \
   sed -i 's/add_ldexeflags -fPIE -pie/add_ldexeflags -fPIE -static-pie/' configure && \
