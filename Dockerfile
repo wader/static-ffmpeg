@@ -43,8 +43,11 @@ RUN apk add --no-cache \
   vo-amrwbenc-dev vo-amrwbenc-static \
   snappy snappy-dev snappy-static \
   xxd \
-  xz-dev xz-static
-
+  xz-dev xz-static \
+  asciidoc gdk-pixbuf-dev gflags-dev gtest-dev \
+  highway-dev lcms2-dev libjpeg-turbo-dev libpng-dev \
+  openexr-dev samurai curl bash
+  
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
 # -static-libgcc is needed to make gcc not include gcc_s as "as-needed" shared library which
@@ -749,6 +752,42 @@ RUN \
   cd zimg-* && ./autogen.sh && ./configure --disable-shared --enable-static && \
   make -j$(nproc) install
 
+#bump: libjxl /LIBJXL_VERSION=v([\d.]+)/ https://github.com/libjxl/libjxl.git
+#bump: libjxl after ./hashupdate Dockerfile LIBJXL $LATEST
+#bump: libjxl link "Changelog" https://github.com/libjxl/libjxl/blob/main/CHANGELOG.md
+# use bundled highway library as its static build is not available in alpine
+ARG LIBJXL_VERSION=v0.9.1
+ARG LIBJXL_URL="https://github.com/libjxl/libjxl/archive/refs/tags/${LIBJXL_VERSION}.tar.gz"
+ARG LIBJXL_SHA256="a0e72e9ece26878147069ad4888ac3382021d4bbee71c2e1b687d5bde7fd7e01"
+RUN wget $WGET_OPTS -O libjxl.tar.gz "$LIBJXL_URL"
+RUN echo "$LIBJXL_SHA256  libjxl.tar.gz" | sha256sum --status -c -
+RUN apk add curl bash
+RUN \
+  tar $TAR_OPTS libjxl.tar.gz && \
+  cd libjxl-* && \
+  ./deps.sh && \
+  cmake -B build \
+    -G"Unix Makefiles" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DCMAKE_INSTALL_PREFIX=/usr/local \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DBUILD_TESTING=OFF \
+    -DJPEGXL_ENABLE_PLUGINS=OFF \
+    -DJPEGXL_ENABLE_BENCHMARK=OFF \
+    -DJPEGXL_ENABLE_COVERAGE=OFF \
+    -DJPEGXL_ENABLE_EXAMPLES=OFF \
+    -DJPEGXL_ENABLE_FUZZERS=OFF \
+    -DJPEGXL_ENABLE_SJPEG=OFF \
+    -DJPEGXL_ENABLE_SKCMS=OFF \
+    -DJPEGXL_ENABLE_VIEWERS=OFF \
+    -DJPEGXL_FORCE_SYSTEM_GTEST=ON \
+    -DJPEGXL_FORCE_SYSTEM_BROTLI=ON \
+    -DJPEGXL_FORCE_SYSTEM_HWY=OFF && \
+  cmake --build build -j$(nproc) && \
+  cmake --install build
+
 # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|^6
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
 # bump: ffmpeg link "Changelog" https://github.com/FFmpeg/FFmpeg/blob/n$LATEST/Changelog
@@ -763,6 +802,9 @@ ARG ENABLE_FDKAAC=
 # large things on the stack.
 RUN wget $WGET_OPTS -O ffmpeg.tar.bz2 "$FFMPEG_URL"
 RUN echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum --status -c -
+# Had to add extra-libs="-lstdc++" to workaround an issue where when ffmpeg checks the availability of
+# libjxl, it tries to build a test program with gcc instead of g++ and it will fail due to missing 
+# libstdc++ symbols.
 RUN \
   tar $TAR_OPTS ffmpeg.tar.bz2 && \
   FDKAAC_FLAGS=$(if [[ -n "$ENABLE_FDKAAC" ]] ;then echo " --enable-libfdk-aac --enable-nonfree " ;else echo ""; fi) && \
@@ -772,6 +814,7 @@ RUN \
   --pkg-config-flags="--static" \
   --extra-cflags="-fopenmp" \
   --extra-ldflags="-fopenmp -Wl,-z,stack-size=2097152" \
+  --extra-libs="-lstdc++" \
   --toolchain=hardened \
   --disable-debug \
   --disable-shared \
@@ -829,6 +872,7 @@ RUN \
   --enable-libxvid \
   --enable-libzimg \
   --enable-openssl \
+  --enable-libjxl \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install
 
@@ -844,6 +888,7 @@ RUN \
   SOXR_VERSION=$(pkg-config --modversion soxr) \
   LIBVO_AMRWBENC_VERSION=$(pkg-config --modversion vo-amrwbenc) \
   SNAPPY_VERSION=$(apk info -a snappy | head -n1 | awk '{print $1}' | sed -e 's/snappy-//') \
+  LIBJXL_VERSION=$(pkg-config --modversion libjxl) \
   jq -n \
   '{ \
   expat: env.EXPAT_VERSION, \
@@ -897,6 +942,7 @@ RUN \
   libxml2: env.LIBXML2_VERSION, \
   libxvid: env.XVID_VERSION, \
   libzimg: env.ZIMG_VERSION, \
+  libjxl: env.LIBJXL_VERSION, \
   openssl: env.OPENSSL_VERSION, \
   }' > /versions.json
 
