@@ -45,7 +45,6 @@ RUN apk add --no-cache \
   xxd \
   xz-dev xz-static \
   asciidoc gdk-pixbuf-dev gflags-dev gtest-dev \
-  highway-dev lcms2-dev libjpeg-turbo-dev libpng-dev \
   openexr-dev samurai curl bash
   
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
@@ -752,7 +751,7 @@ RUN \
   cd zimg-* && ./autogen.sh && ./configure --disable-shared --enable-static && \
   make -j$(nproc) install
 
-#bump: libjxl /LIBJXL_VERSION=v([\d.]+)/ https://github.com/libjxl/libjxl.git
+#bump: libjxl /LIBJXL_VERSION=v([\d.]+)/ https://github.com/libjxl/libjxl.git|^0
 #bump: libjxl after ./hashupdate Dockerfile LIBJXL $LATEST
 #bump: libjxl link "Changelog" https://github.com/libjxl/libjxl/blob/main/CHANGELOG.md
 # use bundled highway library as its static build is not available in alpine
@@ -787,6 +786,10 @@ RUN \
     -DJPEGXL_FORCE_SYSTEM_HWY=OFF && \
   cmake --build build -j$(nproc) && \
   cmake --install build
+# workaround for ffmpeg configure script
+RUN sed -i 's/-ljxl/-ljxl -lstdc++ /' /usr/local/lib/pkgconfig/libjxl.pc
+RUN sed -i 's/-ljxl_cms/-ljxl_cms -lstdc++ /' /usr/local/lib/pkgconfig/libjxl_cms.pc
+RUN sed -i 's/-ljxl_threads/-ljxl_threads -lstdc++ /' /usr/local/lib/pkgconfig/libjxl_threads.pc
 
 # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|^6
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
@@ -814,7 +817,6 @@ RUN \
   --pkg-config-flags="--static" \
   --extra-cflags="-fopenmp" \
   --extra-ldflags="-fopenmp -Wl,-z,stack-size=2097152" \
-  --extra-libs="-lstdc++" \
   --toolchain=hardened \
   --disable-debug \
   --disable-shared \
