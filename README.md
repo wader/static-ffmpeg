@@ -49,6 +49,7 @@ alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --ent
 - libfribidi
 - libgme
 - libgsm
+- libjxl
 - libkvazaar
 - libmodplug
 - libmp3lame
@@ -161,7 +162,6 @@ usage and potential distribution of such.
 ### TODOs and possible things to add
 
 - Add libplacebo, chromaprint, etc. ...
-- Add libjxl support once in stable
 - Add xeve/xevd support once in stable
 - Add acceleration support (GPU, CUDA, ...)
 - Add *.a *.so libraries, headers and pkg-config somehow
