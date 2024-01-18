@@ -750,9 +750,9 @@ RUN \
   cd zimg-* && ./autogen.sh && ./configure --disable-shared --enable-static && \
   make -j$(nproc) install
 
-#bump: libjxl /LIBJXL_VERSION=v([\d.]+)/ https://github.com/libjxl/libjxl.git|^0
-#bump: libjxl after ./hashupdate Dockerfile LIBJXL $LATEST
-#bump: libjxl link "Changelog" https://github.com/libjxl/libjxl/blob/main/CHANGELOG.md
+# bump: libjxl /LIBJXL_VERSION=v([\d.]+)/ https://github.com/libjxl/libjxl.git|^0
+# bump: libjxl after ./hashupdate Dockerfile LIBJXL $LATEST
+# bump: libjxl link "Changelog" https://github.com/libjxl/libjxl/blob/main/CHANGELOG.md
 # use bundled highway library as its static build is not available in alpine
 ARG LIBJXL_VERSION=v0.9.1
 ARG LIBJXL_URL="https://github.com/libjxl/libjxl/archive/refs/tags/${LIBJXL_VERSION}.tar.gz"
