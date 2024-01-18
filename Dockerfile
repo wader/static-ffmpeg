@@ -43,8 +43,9 @@ RUN apk add --no-cache \
   vo-amrwbenc-dev vo-amrwbenc-static \
   snappy snappy-dev snappy-static \
   xxd \
-  xz-dev xz-static
-
+  xz-dev xz-static \
+  curl
+  
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
 # -static-libgcc is needed to make gcc not include gcc_s as "as-needed" shared library which
@@ -749,6 +750,45 @@ RUN \
   cd zimg-* && ./autogen.sh && ./configure --disable-shared --enable-static && \
   make -j$(nproc) install
 
+#bump: libjxl /LIBJXL_VERSION=v([\d.]+)/ https://github.com/libjxl/libjxl.git|^0
+#bump: libjxl after ./hashupdate Dockerfile LIBJXL $LATEST
+#bump: libjxl link "Changelog" https://github.com/libjxl/libjxl/blob/main/CHANGELOG.md
+# use bundled highway library as its static build is not available in alpine
+ARG LIBJXL_VERSION=v0.9.1
+ARG LIBJXL_URL="https://github.com/libjxl/libjxl/archive/refs/tags/${LIBJXL_VERSION}.tar.gz"
+ARG LIBJXL_SHA256="a0e72e9ece26878147069ad4888ac3382021d4bbee71c2e1b687d5bde7fd7e01"
+RUN wget $WGET_OPTS -O libjxl.tar.gz "$LIBJXL_URL"
+RUN echo "$LIBJXL_SHA256  libjxl.tar.gz" | sha256sum --status -c -
+RUN \
+  tar $TAR_OPTS libjxl.tar.gz && \
+  cd libjxl-* && \
+  ./deps.sh && \
+  cmake -B build \
+    -G"Unix Makefiles" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DCMAKE_INSTALL_PREFIX=/usr/local \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DBUILD_TESTING=OFF \
+    -DJPEGXL_ENABLE_PLUGINS=OFF \
+    -DJPEGXL_ENABLE_BENCHMARK=OFF \
+    -DJPEGXL_ENABLE_COVERAGE=OFF \
+    -DJPEGXL_ENABLE_EXAMPLES=OFF \
+    -DJPEGXL_ENABLE_FUZZERS=OFF \
+    -DJPEGXL_ENABLE_SJPEG=OFF \
+    -DJPEGXL_ENABLE_SKCMS=OFF \
+    -DJPEGXL_ENABLE_VIEWERS=OFF \
+    -DJPEGXL_FORCE_SYSTEM_GTEST=ON \
+    -DJPEGXL_FORCE_SYSTEM_BROTLI=ON \
+    -DJPEGXL_FORCE_SYSTEM_HWY=OFF && \
+  cmake --build build -j$(nproc) && \
+  cmake --install build
+# workaround for ffmpeg configure script
+RUN sed -i 's/-ljxl/-ljxl -lstdc++ /' /usr/local/lib/pkgconfig/libjxl.pc
+RUN sed -i 's/-ljxl_cms/-ljxl_cms -lstdc++ /' /usr/local/lib/pkgconfig/libjxl_cms.pc
+RUN sed -i 's/-ljxl_threads/-ljxl_threads -lstdc++ /' /usr/local/lib/pkgconfig/libjxl_threads.pc
+
 # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|^6
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
 # bump: ffmpeg link "Changelog" https://github.com/FFmpeg/FFmpeg/blob/n$LATEST/Changelog
@@ -829,6 +869,7 @@ RUN \
   --enable-libxvid \
   --enable-libzimg \
   --enable-openssl \
+  --enable-libjxl \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install
 
@@ -844,6 +885,7 @@ RUN \
   SOXR_VERSION=$(pkg-config --modversion soxr) \
   LIBVO_AMRWBENC_VERSION=$(pkg-config --modversion vo-amrwbenc) \
   SNAPPY_VERSION=$(apk info -a snappy | head -n1 | awk '{print $1}' | sed -e 's/snappy-//') \
+  LIBJXL_VERSION=$(pkg-config --modversion libjxl) \
   jq -n \
   '{ \
   expat: env.EXPAT_VERSION, \
@@ -897,6 +939,7 @@ RUN \
   libxml2: env.LIBXML2_VERSION, \
   libxvid: env.XVID_VERSION, \
   libzimg: env.ZIMG_VERSION, \
+  libjxl: env.LIBJXL_VERSION, \
   openssl: env.OPENSSL_VERSION, \
   }' > /versions.json
 
