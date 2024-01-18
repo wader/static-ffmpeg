@@ -44,8 +44,7 @@ RUN apk add --no-cache \
   snappy snappy-dev snappy-static \
   xxd \
   xz-dev xz-static \
-  asciidoc gdk-pixbuf-dev gflags-dev gtest-dev \
-  openexr-dev samurai curl bash
+  curl
   
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
@@ -760,7 +759,6 @@ ARG LIBJXL_URL="https://github.com/libjxl/libjxl/archive/refs/tags/${LIBJXL_VERS
 ARG LIBJXL_SHA256="a0e72e9ece26878147069ad4888ac3382021d4bbee71c2e1b687d5bde7fd7e01"
 RUN wget $WGET_OPTS -O libjxl.tar.gz "$LIBJXL_URL"
 RUN echo "$LIBJXL_SHA256  libjxl.tar.gz" | sha256sum --status -c -
-RUN apk add curl bash
 RUN \
   tar $TAR_OPTS libjxl.tar.gz && \
   cd libjxl-* && \
@@ -805,9 +803,6 @@ ARG ENABLE_FDKAAC=
 # large things on the stack.
 RUN wget $WGET_OPTS -O ffmpeg.tar.bz2 "$FFMPEG_URL"
 RUN echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum --status -c -
-# Had to add extra-libs="-lstdc++" to workaround an issue where when ffmpeg checks the availability of
-# libjxl, it tries to build a test program with gcc instead of g++ and it will fail due to missing 
-# libstdc++ symbols.
 RUN \
   tar $TAR_OPTS ffmpeg.tar.bz2 && \
   FDKAAC_FLAGS=$(if [[ -n "$ENABLE_FDKAAC" ]] ;then echo " --enable-libfdk-aac --enable-nonfree " ;else echo ""; fi) && \
