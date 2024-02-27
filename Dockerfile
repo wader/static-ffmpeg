@@ -424,10 +424,10 @@ RUN \
   ninja -j$(nproc) -vC build install && \
   echo "Requires.private: fftw3 samplerate" >> /usr/local/lib/pkgconfig/rubberband.pc
 
-# bump: LIBSHINE /LIBSHINE_VERSION=([\d.]+)/ https://github.com/toots/shine.git|*
-# bump: LIBSHINE after ./hashupdate Dockerfile LIBSHINE $LATEST
-# bump: LIBSHINE link "CHANGELOG" https://github.com/toots/shine/blob/master/ChangeLog
-# bump: LIBSHINE link "Source diff $CURRENT..$LATEST" https://github.com/toots/shine/compare/$CURRENT..$LATEST
+# bump: libshine /LIBSHINE_VERSION=([\d.]+)/ https://github.com/toots/shine.git|*
+# bump: libshine after ./hashupdate Dockerfile LIBSHINE $LATEST
+# bump: libshine link "CHANGELOG" https://github.com/toots/shine/blob/master/ChangeLog
+# bump: libshine link "Source diff $CURRENT..$LATEST" https://github.com/toots/shine/compare/$CURRENT..$LATEST
 ARG LIBSHINE_VERSION=3.1.1
 ARG LIBSHINE_URL="https://github.com/toots/shine/releases/download/$LIBSHINE_VERSION/shine-$LIBSHINE_VERSION.tar.gz"
 ARG LIBSHINE_SHA256=58e61e70128cf73f88635db495bfc17f0dde3ce9c9ac070d505a0cd75b93d384
