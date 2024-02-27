@@ -424,10 +424,10 @@ RUN \
   ninja -j$(nproc) -vC build install && \
   echo "Requires.private: fftw3 samplerate" >> /usr/local/lib/pkgconfig/rubberband.pc
 
-# bump: LIBSHINE /LIBSHINE_VERSION=([\d.]+)/ https://github.com/toots/shine.git|*
-# bump: LIBSHINE after ./hashupdate Dockerfile LIBSHINE $LATEST
-# bump: LIBSHINE link "CHANGELOG" https://github.com/toots/shine/blob/master/ChangeLog
-# bump: LIBSHINE link "Source diff $CURRENT..$LATEST" https://github.com/toots/shine/compare/$CURRENT..$LATEST
+# bump: libshine /LIBSHINE_VERSION=([\d.]+)/ https://github.com/toots/shine.git|*
+# bump: libshine after ./hashupdate Dockerfile LIBSHINE $LATEST
+# bump: libshine link "CHANGELOG" https://github.com/toots/shine/blob/master/ChangeLog
+# bump: libshine link "Source diff $CURRENT..$LATEST" https://github.com/toots/shine/compare/$CURRENT..$LATEST
 ARG LIBSHINE_VERSION=3.1.1
 ARG LIBSHINE_URL="https://github.com/toots/shine/releases/download/$LIBSHINE_VERSION/shine-$LIBSHINE_VERSION.tar.gz"
 ARG LIBSHINE_SHA256=58e61e70128cf73f88635db495bfc17f0dde3ce9c9ac070d505a0cd75b93d384
@@ -744,12 +744,12 @@ RUN \
   cd zimg-* && ./autogen.sh && ./configure --disable-shared --enable-static && \
   make -j$(nproc) install
 
-# bump: libjxl /LIBJXL_VERSION=v([\d.]+)/ https://github.com/libjxl/libjxl.git|^0
+# bump: libjxl /LIBJXL_VERSION=([\d.]+)/ https://github.com/libjxl/libjxl.git|^0
 # bump: libjxl after ./hashupdate Dockerfile LIBJXL $LATEST
 # bump: libjxl link "Changelog" https://github.com/libjxl/libjxl/blob/main/CHANGELOG.md
 # use bundled highway library as its static build is not available in alpine
-ARG LIBJXL_VERSION=v0.10.0
-ARG LIBJXL_URL="https://github.com/libjxl/libjxl/archive/refs/tags/${LIBJXL_VERSION}.tar.gz"
+ARG LIBJXL_VERSION=0.10.0
+ARG LIBJXL_URL="https://github.com/libjxl/libjxl/archive/refs/tags/v${LIBJXL_VERSION}.tar.gz"
 ARG LIBJXL_SHA256=ab32d52b033c814d24762db4942a3b45315d9db37bf5c8a9741ccc1bb0a52d97
 RUN wget $WGET_OPTS -O libjxl.tar.gz "$LIBJXL_URL"
 RUN echo "$LIBJXL_SHA256  libjxl.tar.gz" | sha256sum --status -c -
@@ -879,7 +879,6 @@ RUN \
   SOXR_VERSION=$(pkg-config --modversion soxr) \
   LIBVO_AMRWBENC_VERSION=$(pkg-config --modversion vo-amrwbenc) \
   SNAPPY_VERSION=$(apk info -a snappy | head -n1 | awk '{print $1}' | sed -e 's/snappy-//') \
-  LIBJXL_VERSION=$(pkg-config --modversion libjxl) \
   jq -n \
   '{ \
   expat: env.EXPAT_VERSION, \
