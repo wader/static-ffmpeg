@@ -397,7 +397,7 @@ RUN \
 # bump: librtmp after ./hashupdate Dockerfile LIBRTMP $LATEST
 # bump: librtmp link "Commit diff $CURRENT..$LATEST" https://git.ffmpeg.org/gitweb/rtmpdump.git/commitdiff/$LATEST?ds=sidebyside
 ARG LIBRTMP_URL="https://git.ffmpeg.org/rtmpdump.git"
-ARG LIBRTMP_COMMIT=b59c7926aff3271ff0fe85ac46c6ca390dc81000
+ARG LIBRTMP_COMMIT=6f6bb1353fc84f4cc37138baa99f586750028a01
 RUN \
   git clone "$LIBRTMP_URL" && \
   cd rtmpdump && git checkout $LIBRTMP_COMMIT && \
