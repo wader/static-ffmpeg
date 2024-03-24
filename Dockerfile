@@ -354,9 +354,9 @@ RUN \
 # bump: librabbitmq /LIBRABBITMQ_VERSION=([\d.]+)/ https://github.com/alanxz/rabbitmq-c.git|*
 # bump: librabbitmq after ./hashupdate Dockerfile LIBRABBITMQ $LATEST
 # bump: librabbitmq link "ChangeLog" https://github.com/alanxz/rabbitmq-c/blob/master/ChangeLog.md
-ARG LIBRABBITMQ_VERSION=0.13.0
+ARG LIBRABBITMQ_VERSION=0.14.0
 ARG LIBRABBITMQ_URL="https://github.com/alanxz/rabbitmq-c/archive/refs/tags/v$LIBRABBITMQ_VERSION.tar.gz"
-ARG LIBRABBITMQ_SHA256=8b224e41bba504fc52b02f918d8df7e4bf5359d493cbbff36c06078655c676e6
+ARG LIBRABBITMQ_SHA256=839b28eae20075ac58f45925fe991d16a3138cbde015db0ee11df1acb1c493df
 RUN wget $WGET_OPTS -O rabbitmq-c.tar.gz "$LIBRABBITMQ_URL"
 RUN echo "$LIBRABBITMQ_SHA256  rabbitmq-c.tar.gz" | sha256sum --status -c -
 RUN \
