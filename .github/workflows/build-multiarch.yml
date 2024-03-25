@@ -28,7 +28,7 @@ jobs:
     needs:
       - tag
     name: Build
-    uses: pldin601/build-multiarch-on-aws-spots/.github/workflows/build-multiarch-on-aws-spots.yml@5c448cb91b65e617237df2326723441f25f8eea0
+    uses: pyldin601/build-multiarch-on-aws-spots/.github/workflows/build-multiarch-on-aws-spots.yml@5c448cb91b65e617237df2326723441f25f8eea0
     with:
       DOCKER_IMAGE_TAG: ${{ needs.tag.outputs.TAG }}
       DOCKER_IMAGE_NAME: "mwader/static-ffmpeg"
