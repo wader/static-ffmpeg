@@ -148,7 +148,7 @@ ffmpeg with `-tls_verify 1` and `-ca_file /path/to/cert.pem`.
 
 ### Docker Hub images
 
-Multi-arch dockerhub images are built using [pldin601/build-multiarch-on-aws-spots](https://github.com/pldin601/build-multiarch-on-aws-spots). See [build-multiarch.yml](.github/workflows/build-multiarch.yml) for config. Thanks to [@pldin601](https://github.com/pldin601) for making this possible.
+Multi-arch dockerhub images are built using [pyldin601/build-multiarch-on-aws-spots](https://github.com/pyldin601/build-multiarch-on-aws-spots). See [build-multiarch.yml](.github/workflows/build-multiarch.yml) for config. Thanks to [@pyldin601](https://github.com/pyldin601) for making this possible.
 
 ### Contribute
 
