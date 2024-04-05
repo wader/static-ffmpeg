@@ -141,11 +141,26 @@ RUN \
 ARG LIBBLURAY_VERSION=1.3.4
 ARG LIBBLURAY_URL="https://code.videolan.org/videolan/libbluray/-/archive/$LIBBLURAY_VERSION/libbluray-$LIBBLURAY_VERSION.tar.gz"
 ARG LIBBLURAY_SHA256=9820df5c3e87777be116ca225ad7ee026a3ff42b2447c7fe641910fb23aad3c2
+# TODO: bump config? at least checkout to make commit sticky
+ARG LIBUDFREAD_COMMIT=a35513813819efadca82c4b90edbe1407b1b9e05
+# dec_init rename is to workaround https://code.videolan.org/videolan/libbluray/-/issues/43
 RUN wget $WGET_OPTS -O libbluray.tar.gz "$LIBBLURAY_URL"
 RUN echo "$LIBBLURAY_SHA256  libbluray.tar.gz" | sha256sum --status -c -
 RUN \
-  tar $TAR_OPTS libbluray.tar.gz &&  cd libbluray-* && git clone https://code.videolan.org/videolan/libudfread.git contrib/libudfread && \
-  autoreconf -fiv && ./configure --with-pic --disable-doxygen-doc --disable-doxygen-dot --enable-static --disable-shared --disable-examples --disable-bdjava-jar && \
+  tar $TAR_OPTS libbluray.tar.gz && \
+  cd libbluray-* && \
+  sed -i 's/dec_init/libbluray_dec_init/' src/libbluray/disc/* && \
+  git clone https://code.videolan.org/videolan/libudfread.git contrib/libudfread && \
+  (cd contrib/libudfread && git checkout $LIBUDFREAD_COMMIT) && \
+  autoreconf -fiv && \
+  ./configure \
+    --with-pic \
+    --disable-doxygen-doc \
+    --disable-doxygen-dot \
+    --enable-static \
+    --disable-shared \
+    --disable-examples \
+    --disable-bdjava-jar && \
   make -j$(nproc) install
 
 # bump: dav1d /DAV1D_VERSION=([\d.]+)/ https://code.videolan.org/videolan/dav1d.git|*
@@ -787,9 +802,9 @@ RUN sed -i 's/-ljxl_threads/-ljxl_threads -lstdc++ /' /usr/local/lib/pkgconfig/l
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
 # bump: ffmpeg link "Changelog" https://github.com/FFmpeg/FFmpeg/blob/n$LATEST/Changelog
 # bump: ffmpeg link "Source diff $CURRENT..$LATEST" https://github.com/FFmpeg/FFmpeg/compare/n$CURRENT..n$LATEST
-ARG FFMPEG_VERSION=6.1.1
+ARG FFMPEG_VERSION=7.0
 ARG FFMPEG_URL="https://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.bz2"
-ARG FFMPEG_SHA256=5e3133939a61ef64ac9b47ffd29a5ea6e337a4023ef0ad972094b4da844e3a20
+ARG FFMPEG_SHA256=a24d9074bf5523a65aaa9e7bd02afe4109ce79d69bd77d104fed3dab4b934d7a
 ARG ENABLE_FDKAAC=
 # sed changes --toolchain=hardened -pie to -static-pie
 # extra ldflags stack-size=2097152 is to increase default stack size from 128KB (musl default) to something
