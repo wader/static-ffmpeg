@@ -141,11 +141,26 @@ RUN \
 ARG LIBBLURAY_VERSION=1.3.4
 ARG LIBBLURAY_URL="https://code.videolan.org/videolan/libbluray/-/archive/$LIBBLURAY_VERSION/libbluray-$LIBBLURAY_VERSION.tar.gz"
 ARG LIBBLURAY_SHA256=9820df5c3e87777be116ca225ad7ee026a3ff42b2447c7fe641910fb23aad3c2
+# TODO: bump config? at least checkout to make commit sticky
+ARG LIBUDFREAD_COMMIT=a35513813819efadca82c4b90edbe1407b1b9e05
+# dec_init rename is to workaround https://code.videolan.org/videolan/libbluray/-/issues/43
 RUN wget $WGET_OPTS -O libbluray.tar.gz "$LIBBLURAY_URL"
 RUN echo "$LIBBLURAY_SHA256  libbluray.tar.gz" | sha256sum --status -c -
 RUN \
-  tar $TAR_OPTS libbluray.tar.gz &&  cd libbluray-* && git clone https://code.videolan.org/videolan/libudfread.git contrib/libudfread && \
-  autoreconf -fiv && ./configure --with-pic --disable-doxygen-doc --disable-doxygen-dot --enable-static --disable-shared --disable-examples --disable-bdjava-jar && \
+  tar $TAR_OPTS libbluray.tar.gz && \
+  cd libbluray-* && \
+  sed -i 's/dec_init/libbluray_dec_init/' src/libbluray/disc/* && \
+  git clone https://code.videolan.org/videolan/libudfread.git contrib/libudfread && \
+  (cd contrib/libudfread && git checkout $LIBUDFREAD_COMMIT) && \
+  autoreconf -fiv && \
+  ./configure \
+    --with-pic \
+    --disable-doxygen-doc \
+    --disable-doxygen-dot \
+    --enable-static \
+    --disable-shared \
+    --disable-examples \
+    --disable-bdjava-jar && \
   make -j$(nproc) install
 
 # bump: dav1d /DAV1D_VERSION=([\d.]+)/ https://code.videolan.org/videolan/dav1d.git|*
