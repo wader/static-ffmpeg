@@ -672,9 +672,9 @@ RUN \
 # bump: libwebp after ./hashupdate Dockerfile LIBWEBP $LATEST
 # bump: libwebp link "Release notes" https://github.com/webmproject/libwebp/releases/tag/v$LATEST
 # bump: libwebp link "Source diff $CURRENT..$LATEST" https://github.com/webmproject/libwebp/compare/v$CURRENT..v$LATEST
-ARG LIBWEBP_VERSION=1.3.2
+ARG LIBWEBP_VERSION=1.4.0
 ARG LIBWEBP_URL="https://github.com/webmproject/libwebp/archive/v$LIBWEBP_VERSION.tar.gz"
-ARG LIBWEBP_SHA256=c2c2f521fa468e3c5949ab698c2da410f5dce1c5e99f5ad9e70e0e8446b86505
+ARG LIBWEBP_SHA256=12af50c45530f0a292d39a88d952637e43fb2d4ab1883c44ae729840f7273381
 RUN wget $WGET_OPTS -O libwebp.tar.gz "$LIBWEBP_URL"
 RUN echo "$LIBWEBP_SHA256  libwebp.tar.gz" | sha256sum --status -c -
 RUN \
