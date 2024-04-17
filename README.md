@@ -49,6 +49,7 @@ alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --ent
 - libfribidi
 - libgme
 - libgsm
+- libharfbuzz
 - libjxl
 - libkvazaar
 - libmodplug

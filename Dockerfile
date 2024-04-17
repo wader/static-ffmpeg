@@ -843,6 +843,7 @@ RUN \
   --enable-libfribidi \
   --enable-libgme \
   --enable-libgsm \
+  --enable-libharfbuzz \
   --enable-libkvazaar \
   --enable-libmodplug \
   --enable-libmp3lame \
@@ -888,12 +889,13 @@ RUN \
   FONTCONFIG_VERSION=$(pkg-config --modversion fontconfig)  \
   FREETYPE_VERSION=$(pkg-config --modversion freetype2)  \
   FRIBIDI_VERSION=$(pkg-config --modversion fribidi)  \
+  LIBHARFBUZZ_VERSION=$(pkg-config --modversion harfbuzz) \
   LIBSAMPLERATE_VERSION=$(pkg-config --modversion samplerate) \
+  LIBVO_AMRWBENC_VERSION=$(pkg-config --modversion vo-amrwbenc) \
   LIBXML2_VERSION=$(pkg-config --modversion libxml-2.0) \
   OPENSSL_VERSION=$(pkg-config --modversion openssl) \
-  SOXR_VERSION=$(pkg-config --modversion soxr) \
-  LIBVO_AMRWBENC_VERSION=$(pkg-config --modversion vo-amrwbenc) \
   SNAPPY_VERSION=$(apk info -a snappy | head -n1 | awk '{print $1}' | sed -e 's/snappy-//') \
+  SOXR_VERSION=$(pkg-config --modversion soxr) \
   jq -n \
   '{ \
   expat: env.EXPAT_VERSION, \
@@ -912,6 +914,8 @@ RUN \
   libfribidi: env.FRIBIDI_VERSION, \
   libgme: env.LIBGME_COMMIT, \
   libgsm: env.LIBGSM_COMMIT, \
+  libharfbuzz: env.LIBHARFBUZZ_VERSION, \
+  libjxl: env.LIBJXL_VERSION, \
   libkvazaar: env.KVAZAAR_VERSION, \
   libmodplug: env.LIBMODPLUG_VERSION, \
   libmp3lame: env.MP3LAME_VERSION, \
@@ -926,8 +930,8 @@ RUN \
   librubberband: env.RUBBERBAND_VERSION, \
   libsamplerate: env.LIBSAMPLERATE_VERSION, \
   libshine: env.LIBSHINE_VERSION, \
-  libsoxr: env.SOXR_VERSION, \
   libsnappy: env.SNAPPY_VERSION, \
+  libsoxr: env.SOXR_VERSION, \
   libspeex: env.SPEEX_VERSION, \
   libsrt: env.SRT_VERSION, \
   libssh: env.LIBSSH_VERSION, \
@@ -947,7 +951,6 @@ RUN \
   libxml2: env.LIBXML2_VERSION, \
   libxvid: env.XVID_VERSION, \
   libzimg: env.ZIMG_VERSION, \
-  libjxl: env.LIBJXL_VERSION, \
   openssl: env.OPENSSL_VERSION, \
   }' > /versions.json
 
