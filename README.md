@@ -164,5 +164,6 @@ usage and potential distribution of such.
 
 - Add libplacebo, chromaprint, etc. ...
 - Add xeve/xevd support once in stable
+- Add vvenc/vvdec support once in stable
 - Add acceleration support (GPU, CUDA, ...)
 - Add *.a *.so libraries, headers and pkg-config somehow
