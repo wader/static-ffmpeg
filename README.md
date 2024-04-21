@@ -81,6 +81,8 @@ alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --ent
 - libx264
 - libx265 (multilib with support for 10 and 12 bits)
 - libxavs2
+- libxeve
+- libxevd
 - libxml2
 - libxvid
 - libzimg
@@ -163,7 +165,6 @@ usage and potential distribution of such.
 ### TODOs and possible things to add
 
 - Add libplacebo, chromaprint, etc. ...
-- Add xeve/xevd support once in stable
 - Add vvenc/vvdec support once in stable
 - Add acceleration support (GPU, CUDA, ...)
 - Add *.a *.so libraries, headers and pkg-config somehow

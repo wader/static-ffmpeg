@@ -746,6 +746,54 @@ RUN \
   CFLAGS="$CFLAGS -fstrength-reduce -ffast-math" ./configure && \
   make -j$(nproc) && make install
 
+# bump: xeve /XEVE_VERSION=([\d.]+)/ https://github.com/mpeg5/xeve.git|*
+# bump: xeve after ./hashupdate Dockerfile XEVE $LATEST
+# bump: xeve link "CHANGELOG" https://github.com/mpeg5/xeve/releases/tag/v$LATEST
+# TODO: better -DARM? possible to build on non arm and intel?
+# TODO: report upstream about lib/libxeve.a?
+ARG XEVE_VERSION=0.5.0
+ARG XEVE_URL="https://github.com/mpeg5/xeve/archive/refs/tags/v$XEVE_VERSION.tar.gz"
+ARG XEVE_SHA256=4fb593921d2a0b48621f410ccd704d67d6ed1d08ab0aa7c5d5fef519ce596e8a
+RUN wget $WGET_OPTS -O xeve.tar.gz "$XEVE_URL"
+RUN echo "$XEVE_SHA256  xeve.tar.gz" | sha256sum --status -c -
+RUN \
+  tar $TAR_OPTS xeve.tar.gz && \
+  cd xeve-* && \
+  echo v$XEVE_VERSION > version.txt && \
+  sed -i 's/mc_filter_bilin/xevem_mc_filter_bilin/' src_main/sse/xevem_mc_sse.c && \
+  mkdir build && cd build && \
+  cmake \
+    -G"Unix Makefiles" \
+    -DARM="$(if [ $(uname -m) == aarch64 ]; then echo TRUE; else echo FALSE; fi)" \
+    -DCMAKE_BUILD_TYPE=Release \
+    .. && \
+  make -j$(nproc) install && \
+  ln -s /usr/local/lib/xeve/libxeve.a /usr/local/lib/libxeve.a
+
+# bump: xevd /XEVD_VERSION=([\d.]+)/ https://github.com/mpeg5/xevd.git|*
+# bump: xevd after ./hashupdate Dockerfile XEVD $LATEST
+# bump: xevd link "CHANGELOG" https://github.com/mpeg5/xevd/releases/tag/v$LATEST
+# TODO: better -DARM? possible to build on non arm and intel?
+# TODO: report upstream about lib/libxevd.a?
+ARG XEVD_VERSION=0.5.0
+ARG XEVD_URL="https://github.com/mpeg5/xevd/archive/refs/tags/v$XEVD_VERSION.tar.gz"
+ARG XEVD_SHA256=8d55c7ec1a9ad4e70fe91fbe129a1d4dd288bce766f466cba07a29452b3cecd8
+RUN wget $WGET_OPTS -O xevd.tar.gz "$XEVD_URL"
+RUN echo "$XEVD_SHA256  xevd.tar.gz" | sha256sum --status -c -
+RUN \
+  tar $TAR_OPTS xevd.tar.gz && \
+  cd xevd-* && \
+  echo v$XEVD_VERSION > version.txt && \
+  sed -i 's/mc_filter_bilin/xevdm_mc_filter_bilin/' src_main/sse/xevdm_mc_sse.c && \
+  mkdir build && cd build && \
+  cmake \
+    -G"Unix Makefiles" \
+    -DARM="$(if [ $(uname -m) == aarch64 ]; then echo TRUE; else echo FALSE; fi)" \
+    -DCMAKE_BUILD_TYPE=Release \
+    .. && \
+  make -j$(nproc) install && \
+  ln -s /usr/local/lib/xevd/libxevd.a /usr/local/lib/libxevd.a
+
 # bump: zimg /ZIMG_VERSION=([\d.]+)/ https://github.com/sekrit-twc/zimg.git|*
 # bump: zimg after ./hashupdate Dockerfile ZIMG $LATEST
 # bump: zimg link "ChangeLog" https://github.com/sekrit-twc/zimg/blob/master/ChangeLog
@@ -875,6 +923,8 @@ RUN \
   --enable-libx264 \
   --enable-libx265 \
   --enable-libxavs2 \
+  --enable-libxeve \
+  --enable-libxevd \
   --enable-libxml2 \
   --enable-libxvid \
   --enable-libzimg \
@@ -948,6 +998,8 @@ RUN \
   libx264: env.X264_VERSION, \
   libx265: env.X265_VERSION, \
   libxavs2: env.XAVS2_VERSION, \
+  libxeve: env.XEVE_VERSION, \
+  libxevd: env.XEVD_VERSION, \
   libxml2: env.LIBXML2_VERSION, \
   libxvid: env.XVID_VERSION, \
   libzimg: env.ZIMG_VERSION, \
