@@ -665,7 +665,13 @@ RUN wget $WGET_OPTS -O libvpx.tar.gz "$VPX_URL"
 RUN echo "$VPX_SHA256  libvpx.tar.gz" | sha256sum --status -c -
 RUN \
   tar $TAR_OPTS libvpx.tar.gz && \
-  cd libvpx-* && ./configure --enable-static --enable-vp9-highbitdepth --disable-shared --disable-unit-tests --disable-examples && \
+  cd libvpx-* && \
+  ./configure \
+    --enable-static \
+    --enable-vp9-highbitdepth \
+    --disable-shared \
+    --disable-unit-tests \
+    --disable-examples && \
   make -j$(nproc) install
 
 # bump: libwebp /LIBWEBP_VERSION=([\d.]+)/ https://github.com/webmproject/libwebp.git|*
@@ -679,7 +685,21 @@ RUN wget $WGET_OPTS -O libwebp.tar.gz "$LIBWEBP_URL"
 RUN echo "$LIBWEBP_SHA256  libwebp.tar.gz" | sha256sum --status -c -
 RUN \
   tar $TAR_OPTS libwebp.tar.gz && \
-  cd libwebp-* && ./autogen.sh && ./configure --disable-shared --enable-static --with-pic --enable-libwebpmux --disable-libwebpextras --disable-libwebpdemux --disable-sdl --disable-gl --disable-png --disable-jpeg --disable-tiff --disable-gif && \
+  cd libwebp-* && \
+  ./autogen.sh && \
+  ./configure \
+    --disable-shared \
+    --enable-static \
+    --with-pic \
+    --enable-libwebpmux \
+    --disable-libwebpextras \
+    --disable-libwebpdemux \
+    --disable-sdl \
+    --disable-gl \
+    --disable-png \
+    --disable-jpeg \
+    --disable-tiff \
+    --disable-gif && \
   make -j$(nproc) install
 
 # x264 only have a stable branch no tags and we checkout commit so no hash is needed
@@ -842,9 +862,10 @@ RUN \
   cmake --build build -j$(nproc) && \
   cmake --install build
 # workaround for ffmpeg configure script
-RUN sed -i 's/-ljxl/-ljxl -lstdc++ /' /usr/local/lib/pkgconfig/libjxl.pc
-RUN sed -i 's/-ljxl_cms/-ljxl_cms -lstdc++ /' /usr/local/lib/pkgconfig/libjxl_cms.pc
-RUN sed -i 's/-ljxl_threads/-ljxl_threads -lstdc++ /' /usr/local/lib/pkgconfig/libjxl_threads.pc
+RUN \
+  sed -i 's/-ljxl/-ljxl -lstdc++ /' /usr/local/lib/pkgconfig/libjxl.pc && \
+  sed -i 's/-ljxl_cms/-ljxl_cms -lstdc++ /' /usr/local/lib/pkgconfig/libjxl_cms.pc && \
+  sed -i 's/-ljxl_threads/-ljxl_threads -lstdc++ /' /usr/local/lib/pkgconfig/libjxl_threads.pc
 
 # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|*
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
