@@ -132,7 +132,7 @@ docker run --rm -v "$PWD:/out" $(echo -e 'FROM alpine\nCOPY --from=mwader/static
 #### Quickly see what versions an image was built with
 
 ```
-docker run --rm mwader/static-ffmpeg -v quiet -f data -i versions.json -map 0:0 -c text -f data -
+docker run --rm mwader/static-ffmpeg -v quiet -f data -i versions.json -map 0 -c copy -f data -
 ```
 
 #### I see `Name does not resolve` errors for hosts that should resolve
