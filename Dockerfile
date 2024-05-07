@@ -412,15 +412,10 @@ RUN \
 # bump: librtmp after ./hashupdate Dockerfile LIBRTMP $LATEST
 # bump: librtmp link "Commit diff $CURRENT..$LATEST" https://git.ffmpeg.org/gitweb/rtmpdump.git/commitdiff/$LATEST?ds=sidebyside
 ARG LIBRTMP_URL="https://git.ffmpeg.org/rtmpdump.git"
-ARG LIBRTMP_COMMIT=b59c7926aff3271ff0fe85ac46c6ca390dc81000
+ARG LIBRTMP_COMMIT=6f6bb1353fc84f4cc37138baa99f586750028a01
 RUN \
   git clone "$LIBRTMP_URL" && \
   cd rtmpdump && git checkout $LIBRTMP_COMMIT && \
-  # Patch/port librtmp to openssl 1.1
-  for _dlp in dh.h handshake.h hashswf.c; do \
-    wget $WGET_OPTS https://raw.githubusercontent.com/microsoft/vcpkg/38bb87c5571555f1a4f64cb4ed9d2be0017f9fc1/ports/librtmp/${_dlp%.*}.patch; \
-    patch librtmp/${_dlp} < ${_dlp%.*}.patch; \
-  done && \
   make SYS=posix SHARED=off -j$(nproc) install
 
 # bump: rubberband /RUBBERBAND_VERSION=([\d.]+)/ https://github.com/breakfastquay/rubberband.git|^2
