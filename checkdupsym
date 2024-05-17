@@ -1,0 +1,32 @@
+#!/bin/sh
+# This script exist because we use -Wl,--allow-multiple-definition when linking
+# ffmepeg to workaround that rust staticlib exports more symbols than they need
+# and causes collision with other rust staticlibs linked into the same binary.
+# For details see https://github.com/rust-lang/rust/issues/104707
+# Hopefully we can remove this in the future.
+
+# skip some libs that we know have colliding symbols and also some that for
+# some unknown reason had duplicate symbols that ld was fine with even before
+# using -Wl,--allow-multiple-definition
+SKIP_LIBS="(librav1e|librsvg|libtheora|libav)"
+
+cd "$1"
+
+# How it works:
+# relink ffmpeg using ld -t to get all unique input archive files (and skip some)
+# find all unique externa symbols per archive
+# check for collisions between archives
+DUPS=$(
+    for i in $(rm -f ffmpeg* ; make V=1 LD="gcc -Wl,-t" | sort | grep '.a$' | uniq | grep -Ev "$SKIP_LIBS");
+        do nm --extern-only "$i" 2>/dev/null | awk '/^\d+ [TDB]/ {print $3}' | sort | uniq
+    done | sort | uniq -c | sort -n | grep -vE '^\s+1\s'
+)
+
+if [ "$DUPS" = "" ]; then
+    exit 0
+fi
+
+echo "Found duplicate symbols:"
+echo "$DUPS"
+
+exit 1

@@ -1,5 +1,5 @@
 #!/bin/sh
-set -euo pipefail
+set -eu
 
 NOEXTLIBS=$(test "$(ldd "$1" | wc -l)" -eq 1 && echo yes || echo no)
 RELRO=$(readelf -l "$1" | grep -q GNU_RELRO && echo yes || echo no)
