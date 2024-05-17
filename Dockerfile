@@ -26,12 +26,10 @@ RUN apk add --no-cache \
   fontconfig-dev fontconfig-static \
   freetype freetype-dev freetype-static \
   graphite2-static \
-  glib-static \
   tiff tiff-dev \
   libjpeg-turbo libjpeg-turbo-dev \
   libpng-dev libpng-static \
   giflib giflib-dev \
-  harfbuzz-dev harfbuzz-static \
   fribidi-dev fribidi-static \
   brotli-dev brotli-static \
   soxr-dev soxr-static \
@@ -44,7 +42,12 @@ RUN apk add --no-cache \
   snappy snappy-dev snappy-static \
   xxd \
   xz-dev xz-static \
+  python3 py3-packaging \
+  linux-headers \
   curl
+
+# linux-headers need by rtmpdump
+# python3 py3-packaging needed by glib
   
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
@@ -77,6 +80,118 @@ RUN \
   ninja -j$(nproc) -vC build install
 # extra libs stdc++ is for vmaf https://github.com/Netflix/vmaf/issues/788
 RUN sed -i 's/-lvmaf /-lvmaf -lstdc++ /' /usr/local/lib/pkgconfig/libvmaf.pc
+
+# own build as alpine glib links with libmount etc
+# bump: glib /GLIB_VERSION=([\d.]+)/ https://gitlab.gnome.org/GNOME/glib.git|^2
+# bump: glib after ./hashupxate Dockerfile GLIB $LATEST
+# bump: glib link "NEWS" https://gitlab.gnome.org/GNOME/glib/-/blob/main/NEWS?ref_type=heads
+ARG GLIB_VERSION=2.80.2
+ARG GLIB_URL="https://download.gnome.org/sources/glib/2.80/glib-$GLIB_VERSION.tar.xz"
+ARG GLIB_SHA256=b9cfb6f7a5bd5b31238fd5d56df226b2dda5ea37611475bf89f6a0f9400fe8bd
+RUN \
+  wget -O glib.tar.xz "$GLIB_URL" && \
+  echo "$GLIB_SHA256  glib.tar.xz" | sha256sum --status -c - && \
+  tar xf glib.tar.xz && \
+  cd glib-* && \
+  mkdir -p _build && \
+  meson \
+    -Dbuildtype=release \
+    -Ddefault_library=static \
+    -Dlibmount=disabled \
+    build && \
+  meson compile -C build && \
+  meson install --no-rebuild -C build
+
+# bump: harfbuzz /LIBHARFBUZZ_VERSION=([\d.]+)/ https://github.com/harfbuzz/harfbuzz.git|*
+# bump: harfbuzz after ./hashupxate Dockerfile LIBHARFBUZZ $LATEST
+# bump: harfbuzz link "NEWS" https://github.com/harfbuzz/harfbuzz/blob/main/NEWS
+ARG LIBHARFBUZZ_VERSION=8.5.0
+ARG LIBHARFBUZZ_URL="https://github.com/harfbuzz/harfbuzz/releases/download/$LIBHARFBUZZ_VERSION/harfbuzz-$LIBHARFBUZZ_VERSION.tar.xz"
+ARG LIBHARFBUZZ_SHA256=77e4f7f98f3d86bf8788b53e6832fb96279956e1c3961988ea3d4b7ca41ddc27
+RUN \
+  wget -O harfbuzz.tar.xz "$LIBHARFBUZZ_URL" && \
+  echo "$LIBHARFBUZZ_SHA256  harfbuzz.tar.xz" | sha256sum --status -c - && \
+  tar xf harfbuzz.tar.xz && \
+  cd harfbuzz-* && \
+  mkdir -p _build && \
+  meson \
+    -Dbuildtype=release \
+    -Ddefault_library=static \
+    build && \
+  meson compile -C build && \
+  meson install --no-rebuild -C build
+
+# bump: cairo /CAIRO_VERSION=([\d.]+)/ https://gitlab.freedesktop.org/cairo/cairo.git|^1
+# bump: cairo after ./hashupxate Dockerfile CAIRO $LATEST
+# bump: cairo link "NEWS" https://gitlab.freedesktop.org/cairo/cairo/-/blob/master/NEWS?ref_type=heads
+ARG CAIRO_VERSION=1.18.0
+ARG CAIRO_URL="https://cairographics.org/releases/cairo-$CAIRO_VERSION.tar.xz"
+ARG CAIRO_SHA256=243a0736b978a33dee29f9cca7521733b78a65b5418206fef7bd1c3d4cf10b64
+RUN \
+  wget -O cairo.tar.xz "$CAIRO_URL" && \
+  echo "$CAIRO_SHA256  cairo.tar.xz" | sha256sum --status -c - && \
+  tar xf cairo.tar.xz && \
+  cd cairo-* && \
+  mkdir -p _build && \
+  meson \
+    -Dbuildtype=release \
+    -Ddefault_library=static \
+    -Dtests=disabled \
+    -Dquartz=disabled \
+    -Dxcb=disabled \
+    -Dxlib=disabled \
+    -Dxlib-xcb=disabled \
+    build && \
+  meson compile -C build && \
+  meson install --no-rebuild -C build
+
+# TODO: there is weird "1.90" tag, skip it
+# bump: pango /PANGO_VERSION=([\d.]+)/ https://github.com/GNOME/pango.git|/\d+\.\d+\.\d+/|*
+# bump: pango after ./hashupxate Dockerfile PANGO $LATEST
+# bump: pango link "NEWS" https://gitlab.gnome.org/GNOME/pango/-/blob/main/NEWS?ref_type=heads
+ARG PANGO_VERSION=1.52.2
+ARG PANGO_URL="https://download.gnome.org/sources/pango/1.52/pango-$PANGO_VERSION.tar.xz"
+ARG PANGO_SHA256=d0076afe01082814b853deec99f9349ece5f2ce83908b8e58ff736b41f78a96b
+# TODO: add -Dbuild-testsuite=false when in stable release
+# TODO: -Ddefault_library=both currently to not fail building tests
+RUN \
+  wget -O pango.tar.xz "$PANGO_URL" && \
+  echo "$PANGO_SHA256  pango.tar.xz" | sha256sum --status -c - && \
+  tar xf pango.tar.xz && \
+  cd pango-* && \
+  mkdir -p _build && \
+  meson \
+    -Dbuildtype=release \
+    -Ddefault_library=both \
+    -Dintrospection=disabled \
+    -Dgtk_doc=false \
+    build && \
+  meson compile -C build && \
+  meson install --no-rebuild -C build
+
+# bump: librsvg /LIBRSVG_VERSION=([\d.]+)/ https://gitlab.gnome.org/GNOME/librsvg.git|^2
+# bump: librsvg after ./hashupxate Dockerfile LIBRSVG $LATEST
+# bump: librsvg link "NEWS" https://gitlab.gnome.org/GNOME/librsvg/-/blob/master/NEWS
+ARG LIBRSVG_VERSION=2.58.91
+ARG LIBRSVG_URL="https://download.gnome.org/sources/librsvg/2.58/librsvg-$LIBRSVG_VERSION.tar.xz"
+ARG LIBRSVG_SHA256=65846ae57c11aba288bf3a6fe517f800f7e38e7fbc79b98c99a8177634ed29f7
+RUN \
+  wget -O librsvg.tar.xz "$LIBRSVG_URL" && \
+  echo "$LIBRSVG_SHA256  librsvg.tar.xz" | sha256sum --status -c - && \
+  tar xf librsvg.tar.xz && \
+  cd librsvg-* && \
+  mkdir -p _build && \
+  meson setup _build \
+    -Dbuildtype=release \
+    -Ddefault_library=static \
+    -Ddocs=disabled \
+    -Dintrospection=disabled \
+    -Dpixbuf=disabled \
+    -Dpixbuf-loader=disabled \
+    -Dvala=disabled \
+    -Dtests=false && \
+  meson compile -C _build && \
+  meson install -C _build
 
 # build after libvmaf
 # bump: aom /AOM_VERSION=([\d.]+)/ git:https://aomedia.googlesource.com/aom|*
@@ -151,7 +266,7 @@ RUN \
   cd libbluray-* && \
   sed -i 's/dec_init/libbluray_dec_init/' src/libbluray/disc/* && \
   git clone https://code.videolan.org/videolan/libudfread.git contrib/libudfread && \
-  (cd contrib/libudfread && git checkout $LIBUDFREAD_COMMIT) && \
+  (cd contrib/libudfread && git checkout --recurse-submodules $LIBUDFREAD_COMMIT) && \
   autoreconf -fiv && \
   ./configure \
     --with-pic \
@@ -212,7 +327,7 @@ ARG LIBGME_URL="https://github.com/libgme/game-music-emu.git"
 ARG LIBGME_COMMIT=74449b553fef6528e1fd9d2dccc6413ded1d5e39
 RUN \
   git clone "$LIBGME_URL" && \
-  cd game-music-emu && git checkout $LIBGME_COMMIT && \
+  cd game-music-emu && git checkout --recurse-submodules $LIBGME_COMMIT && \
   mkdir build && cd build && \
   cmake \
     -G"Unix Makefiles" \
@@ -230,7 +345,7 @@ ARG LIBGSM_URL="https://github.com/timothytylee/libgsm.git"
 ARG LIBGSM_COMMIT=98f1708fb5e06a0dfebd58a3b40d610823db9715
 RUN \
   git clone "$LIBGSM_URL" && \
-  cd libgsm && git checkout $LIBGSM_COMMIT && \
+  cd libgsm && git checkout --recurse-submodules $LIBGSM_COMMIT && \
   # Makefile is hard to use, hence use specific compile arguments and flags
   # no need to build toast cli tool \
   rm src/toast* && \
@@ -415,7 +530,8 @@ ARG LIBRTMP_URL="https://git.ffmpeg.org/rtmpdump.git"
 ARG LIBRTMP_COMMIT=6f6bb1353fc84f4cc37138baa99f586750028a01
 RUN \
   git clone "$LIBRTMP_URL" && \
-  cd rtmpdump && git checkout $LIBRTMP_COMMIT && \
+  cd rtmpdump && \
+  git checkout --recurse-submodules $LIBRTMP_COMMIT && \
   make SYS=posix SHARED=off -j$(nproc) install
 
 # bump: rubberband /RUBBERBAND_VERSION=([\d.]+)/ https://github.com/breakfastquay/rubberband.git|^2
@@ -600,7 +716,8 @@ ARG UAVS3D_COMMIT=1fd04917cff50fac72ae23e45f82ca6fd9130bd8
 # Removes BIT_DEPTH 10 to be able to build on other platforms. 10 was overkill anyways.
 RUN \
   git clone "$UAVS3D_URL" && \
-  cd uavs3d && git checkout $UAVS3D_COMMIT && \
+  cd uavs3d && \
+  git checkout --recurse-submodules $UAVS3D_COMMIT && \
   mkdir build/linux && cd build/linux && \
   cmake \
     -G"Unix Makefiles" \
@@ -706,7 +823,7 @@ ARG X264_VERSION=31e19f92f00c7003fa115047ce50978bc98c3a0d
 RUN \
   git clone "$X264_URL" && \
   cd x264 && \
-  git checkout $X264_VERSION && \
+  git checkout --recurse-submodules $X264_VERSION && \
   ./configure --enable-pic --enable-static --disable-cli --disable-lavf --disable-swscale && \
   make -j$(nproc) install
 
@@ -871,9 +988,15 @@ ARG FFMPEG_URL="https://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.bz2"
 ARG FFMPEG_SHA256=a24d9074bf5523a65aaa9e7bd02afe4109ce79d69bd77d104fed3dab4b934d7a
 ARG ENABLE_FDKAAC=
 # sed changes --toolchain=hardened -pie to -static-pie
-# extra ldflags stack-size=2097152 is to increase default stack size from 128KB (musl default) to something
+#
+# ldflags stack-size=2097152 is to increase default stack size from 128KB (musl default) to something
 # more similar to glibc (2MB). This fixing segfault with libaom-av1 and libsvtav1 as they seems to pass
 # large things on the stack.
+#
+# ldfalgs -Wl,--allow-multiple-definition is a workaround for linking with multiple rust staticlib to
+# not cause collision in toolchain symbols
+# TODO: could this hide real problems with other libraries?
+# see https://github.com/rust-lang/rust/issues/104707
 RUN \
   wget $WGET_OPTS -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
   echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum -c - && \
@@ -884,7 +1007,7 @@ RUN \
   ./configure \
   --pkg-config-flags="--static" \
   --extra-cflags="-fopenmp" \
-  --extra-ldflags="-fopenmp -Wl,-z,stack-size=2097152" \
+  --extra-ldflags="-fopenmp -Wl,--allow-multiple-definition -Wl,-z,stack-size=2097152" \
   --toolchain=hardened \
   --disable-debug \
   --disable-shared \
@@ -918,6 +1041,7 @@ RUN \
   --enable-libopus \
   --enable-librabbitmq \
   --enable-librav1e \
+  --enable-librsvg \
   --enable-librtmp \
   --enable-librubberband \
   --enable-libshine \
@@ -939,8 +1063,8 @@ RUN \
   --enable-libx264 \
   --enable-libx265 \
   --enable-libxavs2 \
-  --enable-libxeve \
   --enable-libxevd \
+  --enable-libxeve \
   --enable-libxml2 \
   --enable-libxvid \
   --enable-libzimg \
@@ -955,7 +1079,6 @@ RUN \
   FONTCONFIG_VERSION=$(pkg-config --modversion fontconfig)  \
   FREETYPE_VERSION=$(pkg-config --modversion freetype2)  \
   FRIBIDI_VERSION=$(pkg-config --modversion fribidi)  \
-  LIBHARFBUZZ_VERSION=$(pkg-config --modversion harfbuzz) \
   LIBSAMPLERATE_VERSION=$(pkg-config --modversion samplerate) \
   LIBVO_AMRWBENC_VERSION=$(pkg-config --modversion vo-amrwbenc) \
   LIBXML2_VERSION=$(pkg-config --modversion libxml-2.0) \
@@ -992,6 +1115,7 @@ RUN \
   libopus: env.OPUS_VERSION, \
   librabbitmq: env.LIBRABBITMQ_VERSION, \
   librav1e: env.RAV1E_VERSION, \
+  librsvg: env.LIBRSVG_VERSION, \
   librtmp: env.LIBRTMP_COMMIT, \
   librubberband: env.RUBBERBAND_VERSION, \
   libsamplerate: env.LIBSAMPLERATE_VERSION, \
@@ -1014,8 +1138,8 @@ RUN \
   libx264: env.X264_VERSION, \
   libx265: env.X265_VERSION, \
   libxavs2: env.XAVS2_VERSION, \
-  libxeve: env.XEVE_VERSION, \
   libxevd: env.XEVD_VERSION, \
+  libxeve: env.XEVE_VERSION, \
   libxml2: env.LIBXML2_VERSION, \
   libxvid: env.XVID_VERSION, \
   libzimg: env.ZIMG_VERSION, \
@@ -1028,10 +1152,17 @@ RUN \
   /checkelf /usr/local/bin/ffmpeg && \
   /checkelf /usr/local/bin/ffprobe
 
+# some basic fonts that don't take up much space
+RUN apk add font-terminus font-inconsolata font-dejavu font-awesome
+
 FROM scratch AS final1
 COPY --from=builder /versions.json /usr/local/bin/ffmpeg /usr/local/bin/ffprobe /
 COPY --from=builder /usr/local/share/doc/ffmpeg/* /doc/
 COPY --from=builder /etc/ssl/cert.pem /etc/ssl/cert.pem
+COPY --from=builder /etc/fonts/ /etc/fonts/
+COPY --from=builder /usr/share/fonts/ /usr/share/fonts/
+COPY --from=builder /usr/share/consolefonts/ /usr/share/consolefonts/
+COPY --from=builder /var/cache/fontconfig/ /var/cache/fontconfig/
 
 # sanity tests
 RUN ["/ffmpeg", "-version"]
@@ -1043,6 +1174,8 @@ RUN ["/ffmpeg", "-f", "lavfi", "-i", "testsrc", "-c:v", "libsvtav1", "-t", "100m
 RUN ["/ffprobe", "-i", "https://github.com/favicon.ico"]
 # tls/https certs
 RUN ["/ffprobe", "-tls_verify", "1", "-ca_file", "/etc/ssl/cert.pem", "-i", "https://github.com/favicon.ico"]
+# svg
+RUN ["/ffprobe", "-i", "https://github.githubassets.com/favicons/favicon.svg"]
 
 # clamp all files into one layer
 FROM scratch AS final2
