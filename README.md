@@ -60,6 +60,7 @@ alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --ent
 - libopus
 - librabbitmq
 - librav1e
+- librsvg
 - librtmp
 - librubberband
 - libshine
@@ -81,8 +82,8 @@ alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --ent
 - libx264
 - libx265 (multilib with support for 10 and 12 bits)
 - libxavs2
-- libxeve
 - libxevd
+- libxeve
 - libxml2
 - libxvid
 - libzimg
@@ -139,6 +140,13 @@ docker run --rm mwader/static-ffmpeg -v quiet -f data -i versions.json -map 0 -c
 
 This could happen if the hostname resolve to more IP-addresses than can fit in [DNS UDP packet](https://www.rfc-editor.org/rfc/rfc791) (probably 512 bytes) causing the response to be truncated. Usually clients should then switch to TCP and redo the query.
 This should only be a problem with version 6.0-1 or earlier of this image that uses [musl libc](https://www.musl-libc.org) 1.2.3 or older.
+
+### Fonts usage with SVG or draw text filters etc
+
+The image ships with some basic fonts (`font-terminus font-inconsolata font-dejavu font-awesome`) that can be used when running the image directly. If your copying the binaries into some image you have to install fonts somehow. How to do this depends a bit on distributions but in general look for font packages and how to make [fontconfig](https://www.freedesktop.org/wiki/Software/fontconfig/) know about them.
+
+- Alpine Linux see https://wiki.alpinelinux.org/wiki/Fonts
+- Debian/Ubuntu see https://wiki.debian.org/Fonts
 
 ### TLS
 
