@@ -97,6 +97,11 @@ alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --ent
 - `/doc` Documentation
 - `/versions.json` JSON file with build versions of ffmpeg and libraries.
 - `/etc/ssl/cert.pem` CA certs to make `-tls_verify 1 -ca_file /etc/ssl/cert.pem` work if running image directly
+- Fonts, fontconfig config and pre-populated cache:
+  - `/etc/fonts`
+  - `/usr/share/fonts`
+  - `/usr/share/consolefonts`
+  - `/var/cache/fontconfig`
 
 ### Tags
 
@@ -116,6 +121,22 @@ Due to license issues the docker image does not include libfdk-aac by default. A
 ```
 docker build --build-arg ENABLE_FDKAAC=1 . -t my-ffmpeg-static:latest
 ```
+
+### Fonts usage with SVG or draw text filters etc
+
+The image ships with some basic fonts (`font-terminus font-inconsolata font-dejavu font-awesome`) that can be used when running the image directly. If your copying the binaries into some image you have to install fonts somehow. How to do this depends a bit on distributions but in general look for font packages and how to make [fontconfig](https://www.freedesktop.org/wiki/Software/fontconfig/) know about them.
+
+- Alpine Linux see https://wiki.alpinelinux.org/wiki/Fonts
+- Debian/Ubuntu see https://wiki.debian.org/Fonts
+
+### TLS
+
+Binaries are built with TLS support but, by default, ffmpeg currently do
+not do certificate verification. To enable verification you need to run
+ffmpeg with `-tls_verify 1` and `-ca_file /path/to/cert.pem`.
+
+- Alpine Linux at `/etc/ssl/cert.pem`
+- Debian/Ubuntu install the `ca-certificates` package at it will be available at `/etc/ssl/certs/ca-certificates.crt`.
 
 ### Known issues and tricks
 
@@ -140,22 +161,6 @@ docker run --rm mwader/static-ffmpeg -v quiet -f data -i versions.json -map 0 -c
 
 This could happen if the hostname resolve to more IP-addresses than can fit in [DNS UDP packet](https://www.rfc-editor.org/rfc/rfc791) (probably 512 bytes) causing the response to be truncated. Usually clients should then switch to TCP and redo the query.
 This should only be a problem with version 6.0-1 or earlier of this image that uses [musl libc](https://www.musl-libc.org) 1.2.3 or older.
-
-### Fonts usage with SVG or draw text filters etc
-
-The image ships with some basic fonts (`font-terminus font-inconsolata font-dejavu font-awesome`) that can be used when running the image directly. If your copying the binaries into some image you have to install fonts somehow. How to do this depends a bit on distributions but in general look for font packages and how to make [fontconfig](https://www.freedesktop.org/wiki/Software/fontconfig/) know about them.
-
-- Alpine Linux see https://wiki.alpinelinux.org/wiki/Fonts
-- Debian/Ubuntu see https://wiki.debian.org/Fonts
-
-### TLS
-
-Binaries are built with TLS support but, by default, ffmpeg currently do
-not do certificate verification. To enable verification you need to run
-ffmpeg with `-tls_verify 1` and `-ca_file /path/to/cert.pem`.
-
-- Alpine Linux at `/etc/ssl/cert.pem`
-- Debian/Ubuntu install the `ca-certificates` package at it will be available at `/etc/ssl/certs/ca-certificates.crt`.
 
 ### Docker Hub images
 
