@@ -148,7 +148,7 @@ Since version 5.0.1-3 dockerhub images are multi-arch amd64 and arm64 images.
 
 This will copy `ffmpeg` and `ffprobe` to the current directory:
 ```
-docker run --rm -v "$PWD:/out" $(echo -e 'FROM alpine\nCOPY --from=mwader/static-ffmpeg:latest /ff* /\nENTRYPOINT cp /ff* /out' | docker build -q -)
+docker run --rm -v "$PWD:/out" $(echo -e 'FROM alpine\nCOPY --from=mwader/static-ffmpeg:7.0.1 /ff* /\nENTRYPOINT cp /ff* /out' | docker build -q -)
 ```
 
 #### Quickly see what versions an image was built with
