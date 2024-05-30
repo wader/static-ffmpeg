@@ -75,8 +75,15 @@ ARG VMAF_SHA256=7178c4833639e6b989ecae73131d02f70735fdb3fc2c7d84bc36c9c3461d93b1
 RUN \
   wget $WGET_OPTS -O vmaf.tar.gz "$VMAF_URL" && \
   echo "$VMAF_SHA256  vmaf.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS vmaf.tar.gz && \
-  cd vmaf-*/libvmaf && meson build --buildtype=release -Ddefault_library=static -Dbuilt_in_models=true -Denable_tests=false -Denable_docs=false -Denable_avx512=true -Denable_float=true && \
+  tar $TAR_OPTS vmaf.tar.gz && cd vmaf-*/libvmaf && \
+  meson setup build \
+    -Dbuildtype=release \
+    -Ddefault_library=static \
+    -Dbuilt_in_models=true \
+    -Denable_tests=false \
+    -Denable_docs=false \
+    -Denable_avx512=true \
+    -Denable_float=true && \
   ninja -j$(nproc) -vC build install
 # extra libs stdc++ is for vmaf https://github.com/Netflix/vmaf/issues/788
 RUN sed -i 's/-lvmaf /-lvmaf -lstdc++ /' /usr/local/lib/pkgconfig/libvmaf.pc
@@ -91,16 +98,12 @@ ARG GLIB_SHA256=b9cfb6f7a5bd5b31238fd5d56df226b2dda5ea37611475bf89f6a0f9400fe8bd
 RUN \
   wget -O glib.tar.xz "$GLIB_URL" && \
   echo "$GLIB_SHA256  glib.tar.xz" | sha256sum --status -c - && \
-  tar xf glib.tar.xz && \
-  cd glib-* && \
-  mkdir -p _build && \
-  meson \
+  tar $TAR_OPTS glib.tar.xz && cd glib-* && \
+  meson setup build \
     -Dbuildtype=release \
     -Ddefault_library=static \
-    -Dlibmount=disabled \
-    build && \
-  meson compile -C build && \
-  meson install --no-rebuild -C build
+    -Dlibmount=disabled && \
+  ninja -j$(nproc) -vC build install
 
 # bump: harfbuzz /LIBHARFBUZZ_VERSION=([\d.]+)/ https://github.com/harfbuzz/harfbuzz.git|*
 # bump: harfbuzz after ./hashupxate Dockerfile LIBHARFBUZZ $LATEST
@@ -111,15 +114,11 @@ ARG LIBHARFBUZZ_SHA256=77e4f7f98f3d86bf8788b53e6832fb96279956e1c3961988ea3d4b7ca
 RUN \
   wget -O harfbuzz.tar.xz "$LIBHARFBUZZ_URL" && \
   echo "$LIBHARFBUZZ_SHA256  harfbuzz.tar.xz" | sha256sum --status -c - && \
-  tar xf harfbuzz.tar.xz && \
-  cd harfbuzz-* && \
-  mkdir -p _build && \
-  meson \
+  tar $TAR_OPTS harfbuzz.tar.xz && cd harfbuzz-* && \
+  meson setup build \
     -Dbuildtype=release \
-    -Ddefault_library=static \
-    build && \
-  meson compile -C build && \
-  meson install --no-rebuild -C build
+    -Ddefault_library=static && \
+  ninja -j$(nproc) -vC build install
 
 # bump: cairo /CAIRO_VERSION=([\d.]+)/ https://gitlab.freedesktop.org/cairo/cairo.git|^1
 # bump: cairo after ./hashupxate Dockerfile CAIRO $LATEST
@@ -130,20 +129,16 @@ ARG CAIRO_SHA256=243a0736b978a33dee29f9cca7521733b78a65b5418206fef7bd1c3d4cf10b6
 RUN \
   wget -O cairo.tar.xz "$CAIRO_URL" && \
   echo "$CAIRO_SHA256  cairo.tar.xz" | sha256sum --status -c - && \
-  tar xf cairo.tar.xz && \
-  cd cairo-* && \
-  mkdir -p _build && \
-  meson \
+  tar $TAR_OPTS cairo.tar.xz && cd cairo-* && \
+  meson setup build \
     -Dbuildtype=release \
     -Ddefault_library=static \
     -Dtests=disabled \
     -Dquartz=disabled \
     -Dxcb=disabled \
     -Dxlib=disabled \
-    -Dxlib-xcb=disabled \
-    build && \
-  meson compile -C build && \
-  meson install --no-rebuild -C build
+    -Dxlib-xcb=disabled && \
+  ninja -j$(nproc) -vC build install
 
 # TODO: there is weird "1.90" tag, skip it
 # bump: pango /PANGO_VERSION=([\d.]+)/ https://github.com/GNOME/pango.git|/\d+\.\d+\.\d+/|*
@@ -157,17 +152,13 @@ ARG PANGO_SHA256=d0076afe01082814b853deec99f9349ece5f2ce83908b8e58ff736b41f78a96
 RUN \
   wget -O pango.tar.xz "$PANGO_URL" && \
   echo "$PANGO_SHA256  pango.tar.xz" | sha256sum --status -c - && \
-  tar xf pango.tar.xz && \
-  cd pango-* && \
-  mkdir -p _build && \
-  meson \
+  tar $TAR_OPTS pango.tar.xz && cd pango-* && \
+  meson setup build \
     -Dbuildtype=release \
     -Ddefault_library=both \
     -Dintrospection=disabled \
-    -Dgtk_doc=false \
-    build && \
-  meson compile -C build && \
-  meson install --no-rebuild -C build
+    -Dgtk_doc=false && \
+  ninja -j$(nproc) -vC build install
 
 # bump: librsvg /LIBRSVG_VERSION=([\d.]+)/ https://gitlab.gnome.org/GNOME/librsvg.git|^2
 # bump: librsvg after ./hashupxate Dockerfile LIBRSVG $LATEST
@@ -178,10 +169,8 @@ ARG LIBRSVG_SHA256=65846ae57c11aba288bf3a6fe517f800f7e38e7fbc79b98c99a8177634ed2
 RUN \
   wget -O librsvg.tar.xz "$LIBRSVG_URL" && \
   echo "$LIBRSVG_SHA256  librsvg.tar.xz" | sha256sum --status -c - && \
-  tar xf librsvg.tar.xz && \
-  cd librsvg-* && \
-  mkdir -p _build && \
-  meson setup _build \
+  tar $TAR_OPTS librsvg.tar.xz && cd librsvg-* && \
+  meson setup build \
     -Dbuildtype=release \
     -Ddefault_library=static \
     -Ddocs=disabled \
@@ -190,8 +179,7 @@ RUN \
     -Dpixbuf-loader=disabled \
     -Dvala=disabled \
     -Dtests=false && \
-  meson compile -C _build && \
-  meson install -C _build
+  ninja -j$(nproc) -vC build install
 
 # build after libvmaf
 # bump: aom /AOM_VERSION=([\d.]+)/ git:https://aomedia.googlesource.com/aom|*
@@ -231,10 +219,11 @@ RUN \
   wget $WGET_OPTS -O libaribb24.tar.gz "$LIBARIBB24_URL" && \
   echo "$LIBARIBB24_SHA256  libaribb24.tar.gz" | sha256sum -c - && \
   mkdir libaribb24 && \
-  tar $TAR_OPTS libaribb24.tar.gz -C libaribb24 --strip-components=1 && \
-  cd libaribb24 && \
+  tar $TAR_OPTS libaribb24.tar.gz -C libaribb24 --strip-components=1 && cd libaribb24 && \
   autoreconf -fiv && \
-  ./configure --enable-static --disable-shared && \
+  ./configure \
+    --enable-static \
+    --disable-shared && \
   make -j$(nproc) && make install
 
 # bump: libass /LIBASS_VERSION=([\d.]+)/ https://github.com/libass/libass.git|*
@@ -246,8 +235,10 @@ ARG LIBASS_SHA256=a9afb52bf76a2569263fe2038896774c991b35c0968342a03be708e56ea60c
 RUN \
   wget $WGET_OPTS -O libass.tar.gz "$LIBASS_URL" && \
   echo "$LIBASS_SHA256  libass.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS libass.tar.gz && \
-  cd libass-* && ./configure --disable-shared --enable-static && \
+  tar $TAR_OPTS libass.tar.gz && cd libass-* && \
+  ./configure \
+    --disable-shared \
+    --enable-static && \
   make -j$(nproc) && make install
 
 # bump: libbluray /LIBBLURAY_VERSION=([\d.]+)/ https://code.videolan.org/videolan/libbluray.git|*
@@ -262,8 +253,7 @@ ARG LIBUDFREAD_COMMIT=a35513813819efadca82c4b90edbe1407b1b9e05
 RUN \
   wget $WGET_OPTS -O libbluray.tar.gz "$LIBBLURAY_URL" && \
   echo "$LIBBLURAY_SHA256  libbluray.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS libbluray.tar.gz && \
-  cd libbluray-* && \
+  tar $TAR_OPTS libbluray.tar.gz && cd libbluray-* && \
   sed -i 's/dec_init/libbluray_dec_init/' src/libbluray/disc/* && \
   git clone https://code.videolan.org/videolan/libudfread.git contrib/libudfread && \
   (cd contrib/libudfread && git checkout --recurse-submodules $LIBUDFREAD_COMMIT) && \
@@ -287,9 +277,11 @@ ARG DAV1D_SHA256=fdcf77c191eae67812f5e0f09a146bd8533f10f3f8018a861dca68ea735e73a
 RUN \
   wget $WGET_OPTS -O dav1d.tar.gz "$DAV1D_URL" && \
   echo "$DAV1D_SHA256  dav1d.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS dav1d.tar.gz && \
-  cd dav1d-* && meson build --buildtype release -Ddefault_library=static && \
-  ninja -j$(nproc) -C build install
+  tar $TAR_OPTS dav1d.tar.gz && cd dav1d-* && \
+  meson setup build \
+    -Dbuildtype=release \
+    -Ddefault_library=static && \
+  ninja -j$(nproc) -vC build install
 
 # bump: davs2 /DAVS2_VERSION=([\d.]+)/ https://github.com/pkuvcl/davs2.git|^1
 # bump: davs2 after ./hashupdate Dockerfile DAVS2 $LATEST
@@ -302,8 +294,12 @@ ARG DAVS2_SHA256=b697d0b376a1c7f7eda3a4cc6d29707c8154c4774358303653f0a9727f923cc
 RUN \
   wget $WGET_OPTS -O davs2.tar.gz "$DAVS2_URL" && \
   echo "$DAVS2_SHA256  davs2.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS davs2.tar.gz && \
-  cd davs2-*/build/linux && ./configure --disable-asm --enable-pic --enable-strip --disable-cli && \
+  tar $TAR_OPTS davs2.tar.gz && cd davs2-*/build/linux && \
+  ./configure \
+    --disable-asm \
+    --enable-pic \
+    --enable-strip \
+    --disable-cli && \
   make -j$(nproc) install
 
 # bump: fdk-aac /FDK_AAC_VERSION=([\d.]+)/ https://github.com/mstorsjo/fdk-aac.git|*
@@ -316,8 +312,11 @@ ARG FDK_AAC_SHA256=e25671cd96b10bad896aa42ab91a695a9e573395262baed4e4a2ff178d6a3
 RUN \
   wget $WGET_OPTS -O fdk-aac.tar.gz "$FDK_AAC_URL" && \
   echo "$FDK_AAC_SHA256  fdk-aac.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS fdk-aac.tar.gz && \
-  cd fdk-aac-* && ./autogen.sh && ./configure --disable-shared --enable-static && \
+  tar $TAR_OPTS fdk-aac.tar.gz && cd fdk-aac-* && \
+  ./autogen.sh && \
+  ./configure \
+    --disable-shared \
+    --enable-static && \
   make -j$(nproc) install
 
 # bump: libgme /LIBGME_COMMIT=([[:xdigit:]]+)/ gitrefs:https://github.com/libgme/game-music-emu.git|re:#^refs/heads/master$#|@commit
@@ -365,8 +364,11 @@ ARG KVAZAAR_SHA256=c5a1699d0bd50bc6bdba485b3438a5681a43d7b2c4fd6311a144740bfa59c
 RUN \
   wget $WGET_OPTS -O kvazaar.tar.gz "$KVAZAAR_URL" && \
   echo "$KVAZAAR_SHA256  kvazaar.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS kvazaar.tar.gz && \
-  cd kvazaar-* && ./autogen.sh && ./configure --disable-shared --enable-static && \
+  tar $TAR_OPTS kvazaar.tar.gz && cd kvazaar-* && \
+  ./autogen.sh && \
+  ./configure \
+    --disable-shared \
+    --enable-static && \
   make -j$(nproc) install
 
 # bump: libmodplug /LIBMODPLUG_VERSION=([\d.]+)/ fetch:https://sourceforge.net/projects/modplug-xmms/files/|/libmodplug-([\d.]+).tar.gz/
@@ -378,8 +380,10 @@ ARG LIBMODPLUG_SHA256=457ca5a6c179656d66c01505c0d95fafaead4329b9dbaa0f997d00a350
 RUN \
   wget $WGET_OPTS -O libmodplug.tar.gz "$LIBMODPLUG_URL" && \
   echo "$LIBMODPLUG_SHA256  libmodplug.tar.gz" | sha256sum -c && \
-  tar $TAR_OPTS libmodplug.tar.gz && \
-  cd libmodplug-* && ./configure --disable-shared --enable-static && \
+  tar $TAR_OPTS libmodplug.tar.gz && cd libmodplug-* && \
+  ./configure \
+    --disable-shared \
+    --enable-static && \
   make -j$(nproc) install
 
 # bump: mp3lame /MP3LAME_VERSION=([\d.]+)/ svn:http://svn.code.sf.net/p/lame/svn|/^RELEASE__(.*)$/|/_/./|*
@@ -391,8 +395,14 @@ ARG MP3LAME_SHA256=ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1d
 RUN \
   wget $WGET_OPTS -O lame.tar.gz "$MP3LAME_URL" && \
   echo "$MP3LAME_SHA256  lame.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS lame.tar.gz && \
-  cd lame-* && ./configure --disable-shared --enable-static --enable-nasm --disable-gtktest --disable-cpml --disable-frontend && \
+  tar $TAR_OPTS lame.tar.gz && cd lame-* && \
+  ./configure \
+    --disable-shared \
+    --enable-static \
+    --enable-nasm \
+    --disable-gtktest \
+    --disable-cpml \
+    --disable-frontend && \
   make -j$(nproc) install
 
 # bump: lcms2 /LCMS2_VERSION=([\d.]+)/ https://github.com/mm2/Little-CMS.git|^2
@@ -404,9 +414,11 @@ ARG LCMS2_SHA256=d873d34ad8b9b4cea010631f1a6228d2087475e4dc5e763eb81acc23d9d45a5
 RUN \
   wget -O lcms2.tar.gz "$LCMS2_URL" && \
   echo "$LCMS2_SHA256  lcms2.tar.gz" | sha256sum -c - && \
-  tar xfz lcms2.tar.gz && \
-  cd lcms2-* && \
-  ./autogen.sh && ./configure --enable-static --disable-shared && \
+  tar $TAR_OPTS lcms2.tar.gz && cd lcms2-* && \
+  ./autogen.sh && \
+  ./configure \
+    --enable-static \
+    --disable-shared && \
   make -j$(nproc) install
 
 # bump: libmysofa /LIBMYSOFA_VERSION=([\d.]+)/ https://github.com/hoene/libmysofa.git|^1
@@ -419,8 +431,7 @@ ARG LIBMYSOFA_SHA256=6c5224562895977e87698a64cb7031361803d136057bba35ed4979b69ab
 RUN \
   wget $WGET_OPTS -O libmysofa.tar.gz "$LIBMYSOFA_URL" && \
   echo "$LIBMYSOFA_SHA256  libmysofa.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS libmysofa.tar.gz && \
-  cd libmysofa-*/build && \
+  tar $TAR_OPTS libmysofa.tar.gz && cd libmysofa-*/build && \
   cmake \
     -G"Unix Makefiles" \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
@@ -440,8 +451,10 @@ ARG OPENCOREAMR_SHA256=483eb4061088e2b34b358e47540b5d495a96cd468e361050fae615b18
 RUN \
   wget $WGET_OPTS -O opencoreamr.tar.gz "$OPENCOREAMR_URL" && \
   echo "$OPENCOREAMR_SHA256  opencoreamr.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS opencoreamr.tar.gz && \
-  cd opencore-amr-* && ./configure --enable-static --disable-shared && \
+  tar $TAR_OPTS opencoreamr.tar.gz && cd opencore-amr-* && \
+  ./configure \
+    --enable-static \
+    --disable-shared && \
   make -j$(nproc) install
 
 # bump: openjpeg /OPENJPEG_VERSION=([\d.]+)/ https://github.com/uclouvain/openjpeg.git|*
@@ -453,8 +466,8 @@ ARG OPENJPEG_SHA256=90e3896fed910c376aaf79cdd98bdfdaf98c6472efd8e1debf0a854938cb
 RUN \
   wget $WGET_OPTS -O openjpeg.tar.gz "$OPENJPEG_URL" && \
   echo "$OPENJPEG_SHA256  openjpeg.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS openjpeg.tar.gz && \
-  cd openjpeg-* && mkdir build && cd build && \
+  tar $TAR_OPTS openjpeg.tar.gz && cd openjpeg-* && \
+  mkdir build && cd build && \
   cmake \
     -G"Unix Makefiles" \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
@@ -477,8 +490,12 @@ ARG OPUS_SHA256=65c1d2f78b9f2fb20082c38cbe47c951ad5839345876e46941612ee87f9a7ce1
 RUN \
   wget $WGET_OPTS -O opus.tar.gz "$OPUS_URL" && \
   echo "$OPUS_SHA256  opus.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS opus.tar.gz && \
-  cd opus-* && ./configure --disable-shared --enable-static --disable-extra-programs --disable-doc && \
+  tar $TAR_OPTS opus.tar.gz && cd opus-* && \
+  ./configure \
+    --disable-shared \
+    --enable-static \
+    --disable-extra-programs \
+    --disable-doc && \
   make -j$(nproc) install
 
 # bump: librabbitmq /LIBRABBITMQ_VERSION=([\d.]+)/ https://github.com/alanxz/rabbitmq-c.git|*
@@ -490,8 +507,8 @@ ARG LIBRABBITMQ_SHA256=839b28eae20075ac58f45925fe991d16a3138cbde015db0ee11df1acb
 RUN \
   wget $WGET_OPTS -O rabbitmq-c.tar.gz "$LIBRABBITMQ_URL" && \
   echo "$LIBRABBITMQ_SHA256  rabbitmq-c.tar.gz" | sha256sum -c - && \
-  tar xfz rabbitmq-c.tar.gz && \
-  cd rabbitmq-c-* && mkdir build && cd build && \
+  tar $TAR_OPTS rabbitmq-c.tar.gz && cd rabbitmq-c-* && \
+  mkdir build && cd build && \
   cmake \
     -G"Unix Makefiles" \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
@@ -517,11 +534,11 @@ ARG RAV1E_SHA256=da7ae0df2b608e539de5d443c096e109442cdfa6c5e9b4014361211cf61d030
 RUN \
   wget $WGET_OPTS -O rav1e.tar.gz "$RAV1E_URL" && \
   echo "$RAV1E_SHA256  rav1e.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS rav1e.tar.gz && \
-  cd rav1e-* && \
+  tar $TAR_OPTS rav1e.tar.gz && cd rav1e-* && \
   # workaround weird cargo problem when on aws (?) weirdly alpine edge seems to work
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL="sparse" \
-  RUSTFLAGS="-C target-feature=+crt-static" cargo cinstall --release
+  RUSTFLAGS="-C target-feature=+crt-static" \
+  cargo cinstall --release
 
 # bump: librtmp /LIBRTMP_COMMIT=([[:xdigit:]]+)/ gitrefs:https://git.ffmpeg.org/rtmpdump.git|re:#^refs/heads/master$#|@commit
 # bump: librtmp after ./hashupdate Dockerfile LIBRTMP $LATEST
@@ -529,8 +546,7 @@ RUN \
 ARG LIBRTMP_URL="https://git.ffmpeg.org/rtmpdump.git"
 ARG LIBRTMP_COMMIT=6f6bb1353fc84f4cc37138baa99f586750028a01
 RUN \
-  git clone "$LIBRTMP_URL" && \
-  cd rtmpdump && \
+  git clone "$LIBRTMP_URL" && cd rtmpdump && \
   git checkout --recurse-submodules $LIBRTMP_COMMIT && \
   make SYS=posix SHARED=off -j$(nproc) install
 
@@ -544,9 +560,11 @@ ARG RUBBERBAND_SHA256=b9eac027e797789ae99611c9eaeaf1c3a44cc804f9c8a0441a0d1d26f3
 RUN \
   wget $WGET_OPTS -O rubberband.tar.bz2 "$RUBBERBAND_URL" && \
   echo "$RUBBERBAND_SHA256  rubberband.tar.bz2" | sha256sum -c - && \
-  tar $TAR_OPTS rubberband.tar.bz2 && \
-  cd rubberband-* && \
-  meson -Ddefault_library=static -Dfft=fftw -Dresampler=libsamplerate build && \
+  tar $TAR_OPTS rubberband.tar.bz2 && cd rubberband-* && \
+  meson setup build \
+    -Ddefault_library=static \
+    -Dfft=fftw \
+    -Dresampler=libsamplerate && \
   ninja -j$(nproc) -vC build install && \
   echo "Requires.private: fftw3 samplerate" >> /usr/local/lib/pkgconfig/rubberband.pc
 
@@ -561,7 +579,11 @@ RUN \
   wget $WGET_OPTS -O libshine.tar.gz "$LIBSHINE_URL" && \
   echo "$LIBSHINE_SHA256  libshine.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS libshine.tar.gz && cd shine* && \
-  ./configure --with-pic --enable-static --disable-shared --disable-fast-install && \
+  ./configure \
+    --with-pic \
+    --enable-static \
+    --disable-shared \
+    --disable-fast-install && \
   make -j$(nproc) install
 
 # bump: speex /SPEEX_VERSION=([\d.]+)/ https://github.com/xiph/speex.git|*
@@ -574,8 +596,11 @@ ARG SPEEX_SHA256=beaf2642e81a822eaade4d9ebf92e1678f301abfc74a29159c4e721ee70fdce
 RUN \
   wget $WGET_OPTS -O speex.tar.gz "$SPEEX_URL" && \
   echo "$SPEEX_SHA256  speex.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS speex.tar.gz && \
-  cd speex-Speex-* && ./autogen.sh && ./configure --disable-shared --enable-static && \
+  tar $TAR_OPTS speex.tar.gz && cd speex-Speex-* && \
+  ./autogen.sh && \
+  ./configure \
+    --disable-shared \
+    --enable-static && \
   make -j$(nproc) install
 
 # bump: srt /SRT_VERSION=([\d.]+)/ https://github.com/Haivision/srt.git|^1
@@ -587,7 +612,8 @@ ARG SRT_SHA256=befaeb16f628c46387b898df02bc6fba84868e86a6f6d8294755375b9932d777
 RUN \
   wget $WGET_OPTS -O libsrt.tar.gz "$SRT_URL" && \
   echo "$SRT_SHA256  libsrt.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS libsrt.tar.gz && cd srt-* && mkdir build && cd build && \
+  tar $TAR_OPTS libsrt.tar.gz && cd srt-* && \
+  mkdir build && cd build && \
   cmake \
     -G"Unix Makefiles" \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
@@ -616,7 +642,8 @@ ARG LIBSSH_SHA256=3a29ee78cbe0305459fc8a337b3b0dc3335b7724299dc69ab2657607746a1d
 RUN \
   wget $WGET_OPTS -O libssh.tar.gz "$LIBSSH_URL" && \
   echo "$LIBSSH_SHA256  libssh.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS libssh.tar.gz && cd libssh* && mkdir build && cd build && \
+  tar $TAR_OPTS libssh.tar.gz && cd libssh* && \
+  mkdir build && cd build && \
   echo -e 'Requires.private: libssl libcrypto zlib \nLibs.private: -DLIBSSH_STATIC=1 -lssh\nCflags.private: -DLIBSSH_STATIC=1 -I${CMAKE_INSTALL_FULL_INCLUDEDIR}' >> ../libssh.pc.cmake && \
   cmake \
     -G"Unix Makefiles" \
@@ -642,7 +669,7 @@ RUN \
     -DWITH_EXAMPLES=OFF \
     -DWITH_INTERNAL_DOC=OFF \
     .. && \
-  make install
+  make -j$(nproc) install
 
 # bump: svtav1 /SVTAV1_VERSION=([\d.]+)/ https://gitlab.com/AOMediaCodec/SVT-AV1.git|*
 # bump: svtav1 after ./hashupdate Dockerfile SVTAV1 $LATEST
@@ -653,8 +680,7 @@ ARG SVTAV1_SHA256=2bfd098770bba185cd1ced8e1ff389837e3dca0d8b5cfb0d97c925a61dbbf9
 RUN \
   wget $WGET_OPTS -O svtav1.tar.bz2 "$SVTAV1_URL" && \
   echo "$SVTAV1_SHA256  svtav1.tar.bz2" | sha256sum -c - && \
-  tar $TAR_OPTS svtav1.tar.bz2 && \
-  cd SVT-AV1-*/Build && \
+  tar $TAR_OPTS svtav1.tar.bz2 && cd SVT-AV1-*/Build && \
   cmake \
     -G"Unix Makefiles" \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
@@ -675,8 +701,10 @@ ARG OGG_SHA256=0eb4b4b9420a0f51db142ba3f9c64b333f826532dc0f48c6410ae51f4799b664
 RUN \
   wget $WGET_OPTS -O libogg.tar.gz "$OGG_URL" && \
   echo "$OGG_SHA256  libogg.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS libogg.tar.gz && \
-  cd libogg-* && ./configure --disable-shared --enable-static && \
+  tar $TAR_OPTS libogg.tar.gz && cd libogg-* && \
+  ./configure \
+    --disable-shared \
+    --enable-static && \
   make -j$(nproc) install
 
 # bump: theora /THEORA_VERSION=([\d.]+)/ https://github.com/xiph/theora.git|*
@@ -689,10 +717,15 @@ ARG THEORA_SHA256=b6ae1ee2fa3d42ac489287d3ec34c5885730b1296f0801ae577a35193d3aff
 RUN \
   wget $WGET_OPTS -O libtheora.tar.bz2 "$THEORA_URL" && \
   echo "$THEORA_SHA256  libtheora.tar.bz2" | sha256sum -c - && \
-  tar $TAR_OPTS libtheora.tar.bz2 && \
+  tar $TAR_OPTS libtheora.tar.bz2 && cd libtheora-* && \
   # --build=$(arch)-unknown-linux-gnu helps with guessing the correct build. For some reason,
   # build script can't guess the build type in arm64 (hardware and emulated) environment.
-  cd libtheora-* && ./configure --build=$(arch)-unknown-linux-gnu --disable-examples --disable-oggtest --disable-shared --enable-static && \
+ ./configure \
+   --build=$(arch)-unknown-linux-gnu \
+   --disable-examples \
+   --disable-oggtest \
+   --disable-shared \
+   --enable-static && \
   make -j$(nproc) install
 
 # bump: twolame /TWOLAME_VERSION=([\d.]+)/ https://github.com/njh/twolame.git|*
@@ -704,8 +737,12 @@ ARG TWOLAME_SHA256=cc35424f6019a88c6f52570b63e1baf50f62963a3eac52a03a800bb070d7c
 RUN \
   wget $WGET_OPTS -O twolame.tar.gz "$TWOLAME_URL" && \
   echo "$TWOLAME_SHA256  twolame.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS twolame.tar.gz && \
-  cd twolame-* && ./configure --disable-shared --enable-static --disable-sndfile --with-pic && \
+  tar $TAR_OPTS twolame.tar.gz && cd twolame-* && \
+  ./configure \
+    --disable-shared \
+    --enable-static \
+    --disable-sndfile \
+    --with-pic && \
   make -j$(nproc) install
 
 # bump: uavs3d /UAVS3D_COMMIT=([[:xdigit:]]+)/ gitrefs:https://github.com/uavs3/uavs3d.git|re:#^refs/heads/master$#|@commit
@@ -715,8 +752,7 @@ ARG UAVS3D_URL="https://github.com/uavs3/uavs3d.git"
 ARG UAVS3D_COMMIT=1fd04917cff50fac72ae23e45f82ca6fd9130bd8
 # Removes BIT_DEPTH 10 to be able to build on other platforms. 10 was overkill anyways.
 RUN \
-  git clone "$UAVS3D_URL" && \
-  cd uavs3d && \
+  git clone "$UAVS3D_URL" && cd uavs3d && \
   git checkout --recurse-submodules $UAVS3D_COMMIT && \
   mkdir build/linux && cd build/linux && \
   cmake \
@@ -736,8 +772,8 @@ ARG VIDSTAB_SHA256=9001b6df73933555e56deac19a0f225aae152abbc0e97dc70034814a1943f
 RUN \
   wget $WGET_OPTS -O vid.stab.tar.gz "$VIDSTAB_URL" && \
   echo "$VIDSTAB_SHA256  vid.stab.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS vid.stab.tar.gz && \
-  cd vid.stab-* && mkdir build && cd build && \
+  tar $TAR_OPTS vid.stab.tar.gz && cd vid.stab-* && \
+  mkdir build && cd build && \
   # This line workarounds the issue that happens when the image builds in emulated (buildx) arm64 environment.
   # Since in emulated container the /proc is mounted from the host, the cmake not able to detect CPU features correctly.
   sed -i 's/include (FindSSE)/if(CMAKE_SYSTEM_ARCH MATCHES "amd64")\ninclude (FindSSE)\nendif()/' ../CMakeLists.txt && \
@@ -762,8 +798,11 @@ ARG VORBIS_SHA256=0e982409a9c3fc82ee06e08205b1355e5c6aa4c36bca58146ef399621b0ce5
 RUN \
   wget $WGET_OPTS -O libvorbis.tar.gz "$VORBIS_URL" && \
   echo "$VORBIS_SHA256  libvorbis.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS libvorbis.tar.gz && \
-  cd libvorbis-* && ./configure --disable-shared --enable-static --disable-oggtest && \
+  tar $TAR_OPTS libvorbis.tar.gz && cd libvorbis-* && \
+  ./configure \
+    --disable-shared \
+    --enable-static \
+    --disable-oggtest && \
   make -j$(nproc) install
 
 # bump: libvpx /VPX_VERSION=([\d.]+)/ https://github.com/webmproject/libvpx.git|*
@@ -776,8 +815,7 @@ ARG VPX_SHA256=5f21d2db27071c8a46f1725928a10227ae45c5cd1cad3727e4aafbe476e321fa
 RUN \
   wget $WGET_OPTS -O libvpx.tar.gz "$VPX_URL" && \
   echo "$VPX_SHA256  libvpx.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS libvpx.tar.gz && \
-  cd libvpx-* && \
+  tar $TAR_OPTS libvpx.tar.gz && cd libvpx-* && \
   ./configure \
     --enable-static \
     --enable-vp9-highbitdepth \
@@ -796,8 +834,7 @@ ARG LIBWEBP_SHA256=12af50c45530f0a292d39a88d952637e43fb2d4ab1883c44ae729840f7273
 RUN \
   wget $WGET_OPTS -O libwebp.tar.gz "$LIBWEBP_URL" && \
   echo "$LIBWEBP_SHA256  libwebp.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS libwebp.tar.gz && \
-  cd libwebp-* && \
+  tar $TAR_OPTS libwebp.tar.gz && cd libwebp-* && \
   ./autogen.sh && \
   ./configure \
     --disable-shared \
@@ -821,10 +858,14 @@ RUN \
 ARG X264_URL="https://code.videolan.org/videolan/x264.git"
 ARG X264_VERSION=31e19f92f00c7003fa115047ce50978bc98c3a0d
 RUN \
-  git clone "$X264_URL" && \
-  cd x264 && \
+  git clone "$X264_URL" && cd x264 && \
   git checkout --recurse-submodules $X264_VERSION && \
-  ./configure --enable-pic --enable-static --disable-cli --disable-lavf --disable-swscale && \
+  ./configure \
+    --enable-pic \
+    --enable-static \
+    --disable-cli \
+    --disable-lavf \
+    --disable-swscale && \
   make -j$(nproc) install
 
 # x265 release is over 1 years old and master branch has a lot of fixes and improvements, so we checkout commit so no hash is needed
@@ -839,8 +880,7 @@ ARG X265_URL="https://bitbucket.org/multicoreware/x265_git/get/$X265_VERSION.tar
 RUN \
   wget $WGET_OPTS -O x265_git.tar.bz2 "$X265_URL" && \
   echo "$X265_SHA256  x265_git.tar.bz2" | sha256sum -c - && \
-  tar $TAR_OPTS x265_git.tar.bz2 && \
-  cd multicoreware-x265_git-*/build/linux && \
+  tar $TAR_OPTS x265_git.tar.bz2 && cd multicoreware-x265_git-*/build/linux && \
   sed -i '/^cmake / s/$/ -G "Unix Makefiles" ${CMAKEFLAGS}/' ./multilib.sh && \
   sed -i 's/ -DENABLE_SHARED=OFF//g' ./multilib.sh && \
   MAKEFLAGS="-j$(nproc)" \
@@ -859,8 +899,11 @@ ARG XAVS2_SHA256=1e6d731cd64cb2a8940a0a3fd24f9c2ac3bb39357d802432a47bc20bad52c6c
 RUN \
   wget $WGET_OPTS -O xavs2.tar.gz "$XAVS2_URL" && \
   echo "$XAVS2_SHA256  xavs2.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS xavs2.tar.gz && \
-  cd xavs2-*/build/linux && ./configure --disable-asm --enable-pic --disable-cli && \
+  tar $TAR_OPTS xavs2.tar.gz && cd xavs2-*/build/linux && \
+  ./configure \
+    --disable-asm \
+    --enable-pic \
+    --disable-cli && \
   make -j$(nproc) install
 
 # http://websvn.xvid.org/cvs/viewvc.cgi/trunk/xvidcore/build/generic/configure.in?revision=2146&view=markup
@@ -873,8 +916,7 @@ ARG XVID_SHA256=abbdcbd39555691dd1c9b4d08f0a031376a3b211652c0d8b3b8aa9be1303ce2d
 RUN \
   wget $WGET_OPTS -O libxvid.tar.gz "$XVID_URL" && \
   echo "$XVID_SHA256  libxvid.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS libxvid.tar.gz && \
-  cd xvidcore/build/generic && \
+  tar $TAR_OPTS libxvid.tar.gz && cd xvidcore/build/generic && \
   CFLAGS="$CFLAGS -fstrength-reduce -ffast-math" ./configure && \
   make -j$(nproc) && make install
 
@@ -913,8 +955,7 @@ ARG XEVD_SHA256=8d55c7ec1a9ad4e70fe91fbe129a1d4dd288bce766f466cba07a29452b3cecd8
 RUN \
   wget $WGET_OPTS -O xevd.tar.gz "$XEVD_URL" && \
   echo "$XEVD_SHA256  xevd.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS xevd.tar.gz && \
-  cd xevd-* && \
+  tar $TAR_OPTS xevd.tar.gz && cd xevd-* && \
   echo v$XEVD_VERSION > version.txt && \
   sed -i 's/mc_filter_bilin/xevdm_mc_filter_bilin/' src_main/sse/xevdm_mc_sse.c && \
   mkdir build && cd build && \
@@ -935,8 +976,11 @@ ARG ZIMG_SHA256=a9a0226bf85e0d83c41a8ebe4e3e690e1348682f6a2a7838f1b8cbff1b799bcf
 RUN \
   wget $WGET_OPTS -O zimg.tar.gz "$ZIMG_URL" && \
   echo "$ZIMG_SHA256  zimg.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS zimg.tar.gz && \
-  cd zimg-* && ./autogen.sh && ./configure --disable-shared --enable-static && \
+  tar $TAR_OPTS zimg.tar.gz && cd zimg-* && \
+  ./autogen.sh && \
+  ./configure \
+    --disable-shared \
+    --enable-static && \
   make -j$(nproc) install
 
 # bump: libjxl /LIBJXL_VERSION=([\d.]+)/ https://github.com/libjxl/libjxl.git|^0
@@ -949,8 +993,7 @@ ARG LIBJXL_SHA256=95e807f63143856dc4d161c071cca01115d2c6405b3d3209854ac6989dc6bb
 RUN \
   wget $WGET_OPTS -O libjxl.tar.gz "$LIBJXL_URL" && \
   echo "$LIBJXL_SHA256  libjxl.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS libjxl.tar.gz && \
-  cd libjxl-* && \
+  tar $TAR_OPTS libjxl.tar.gz && cd libjxl-* && \
   ./deps.sh && \
   cmake -B build \
     -G"Unix Makefiles" \
@@ -998,9 +1041,8 @@ ARG ENABLE_FDKAAC=
 RUN \
   wget $WGET_OPTS -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
   echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum -c - && \
-  tar $TAR_OPTS ffmpeg.tar.bz2 && \
+  tar $TAR_OPTS ffmpeg.tar.bz2 && cd ffmpeg-* && \
   FDKAAC_FLAGS=$(if [[ -n "$ENABLE_FDKAAC" ]] ;then echo " --enable-libfdk-aac --enable-nonfree " ;else echo ""; fi) && \
-  cd ffmpeg-* && \
   sed -i 's/add_ldexeflags -fPIE -pie/add_ldexeflags -fPIE -static-pie/' configure && \
   ./configure \
   --pkg-config-flags="--static" \
