@@ -99,7 +99,7 @@ ARG GLIB_VERSION=2.80.2
 ARG GLIB_URL="https://download.gnome.org/sources/glib/2.80/glib-$GLIB_VERSION.tar.xz"
 ARG GLIB_SHA256=b9cfb6f7a5bd5b31238fd5d56df226b2dda5ea37611475bf89f6a0f9400fe8bd
 RUN \
-  wget -O glib.tar.xz "$GLIB_URL" && \
+  wget $WGET_OPTS -O glib.tar.xz "$GLIB_URL" && \
   echo "$GLIB_SHA256  glib.tar.xz" | sha256sum --status -c - && \
   tar $TAR_OPTS glib.tar.xz && cd glib-* && \
   meson setup build \
@@ -115,7 +115,7 @@ ARG LIBHARFBUZZ_VERSION=8.5.0
 ARG LIBHARFBUZZ_URL="https://github.com/harfbuzz/harfbuzz/releases/download/$LIBHARFBUZZ_VERSION/harfbuzz-$LIBHARFBUZZ_VERSION.tar.xz"
 ARG LIBHARFBUZZ_SHA256=77e4f7f98f3d86bf8788b53e6832fb96279956e1c3961988ea3d4b7ca41ddc27
 RUN \
-  wget -O harfbuzz.tar.xz "$LIBHARFBUZZ_URL" && \
+  wget $WGET_OPTS -O harfbuzz.tar.xz "$LIBHARFBUZZ_URL" && \
   echo "$LIBHARFBUZZ_SHA256  harfbuzz.tar.xz" | sha256sum --status -c - && \
   tar $TAR_OPTS harfbuzz.tar.xz && cd harfbuzz-* && \
   meson setup build \
@@ -130,7 +130,7 @@ ARG CAIRO_VERSION=1.18.0
 ARG CAIRO_URL="https://cairographics.org/releases/cairo-$CAIRO_VERSION.tar.xz"
 ARG CAIRO_SHA256=243a0736b978a33dee29f9cca7521733b78a65b5418206fef7bd1c3d4cf10b64
 RUN \
-  wget -O cairo.tar.xz "$CAIRO_URL" && \
+  wget $WGET_OPTS -O cairo.tar.xz "$CAIRO_URL" && \
   echo "$CAIRO_SHA256  cairo.tar.xz" | sha256sum --status -c - && \
   tar $TAR_OPTS cairo.tar.xz && cd cairo-* && \
   meson setup build \
@@ -153,7 +153,7 @@ ARG PANGO_SHA256=d0076afe01082814b853deec99f9349ece5f2ce83908b8e58ff736b41f78a96
 # TODO: add -Dbuild-testsuite=false when in stable release
 # TODO: -Ddefault_library=both currently to not fail building tests
 RUN \
-  wget -O pango.tar.xz "$PANGO_URL" && \
+  wget $WGET_OPTS -O pango.tar.xz "$PANGO_URL" && \
   echo "$PANGO_SHA256  pango.tar.xz" | sha256sum --status -c - && \
   tar $TAR_OPTS pango.tar.xz && cd pango-* && \
   meson setup build \
@@ -170,7 +170,7 @@ ARG LIBRSVG_VERSION=2.58.91
 ARG LIBRSVG_URL="https://download.gnome.org/sources/librsvg/2.58/librsvg-$LIBRSVG_VERSION.tar.xz"
 ARG LIBRSVG_SHA256=65846ae57c11aba288bf3a6fe517f800f7e38e7fbc79b98c99a8177634ed29f7
 RUN \
-  wget -O librsvg.tar.xz "$LIBRSVG_URL" && \
+  wget $WGET_OPTS -O librsvg.tar.xz "$LIBRSVG_URL" && \
   echo "$LIBRSVG_SHA256  librsvg.tar.xz" | sha256sum --status -c - && \
   tar $TAR_OPTS librsvg.tar.xz && cd librsvg-* && \
   meson setup build \
@@ -415,7 +415,7 @@ ARG LCMS2_VERSION=2.16
 ARG LCMS2_URL="https://github.com/mm2/Little-CMS/releases/download/lcms$LCMS2_VERSION/lcms2-$LCMS2_VERSION.tar.gz"
 ARG LCMS2_SHA256=d873d34ad8b9b4cea010631f1a6228d2087475e4dc5e763eb81acc23d9d45a51
 RUN \
-  wget -O lcms2.tar.gz "$LCMS2_URL" && \
+  wget $WGET_OPTS -O lcms2.tar.gz "$LCMS2_URL" && \
   echo "$LCMS2_SHA256  lcms2.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS lcms2.tar.gz && cd lcms2-* && \
   ./autogen.sh && \
