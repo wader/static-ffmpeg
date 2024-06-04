@@ -2,7 +2,10 @@
 # bump: alpine link "Release notes" https://alpinelinux.org/posts/Alpine-$LATEST-released.html
 FROM alpine:3.20.0 AS builder
 
-RUN apk add --no-cache \
+# Alpine Package Keeper options
+ARG APK_OPTS=""
+
+RUN apk add --no-cache $APK_OPTS \
   coreutils \
   wget \
   rust cargo cargo-c \
@@ -1081,7 +1084,7 @@ RUN \
   LIBVO_AMRWBENC_VERSION=$(pkg-config --modversion vo-amrwbenc) \
   LIBXML2_VERSION=$(pkg-config --modversion libxml-2.0) \
   OPENSSL_VERSION=$(pkg-config --modversion openssl) \
-  SNAPPY_VERSION=$(apk info -a snappy | head -n1 | awk '{print $1}' | sed -e 's/snappy-//') \
+  SNAPPY_VERSION=$(apk info -a snappy $APK_OPTS | head -n1 | awk '{print $1}' | sed -e 's/snappy-//') \
   SOXR_VERSION=$(pkg-config --modversion soxr) \
   jq -n \
   '{ \
@@ -1155,7 +1158,7 @@ COPY checkdupsym /
 RUN /checkdupsym /ffmpeg-*
 
 # some basic fonts that don't take up much space
-RUN apk add font-terminus font-inconsolata font-dejavu font-awesome
+RUN apk add $APK_OPTS font-terminus font-inconsolata font-dejavu font-awesome
 
 FROM scratch AS final1
 COPY --from=builder /usr/local/bin/ffmpeg /
