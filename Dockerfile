@@ -94,7 +94,7 @@ RUN sed -i 's/-lvmaf /-lvmaf -lstdc++ /' /usr/local/lib/pkgconfig/libvmaf.pc
 
 # own build as alpine glib links with libmount etc
 # bump: glib /GLIB_VERSION=([\d.]+)/ https://gitlab.gnome.org/GNOME/glib.git|^2
-# bump: glib after ./hashupxate Dockerfile GLIB $LATEST
+# bump: glib after ./hashupdate Dockerfile GLIB $LATEST
 # bump: glib link "NEWS" https://gitlab.gnome.org/GNOME/glib/-/blob/main/NEWS?ref_type=heads
 ARG GLIB_VERSION=2.80.2
 ARG GLIB_URL="https://download.gnome.org/sources/glib/2.80/glib-$GLIB_VERSION.tar.xz"
@@ -110,7 +110,7 @@ RUN \
   ninja -j$(nproc) -vC build install
 
 # bump: harfbuzz /LIBHARFBUZZ_VERSION=([\d.]+)/ https://github.com/harfbuzz/harfbuzz.git|*
-# bump: harfbuzz after ./hashupxate Dockerfile LIBHARFBUZZ $LATEST
+# bump: harfbuzz after ./hashupdate Dockerfile LIBHARFBUZZ $LATEST
 # bump: harfbuzz link "NEWS" https://github.com/harfbuzz/harfbuzz/blob/main/NEWS
 ARG LIBHARFBUZZ_VERSION=8.5.0
 ARG LIBHARFBUZZ_URL="https://github.com/harfbuzz/harfbuzz/releases/download/$LIBHARFBUZZ_VERSION/harfbuzz-$LIBHARFBUZZ_VERSION.tar.xz"
@@ -125,7 +125,7 @@ RUN \
   ninja -j$(nproc) -vC build install
 
 # bump: cairo /CAIRO_VERSION=([\d.]+)/ https://gitlab.freedesktop.org/cairo/cairo.git|^1
-# bump: cairo after ./hashupxate Dockerfile CAIRO $LATEST
+# bump: cairo after ./hashupdate Dockerfile CAIRO $LATEST
 # bump: cairo link "NEWS" https://gitlab.freedesktop.org/cairo/cairo/-/blob/master/NEWS?ref_type=heads
 ARG CAIRO_VERSION=1.18.0
 ARG CAIRO_URL="https://cairographics.org/releases/cairo-$CAIRO_VERSION.tar.xz"
@@ -146,7 +146,7 @@ RUN \
 
 # TODO: there is weird "1.90" tag, skip it
 # bump: pango /PANGO_VERSION=([\d.]+)/ https://github.com/GNOME/pango.git|/\d+\.\d+\.\d+/|*
-# bump: pango after ./hashupxate Dockerfile PANGO $LATEST
+# bump: pango after ./hashupdate Dockerfile PANGO $LATEST
 # bump: pango link "NEWS" https://gitlab.gnome.org/GNOME/pango/-/blob/main/NEWS?ref_type=heads
 ARG PANGO_VERSION=1.52.2
 ARG PANGO_URL="https://download.gnome.org/sources/pango/1.52/pango-$PANGO_VERSION.tar.xz"
@@ -165,7 +165,7 @@ RUN \
   ninja -j$(nproc) -vC build install
 
 # bump: librsvg /LIBRSVG_VERSION=([\d.]+)/ https://gitlab.gnome.org/GNOME/librsvg.git|^2
-# bump: librsvg after ./hashupxate Dockerfile LIBRSVG $LATEST
+# bump: librsvg after ./hashupdate Dockerfile LIBRSVG $LATEST
 # bump: librsvg link "NEWS" https://gitlab.gnome.org/GNOME/librsvg/-/blob/master/NEWS
 ARG LIBRSVG_VERSION=2.58.91
 ARG LIBRSVG_URL="https://download.gnome.org/sources/librsvg/2.58/librsvg-$LIBRSVG_VERSION.tar.xz"
