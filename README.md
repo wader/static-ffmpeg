@@ -162,6 +162,19 @@ docker run --rm mwader/static-ffmpeg -v quiet -f data -i versions.json -map 0 -c
 This could happen if the hostname resolve to more IP-addresses than can fit in [DNS UDP packet](https://www.rfc-editor.org/rfc/rfc791) (probably 512 bytes) causing the response to be truncated. Usually clients should then switch to TCP and redo the query.
 This should only be a problem with version 6.0-1 or earlier of this image that uses [musl libc](https://www.musl-libc.org) 1.2.3 or older.
 
+#### I see `[tls @ 0x7f80c8ec3800] error:030000A9:digital envelope routines::unknown option` errors
+
+This could be because the statically linked openssl version in the static-ffmpeg binaries are not compatible with the (possibly distro modified openssl) configuration files found in the filesystem. The error is about openssl encountering an option that it does not know about.
+
+Possible workarounds:
+- Add `config_diagnostics = 0` to the openssl config to ignore unknown options with the risk of ignoring real problems.
+- Use ffmpeg option `-reconnect_on_network_error true` to ignore the error but will still warn.
+
+See these references for further discussion and workarounds:
+- [First call to SSL_CTX_new is failing on AL2023 (3.0.12)
+](https://github.com/openssl/openssl/discussions/23016)
+- [OpenSSL issue with binary outside container (RedHat/Fedora specific)](https://github.com/wader/static-ffmpeg/issues/462)
+
 ### Docker Hub images
 
 Multi-arch dockerhub images are built using [pyldin601/build-multiarch-on-aws-spots](https://github.com/pyldin601/build-multiarch-on-aws-spots). See [build-multiarch.yml](.github/workflows/build-multiarch.yml) for config. Thanks to [@pyldin601](https://github.com/pyldin601) for making this possible.
