@@ -12,7 +12,7 @@ Versions are kept up to date automatically using [bump](https://github.com/wader
 
 ### Usage
 
-Use `mwader/static-ffmpeg` from Docker Hub or build image yourself.
+Use `mwader/static-ffmpeg` from [Docker Hub](https://hub.docker.com/r/mwader/static-ffmpeg) or build the image yourself.
 
 In Dockerfile
 ```Dockerfile
@@ -34,60 +34,60 @@ alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --ent
 
 ### Libraries
 
-- fontconfig
+- [fontconfig](https://www.freedesktop.org/wiki/Software/fontconfig/)
 - gray
 - iconv
-- lcms2
-- libaom
-- libaribb24
-- libass
-- libbluray
-- libdav1d
-- libdavs2
-- libfdk-aac (only if explicitly enabled during build, [see below](#libfdk-aac))
-- libfreetype
-- libfribidi
-- libgme
-- libgsm
-- libharfbuzz
-- libjxl
-- libkvazaar
-- libmodplug
-- libmp3lame
-- libmysofa
-- libopencore
-- libopenjpeg
-- libopus
-- librabbitmq
-- librav1e
-- librsvg
-- librtmp
-- librubberband
-- libshine
-- libsnappy
-- libsoxr
-- libspeex
-- libsrt
-- libssh
-- libsvtav1
-- libtheora
-- libtwolame
-- libuavs3d
-- libvidstab
-- libvmaf
-- libvo-amrwbenc
-- libvorbis
-- libvpx
-- libwebp
-- libx264
-- libx265 (multilib with support for 10 and 12 bits)
-- libxavs2
-- libxevd
-- libxeve
-- libxml2
-- libxvid
-- libzimg
-- openssl
+- [lcms2](https://www.littlecms.com/)
+- [libaom](https://aomedia.googlesource.com/aom/)
+- [libaribb24](https://github.com/nkoriyama/aribb24)
+- [libass](https://github.com/libass/libass)
+- [libbluray](https://www.videolan.org/developers/libbluray.html)
+- [libdav1d](https://code.videolan.org/videolan/dav1d)
+- [libdavs2](https://github.com/pkuvcl/davs2)
+- [libfdk-aac](https://github.com/mstorsjo/fdk-aac) (only if explicitly enabled during build, [see below](#libfdk-aac))
+- [libfreetype](https://freetype.org/)
+- [libfribidi](https://github.com/fribidi/fribidi)
+- [libgme](https://github.com/mcfiredrill/libgme)
+- [libgsm](https://github.com/timothytylee/libgsm)
+- [libharfbuzz](https://github.com/harfbuzz/harfbuzz)
+- [libjxl](https://github.com/libjxl/libjxl)
+- [libkvazaar](https://github.com/ultravideo/kvazaar)
+- [libmodplug](https://github.com/Konstanty/libmodplug)
+- [libmp3lame](https://lame.sourceforge.io/)
+- [libmysofa](https://github.com/hoene/libmysofa)
+- [libopencore](https://sourceforge.net/projects/opencore-amr/)
+- [libopenjpeg](https://www.openjpeg.org)
+- [libopus](https://opus-codec.org)
+- [librabbitmq](https://github.com/alanxz/rabbitmq-c)
+- [librav1e](https://github.com/xiph/rav1e)
+- [librsvg](https://gitlab.gnome.org/GNOME/librsvg)
+- [librtmp](https://rtmpdump.mplayerhq.hu/)
+- [librubberband](https://breakfastquay.com/rubberband/)
+- [libshine](https://github.com/toots/shine)
+- [libsnappy](https://google.github.io/snappy/)
+- [libsoxr](https://sourceforge.net/projects/soxr/)
+- [libspeex](https://github.com/xiph/speex)
+- [libsrt](https://github.com/Haivision/srt)
+- [libssh](https://gitlab.com/libssh/libssh-mirror)
+- [libsvtav1](https://gitlab.com/AOMediaCodec/SVT-AV1)
+- [libtheora](https://github.com/xiph/theora)
+- [libtwolame](https://github.com/njh/twolame)
+- [libuavs3d](https://github.com/uavs3/uavs3d)
+- [libvidstab](https://github.com/georgmartius/vid.stab)
+- [libvmaf](https://github.com/Netflix/vmaf)
+- [libvo-amrwbenc](https://github.com/mstorsjo/vo-amrwbenc)
+- [libvorbis](https://github.com/xiph/vorbis)
+- [libvpx](https://github.com/webmproject/libvpx)
+- [libwebp](https://chromium.googlesource.com/webm/libwebp)
+- [libx264](https://www.videolan.org/developers/x264.html)
+- [libx265](https://www.videolan.org/developers/x265.html) (multilib with support for 10 and 12 bits)
+- [libxavs2](https://github.com/pkuvcl/xavs2)
+- [libxevd[(https://github.com/mpeg5/xevd)
+- [libxeve[(https://github.com/mpeg5/xeve)
+- [libxml2](https://gitlab.gnome.org/GNOME/libxml2)
+- [libxvid](https://labs.xvid.com)
+- [libzimg](https://github.com/sekrit-twc/zimg)
+- [openssl](https://openssl.org)
 - and all native ffmpeg codecs, formats, filters etc.
 
 ### Files in the image
