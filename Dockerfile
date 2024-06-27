@@ -991,9 +991,9 @@ RUN \
 # bump: libjxl after ./hashupdate Dockerfile LIBJXL $LATEST
 # bump: libjxl link "Changelog" https://github.com/libjxl/libjxl/blob/main/CHANGELOG.md
 # use bundled highway library as its static build is not available in alpine
-ARG LIBJXL_VERSION=0.10.2
+ARG LIBJXL_VERSION=0.10.3
 ARG LIBJXL_URL="https://github.com/libjxl/libjxl/archive/refs/tags/v${LIBJXL_VERSION}.tar.gz"
-ARG LIBJXL_SHA256=95e807f63143856dc4d161c071cca01115d2c6405b3d3209854ac6989dc6bb91
+ARG LIBJXL_SHA256=e0191411cfcd927eebe5392d030fe4283fe27ba1685ab7265104936e0b4283a6
 RUN \
   wget $WGET_OPTS -O libjxl.tar.gz "$LIBJXL_URL" && \
   echo "$LIBJXL_SHA256  libjxl.tar.gz" | sha256sum -c - && \
