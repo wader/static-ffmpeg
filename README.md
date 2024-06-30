@@ -129,6 +129,98 @@ The image ships with some basic fonts (`font-terminus font-inconsolata font-deja
 - Alpine Linux see https://wiki.alpinelinux.org/wiki/Fonts
 - Debian/Ubuntu see https://wiki.debian.org/Fonts
 
+#### Custom fonts directory
+
+Let's say you're building a docker image for your application that requires the `ffmpeg` and `ffprobe` binaries, and want to have a dedicated directory for storing fonts, e.g. `/app/fonts`. In order to achieve this, let's take a look at the following steps.
+
+1. A custom config file containing the fonts directory you want to use has to be added to the image. Here, a file `50-custom.conf` will be added to the `/etc/fonts/conf.d` directory, containing an additional `/app/fonts` directory for Fontconfig to use.
+
+```Dockerfile
+COPY <<EOF /etc/fonts/conf.d/50-custom.conf
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+<fontconfig>
+        <dir>/app/fonts</dir>
+</fontconfig>
+EOF
+```
+
+> [!TIP]
+> Check the [Fontconfig User Documentation](https://fontconfig.pages.freedesktop.org/fontconfig/fontconfig-user.html) for examples and available options for your custom fontconfig file.
+
+2. Copy the `ffmpeg` (and `ffprobe`) binaries.
+
+```Dockerfile
+COPY --from=mwader/static-ffmpeg:7.0.1 /ffmpeg /usr/bin/
+COPY --from=mwader/static-ffmpeg:7.0.1 /ffprobe /usr/bin/
+```
+
+3. Make sure the `/app/fonts` directory exist in your image.
+
+```Dockerfile
+WORKDIR /app
+
+RUN <<EOT bash
+  set -ex
+  mkdir -p ./fonts
+EOT
+```
+
+If you followed the steps above, your image should look something like this.
+
+```Dockerfile
+FROM python:3.11-slim-bookworm AS base
+
+COPY <<EOF /etc/fonts/conf.d/50-custom.conf
+<?xml version="1.0"?>
+<!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+<fontconfig>
+        <dir>/app/fonts</dir>
+</fontconfig>
+EOF
+
+FROM base as ffmpeg
+
+COPY --from=mwader/static-ffmpeg:7.0.1 /ffmpeg /usr/bin/
+COPY --from=mwader/static-ffmpeg:7.0.1 /ffprobe /usr/bin/
+
+FROM ffmpeg AS app
+
+WORKDIR /app
+
+RUN <<EOT bash
+  set -ex
+  mkdir -p ./fonts
+EOT
+```
+
+You can now build the image and run a container that has volume mounted to `/app/fonts`.
+
+```shell
+docker build -t ffmpeg-fonts-image .
+docker run -i --rm \
+  -u "$UID:$GROUPS" \
+  -v "$PWD:$PWD" \
+  -v "$PWD/fonts:/app/fonts" \
+  -v "$PWD/cache:/var/cache/fontconfig" \
+  -w "$PWD" \
+  ffmpeg-fonts-image \
+  ffmpeg -v debug -y -f lavfi -i 'color=white,drawtext=text=Test:fontfile=Arial' -t 1s /app/output.mp4
+```
+
+Inspecting the log, you will find that the font is located in `/app/fonts`.
+
+```shell
+Opening an input file: color=white,drawtext=text=Test:fontfile=Arial.
+[AVFilterGraph @ 0x7fb481827800] Setting 'color' to value 'white'
+[AVFilterGraph @ 0x7fb481827800] Setting 'text' to value 'Test'
+[AVFilterGraph @ 0x7fb481827800] Setting 'fontfile' to value 'Arial'
+[Parsed_drawtext_1 @ 0x7fb481827cc0] Using "/app/fonts/arial.ttf"
+```
+
+> [!NOTE]
+> The volume mount for `/var/cache/fontconfig` is optional. If you run the container as a non-root user, just make sure the cache directory exists on host before mounting, else it will still show the debug message `Fontconfig error: No writable cache directories`. This error does *not* further impact Fontconfig in locating the appropriate fonts.
+
 ### TLS
 
 Binaries are built with TLS support but, by default, ffmpeg currently do
