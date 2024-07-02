@@ -36,7 +36,7 @@ alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --ent
 
 - [fontconfig](https://www.freedesktop.org/wiki/Software/fontconfig/)
 - gray
-- iconv
+- [iconv](https://www.gnu.org/software/libiconv/)
 - [lcms2](https://www.littlecms.com/)
 - [libaom](https://aomedia.googlesource.com/aom/)
 - [libaribb24](https://github.com/nkoriyama/aribb24)
