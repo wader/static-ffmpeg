@@ -1227,6 +1227,8 @@ RUN ["/ffprobe", "-i", "https://github.com/favicon.ico"]
 RUN ["/ffprobe", "-tls_verify", "1", "-ca_file", "/etc/ssl/cert.pem", "-i", "https://github.com/favicon.ico"]
 # svg
 RUN ["/ffprobe", "-i", "https://github.githubassets.com/favicons/favicon.svg"]
+# >1 static rust libs
+RUN ["/ffmpeg", "-f", "lavfi", "-i", "testsrc", "-c:v", "librav1e", "-t", "100ms", "-f", "null", "-"]
 
 # clamp all files into one layer
 FROM scratch AS final2
