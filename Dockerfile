@@ -48,11 +48,12 @@ RUN apk add --no-cache $APK_OPTS \
   xz-dev xz-static \
   python3 py3-packaging \
   linux-headers \
-  curl
+  curl \
+  libdrm-dev
 
 # linux-headers need by rtmpdump
 # python3 py3-packaging needed by glib
-  
+
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
 # -static-libgcc is needed to make gcc not include gcc_s as "as-needed" shared library which
@@ -1027,6 +1028,51 @@ RUN \
   sed -i 's/-ljxl_cms/-ljxl_cms -lstdc++ /' /usr/local/lib/pkgconfig/libjxl_cms.pc && \
   sed -i 's/-ljxl_threads/-ljxl_threads -lstdc++ /' /usr/local/lib/pkgconfig/libjxl_threads.pc
 
+# requires libdrm
+# bump: libva /LIBVA_VERSION=([\d.]+)/ https://github.com/intel/libva.git|^0
+# bump: libva after ./hashupdate Dockerfile LIBVA $LATEST
+# bump: libva link "Changelog" https://github.com/intel/libva/blob/master/NEWS
+ARG LIBVA_VERSION=2.22.0
+ARG LIBVA_URL="https://github.com/intel/libva/archive/refs/tags/${LIBVA_VERSION}.tar.gz"
+ARG LIBVA_SHA256=467c418c2640a178c6baad5be2e00d569842123763b80507721ab87eb7af8735
+RUN \
+  wget $WGET_OPTS -O libva.tar.gz "$LIBVA_URL" && \
+  echo "$LIBVA_SHA256  libva.tar.gz" | sha256sum -c - && \
+  tar $TAR_OPTS libva.tar.gz && cd libva-* && \
+  meson setup build \
+    -Dbuildtype=release \
+    -Ddefault_library=static \
+    -Ddisable_drm=false \
+    -Dwith_x11=no \
+    -Dwith_glx=no \
+    -Dwith_wayland=no \
+    -Dwith_win32=no \
+    -Dwith_legacy=[] \
+    -Denable_docs=false && \
+  ninja -j$(nproc) -vC build install
+
+# bump: libvpl /LIBVPL_VERSION=([\d.]+)/ https://github.com/intel/libvpl.git|^0
+# bump: libvpl after ./hashupdate Dockerfile LIBVPL $LATEST
+# bump: libvpl link "Changelog" https://github.com/intel/libvpl/blob/main/CHANGELOG.md
+ARG LIBVPL_VERSION=2.12.0
+ARG LIBVPL_URL="https://github.com/intel/libvpl/archive/refs/tags/v${LIBVPL_VERSION}.tar.gz"
+ARG LIBVPL_SHA256=efc19e5a8544704100f814753eb5e09e85a68e3386508b164042c1f1f761bae8
+RUN \
+  wget $WGET_OPTS -O libvpl.tar.gz "$LIBVPL_URL" && \
+  echo "$LIBVPL_SHA256  libvpl.tar.gz" | sha256sum -c - && \
+  tar $TAR_OPTS libvpl.tar.gz && cd libvpl-* && \
+  cmake -B build \
+    -G"Unix Makefiles" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DCMAKE_INSTALL_PREFIX=/usr/local \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DBUILD_TESTS=OFF \
+    -DENABLE_WARNING_AS_ERROR=ON && \
+  cmake --build build -j$(nproc) && \
+  cmake --install build
+
 # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|*
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
 # bump: ffmpeg link "Changelog" https://github.com/FFmpeg/FFmpeg/blob/n$LATEST/Changelog
@@ -1115,6 +1161,7 @@ RUN \
   --enable-libzimg \
   --enable-openssl \
   --enable-libjxl \
+  --enable-libvpl \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install
 
@@ -1174,10 +1221,12 @@ RUN \
   libtheora: env.THEORA_VERSION, \
   libtwolame: env.TWOLAME_VERSION, \
   libuavs3d: env.UAVS3D_COMMIT, \
+  libva: env.LIBVA_VERSION, \
   libvidstab: env.VIDSTAB_VERSION, \
   libvmaf: env.VMAF_VERSION, \
   libvo_amrwbenc: env.LIBVO_AMRWBENC_VERSION, \
   libvorbis: env.VORBIS_VERSION, \
+  libvpl: env.LIBVPL_VERSION, \
   libvpx: env.VPX_VERSION, \
   libwebp: env.LIBWEBP_VERSION, \
   libx264: env.X264_VERSION, \
