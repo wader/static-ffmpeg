@@ -1027,6 +1027,18 @@ RUN \
   sed -i 's/-ljxl_cms/-ljxl_cms -lstdc++ /' /usr/local/lib/pkgconfig/libjxl_cms.pc && \
   sed -i 's/-ljxl_threads/-ljxl_threads -lstdc++ /' /usr/local/lib/pkgconfig/libjxl_threads.pc
 
+# bump: nv-codec-headers /NV_CODEC_HEADERS_VERSION=([\d.]+)/ https://github.com/FFmpeg/nv-codec-headers.git|*
+# bump: nv-codec-headers after ./hashupdate Dockerfile NV_CODEC_HEADERS $LATEST
+# bump: nv-codec-headers link "Source diff $CURRENT..$LATEST" https://github.com/FFmpeg/nv-codec-headers/compare/v$CURRENT..v$LATEST
+ARG NV_CODEC_HEADERS_VERSION=12.2.72.0
+ARG NV_CODEC_HEADERS_URL="https://github.com/FFmpeg/nv-codec-headers/archive/n$NV_CODEC_HEADERS_VERSION.tar.gz"
+ARG NV_CODEC_HEADERS_SHA256=dbeaec433d93b850714760282f1d0992b1254fc3b5a6cb7d76fc1340a1e47563
+RUN \
+  wget $WGET_OPTS -O nv-codec-headers.tar.gz "$NV_CODEC_HEADERS_URL" && \
+  echo "$NV_CODEC_HEADERS_SHA256  nv-codec-headers.tar.gz" | sha256sum -c - && \
+  tar $TAR_OPTS nv-codec-headers.tar.gz && cd nv-codec-headers-* && \
+  make -j$(nproc) install
+
 # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|*
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
 # bump: ffmpeg link "Changelog" https://github.com/FFmpeg/FFmpeg/blob/n$LATEST/Changelog
@@ -1044,6 +1056,7 @@ ARG ENABLE_FDKAAC=
 # ldfalgs -Wl,--allow-multiple-definition is a workaround for linking with multiple rust staticlib to
 # not cause collision in toolchain symbols, see comment in checkdupsym script for details.
 RUN \
+  set -ex && \
   wget $WGET_OPTS -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
   echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum -c - && \
   tar $TAR_OPTS ffmpeg.tar.bz2 && cd ffmpeg* && \
@@ -1051,8 +1064,8 @@ RUN \
   sed -i 's/add_ldexeflags -fPIE -pie/add_ldexeflags -fPIE -static-pie/' configure && \
   ./configure \
   --pkg-config-flags="--static" \
-  --extra-cflags="-fopenmp" \
-  --extra-ldflags="-fopenmp -Wl,--allow-multiple-definition -Wl,-z,stack-size=2097152" \
+  --extra-cflags="-fopenmp -I/usr/local/cuda/include" \
+  --extra-ldflags="-fopenmp -Wl,--allow-multiple-definition -Wl,-z,stack-size=2097152 -L/usr/local/cuda/lib64" \
   --toolchain=hardened \
   --disable-debug \
   --disable-shared \
@@ -1115,6 +1128,9 @@ RUN \
   --enable-libzimg \
   --enable-openssl \
   --enable-libjxl \
+  --enable-cuda-nvcc \
+  --enable-libnpp \
+  --enable-nonfree \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install
 
