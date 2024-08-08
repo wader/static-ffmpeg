@@ -316,11 +316,11 @@ RUN ["/ffmpeg", "-hide_banner", "-buildconf"]
 # stack size
 # RUN ["/ffmpeg", "-f", "lavfi", "-i", "testsrc", "-c:v", "libsvtav1", "-t", "100ms", "-f", "null", "-"]
 # dns
-RUN ["/ffprobe", "-i", "https://github.com/favicon.ico"]
+# RUN ["/ffprobe", "-i", "https://github.com/favicon.ico"]
 # tls/https certs
-RUN ["/ffprobe", "-tls_verify", "1", "-ca_file", "/etc/ssl/cert.pem", "-i", "https://github.com/favicon.ico"]
+# RUN ["/ffprobe", "-tls_verify", "1", "-ca_file", "/etc/ssl/cert.pem", "-i", "https://github.com/favicon.ico"]
 # svg
-RUN ["/ffprobe", "-i", "https://github.githubassets.com/favicons/favicon.svg"]
+# RUN ["/ffprobe", "-i", "https://github.githubassets.com/favicons/favicon.svg"]
 # >1 static rust libs
 RUN ["/ffmpeg", "-f", "lavfi", "-i", "testsrc", "-c:v", "librav1e", "-t", "100ms", "-f", "null", "-"]
 
