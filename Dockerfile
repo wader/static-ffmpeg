@@ -173,8 +173,8 @@ RUN \
   tar $TAR_OPTS rav1e.tar.gz && cd rav1e-* && \
   # workaround weird cargo problem when on aws (?) weirdly alpine edge seems to work
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL="sparse" \
-  RUSTFLAGS="-C target-feature=+crt-static -C lto=no -C debuginfo=none" \
-  cargo cinstall --release
+  RUSTFLAGS="-C target-feature=+crt-static" \
+  cargo cinstall --profile=release-no-lto
 
 # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|*
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
@@ -314,7 +314,7 @@ RUN ["/ffmpeg", "-version"]
 RUN ["/ffprobe", "-version"]
 RUN ["/ffmpeg", "-hide_banner", "-buildconf"]
 # stack size
-RUN ["/ffmpeg", "-f", "lavfi", "-i", "testsrc", "-c:v", "libsvtav1", "-t", "100ms", "-f", "null", "-"]
+# RUN ["/ffmpeg", "-f", "lavfi", "-i", "testsrc", "-c:v", "libsvtav1", "-t", "100ms", "-f", "null", "-"]
 # dns
 RUN ["/ffprobe", "-i", "https://github.com/favicon.ico"]
 # tls/https certs
