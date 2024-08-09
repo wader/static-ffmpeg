@@ -1027,6 +1027,21 @@ RUN \
   sed -i 's/-ljxl_cms/-ljxl_cms -lstdc++ /' /usr/local/lib/pkgconfig/libjxl_cms.pc && \
   sed -i 's/-ljxl_threads/-ljxl_threads -lstdc++ /' /usr/local/lib/pkgconfig/libjxl_threads.pc
 
+# bump: libzmq /LIBZMQ_VERSION=([\d.]+)/ https://github.com/zeromq/libzmq.git|*
+# bump: libzmq after ./hashupdate Dockerfile LIBZMQ $LATEST
+# bump: libzmq link "NEWS" https://github.com/zeromq/libzmq/blob/master/NEWS
+ARG LIBZMQ_VERSION=4.3.5
+ARG LIBZMQ_URL="https://github.com/zeromq/libzmq/releases/download/v${LIBZMQ_VERSION}/zeromq-${LIBZMQ_VERSION}.tar.gz"
+ARG LIBZMQ_SHA256=6653ef5910f17954861fe72332e68b03ca6e4d9c7160eb3a8de5a5a913bfab43
+RUN \
+  wget $WGET_OPTS -O zmq.tar.gz "$LIBZMQ_URL" && \
+  echo "$LIBZMQ_SHA256  zmq.tar.gz" | sha256sum -c - && \
+  tar $TAR_OPTS zmq.tar.gz && cd zeromq-* && \
+  # fix sha1_init symbol collision with libssh
+  grep -r -l sha1_init external/sha1* | xargs sed -i 's/sha1_init/zeromq_sha1_init/g' && \
+  ./configure --disable-shared --enable-static && \
+  make -j$(nproc) install
+
 # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|*
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
 # bump: ffmpeg link "Changelog" https://github.com/FFmpeg/FFmpeg/blob/n$LATEST/Changelog
@@ -1113,6 +1128,7 @@ RUN \
   --enable-libxml2 \
   --enable-libxvid \
   --enable-libzimg \
+  --enable-libzmq \
   --enable-openssl \
   --enable-libjxl \
   || (cat ffbuild/config.log ; false) \
@@ -1188,6 +1204,7 @@ RUN \
   libxml2: env.LIBXML2_VERSION, \
   libxvid: env.XVID_VERSION, \
   libzimg: env.ZIMG_VERSION, \
+  libzmq: env.LIBZMQ_VERSION, \
   openssl: env.OPENSSL_VERSION, \
   }' > /versions.json
 
