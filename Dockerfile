@@ -172,6 +172,8 @@ RUN \
   echo "$RAV1E_SHA256  rav1e.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS rav1e.tar.gz && cd rav1e-* && \
   # workaround weird cargo problem when on aws (?) weirdly alpine edge seems to work
+  sed -i 's/debug = true//' Cargo.toml && \
+  sed -i 's/lto = "thin"//' Cargo.toml && \
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL="sparse" \
   RUSTFLAGS="-C target-feature=+crt-static" \
   cargo cinstall --profile=release-no-lto
