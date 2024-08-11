@@ -1039,7 +1039,9 @@ RUN \
   tar $TAR_OPTS zmq.tar.gz && cd zeromq-* && \
   # fix sha1_init symbol collision with libssh
   grep -r -l sha1_init external/sha1* | xargs sed -i 's/sha1_init/zeromq_sha1_init/g' && \
-  ./configure --disable-shared --enable-static && \
+  ./configure \
+    --disable-shared \
+    --enable-static && \
   make -j$(nproc) install
 
 # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|*
