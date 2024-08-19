@@ -154,7 +154,7 @@ RUN \
   sed -i 's/default-members = ["rsvg", "rsvg_convert"]/default-members = ["rsvg"]/g' Cargo.toml && \
   sed -i "s/subdir('rsvg_convert')//g" meson.build && \
   meson setup build \
-    -Dbuildtype=release \
+    -Dbuildtype=debug \
     -Ddefault_library=static \
     -Ddocs=disabled \
     -Dintrospection=disabled \
@@ -182,7 +182,7 @@ RUN \
   sed -i 's/lto = "thin"/lto = "off"/g' Cargo.toml && \
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL="sparse" \
   RUSTFLAGS="-C target-feature=+crt-static" \
-  cargo cinstall --release
+  cargo cinstall --debug
 
 # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|*
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
@@ -208,10 +208,9 @@ RUN \
   sed -i 's/add_ldexeflags -fPIE -pie/add_ldexeflags -fPIE -static-pie/' configure && \
   ./configure \
   --pkg-config-flags="--static" \
-  --extra-cflags="-fopenmp" \
+  --extra-cflags="-O0 -ggdb -fopenmp" \
   --extra-ldflags="-fopenmp -Wl,--allow-multiple-definition -Wl,-z,stack-size=2097152" \
   --toolchain=hardened \
-  --disable-debug \
   --disable-shared \
   --disable-ffplay \
   --enable-static \
@@ -220,123 +219,123 @@ RUN \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install
 
-RUN \
-  EXPAT_VERSION=$(pkg-config --modversion expat) \
-  FFTW_VERSION=$(pkg-config --modversion fftw3) \
-  FONTCONFIG_VERSION=$(pkg-config --modversion fontconfig)  \
-  FREETYPE_VERSION=$(pkg-config --modversion freetype2)  \
-  FRIBIDI_VERSION=$(pkg-config --modversion fribidi)  \
-  LIBSAMPLERATE_VERSION=$(pkg-config --modversion samplerate) \
-  LIBVO_AMRWBENC_VERSION=$(pkg-config --modversion vo-amrwbenc) \
-  LIBXML2_VERSION=$(pkg-config --modversion libxml-2.0) \
-  OPENSSL_VERSION=$(pkg-config --modversion openssl) \
-  SNAPPY_VERSION=$(apk info -a snappy $APK_OPTS | head -n1 | awk '{print $1}' | sed -e 's/snappy-//') \
-  SOXR_VERSION=$(pkg-config --modversion soxr) \
-  jq -n \
-  '{ \
-  expat: env.EXPAT_VERSION, \
-  "libfdk-aac": env.FDK_AAC_VERSION, \
-  ffmpeg: env.FFMPEG_VERSION, \
-  fftw: env.FFTW_VERSION, \
-  fontconfig: env.FONTCONFIG_VERSION, \
-  lcms2: env.LCMS2_VERSION, \
-  libaom: env.AOM_VERSION, \
-  libaribb24: env.LIBARIBB24_VERSION, \
-  libass: env.LIBASS_VERSION, \
-  libbluray: env.LIBBLURAY_VERSION, \
-  libdav1d: env.DAV1D_VERSION, \
-  libdavs2: env.DAVS2_VERSION, \
-  libfreetype: env.FREETYPE_VERSION, \
-  libfribidi: env.FRIBIDI_VERSION, \
-  libgme: env.LIBGME_COMMIT, \
-  libgsm: env.LIBGSM_COMMIT, \
-  libharfbuzz: env.LIBHARFBUZZ_VERSION, \
-  libjxl: env.LIBJXL_VERSION, \
-  libkvazaar: env.KVAZAAR_VERSION, \
-  libmodplug: env.LIBMODPLUG_VERSION, \
-  libmp3lame: env.MP3LAME_VERSION, \
-  libmysofa: env.LIBMYSOFA_VERSION, \
-  libogg: env.OGG_VERSION, \
-  libopencoreamr: env.OPENCOREAMR_VERSION, \
-  libopenjpeg: env.OPENJPEG_VERSION, \
-  libopus: env.OPUS_VERSION, \
-  librabbitmq: env.LIBRABBITMQ_VERSION, \
-  librav1e: env.RAV1E_VERSION, \
-  librsvg: env.LIBRSVG_VERSION, \
-  librtmp: env.LIBRTMP_COMMIT, \
-  librubberband: env.RUBBERBAND_VERSION, \
-  libsamplerate: env.LIBSAMPLERATE_VERSION, \
-  libshine: env.LIBSHINE_VERSION, \
-  libsnappy: env.SNAPPY_VERSION, \
-  libsoxr: env.SOXR_VERSION, \
-  libspeex: env.SPEEX_VERSION, \
-  libsrt: env.SRT_VERSION, \
-  libssh: env.LIBSSH_VERSION, \
-  libsvtav1: env.SVTAV1_VERSION, \
-  libtheora: env.THEORA_VERSION, \
-  libtwolame: env.TWOLAME_VERSION, \
-  libuavs3d: env.UAVS3D_COMMIT, \
-  libvidstab: env.VIDSTAB_VERSION, \
-  libvmaf: env.VMAF_VERSION, \
-  libvo_amrwbenc: env.LIBVO_AMRWBENC_VERSION, \
-  libvorbis: env.VORBIS_VERSION, \
-  libvpx: env.VPX_VERSION, \
-  libwebp: env.LIBWEBP_VERSION, \
-  libx264: env.X264_VERSION, \
-  libx265: env.X265_VERSION, \
-  libxavs2: env.XAVS2_VERSION, \
-  libxevd: env.XEVD_VERSION, \
-  libxeve: env.XEVE_VERSION, \
-  libxml2: env.LIBXML2_VERSION, \
-  libxvid: env.XVID_VERSION, \
-  libzimg: env.ZIMG_VERSION, \
-  libzmq: env.LIBZMQ_VERSION, \
-  openssl: env.OPENSSL_VERSION, \
-  }' > /versions.json
+# RUN \
+#   EXPAT_VERSION=$(pkg-config --modversion expat) \
+#   FFTW_VERSION=$(pkg-config --modversion fftw3) \
+#   FONTCONFIG_VERSION=$(pkg-config --modversion fontconfig)  \
+#   FREETYPE_VERSION=$(pkg-config --modversion freetype2)  \
+#   FRIBIDI_VERSION=$(pkg-config --modversion fribidi)  \
+#   LIBSAMPLERATE_VERSION=$(pkg-config --modversion samplerate) \
+#   LIBVO_AMRWBENC_VERSION=$(pkg-config --modversion vo-amrwbenc) \
+#   LIBXML2_VERSION=$(pkg-config --modversion libxml-2.0) \
+#   OPENSSL_VERSION=$(pkg-config --modversion openssl) \
+#   SNAPPY_VERSION=$(apk info -a snappy $APK_OPTS | head -n1 | awk '{print $1}' | sed -e 's/snappy-//') \
+#   SOXR_VERSION=$(pkg-config --modversion soxr) \
+#   jq -n \
+#   '{ \
+#   expat: env.EXPAT_VERSION, \
+#   "libfdk-aac": env.FDK_AAC_VERSION, \
+#   ffmpeg: env.FFMPEG_VERSION, \
+#   fftw: env.FFTW_VERSION, \
+#   fontconfig: env.FONTCONFIG_VERSION, \
+#   lcms2: env.LCMS2_VERSION, \
+#   libaom: env.AOM_VERSION, \
+#   libaribb24: env.LIBARIBB24_VERSION, \
+#   libass: env.LIBASS_VERSION, \
+#   libbluray: env.LIBBLURAY_VERSION, \
+#   libdav1d: env.DAV1D_VERSION, \
+#   libdavs2: env.DAVS2_VERSION, \
+#   libfreetype: env.FREETYPE_VERSION, \
+#   libfribidi: env.FRIBIDI_VERSION, \
+#   libgme: env.LIBGME_COMMIT, \
+#   libgsm: env.LIBGSM_COMMIT, \
+#   libharfbuzz: env.LIBHARFBUZZ_VERSION, \
+#   libjxl: env.LIBJXL_VERSION, \
+#   libkvazaar: env.KVAZAAR_VERSION, \
+#   libmodplug: env.LIBMODPLUG_VERSION, \
+#   libmp3lame: env.MP3LAME_VERSION, \
+#   libmysofa: env.LIBMYSOFA_VERSION, \
+#   libogg: env.OGG_VERSION, \
+#   libopencoreamr: env.OPENCOREAMR_VERSION, \
+#   libopenjpeg: env.OPENJPEG_VERSION, \
+#   libopus: env.OPUS_VERSION, \
+#   librabbitmq: env.LIBRABBITMQ_VERSION, \
+#   librav1e: env.RAV1E_VERSION, \
+#   librsvg: env.LIBRSVG_VERSION, \
+#   librtmp: env.LIBRTMP_COMMIT, \
+#   librubberband: env.RUBBERBAND_VERSION, \
+#   libsamplerate: env.LIBSAMPLERATE_VERSION, \
+#   libshine: env.LIBSHINE_VERSION, \
+#   libsnappy: env.SNAPPY_VERSION, \
+#   libsoxr: env.SOXR_VERSION, \
+#   libspeex: env.SPEEX_VERSION, \
+#   libsrt: env.SRT_VERSION, \
+#   libssh: env.LIBSSH_VERSION, \
+#   libsvtav1: env.SVTAV1_VERSION, \
+#   libtheora: env.THEORA_VERSION, \
+#   libtwolame: env.TWOLAME_VERSION, \
+#   libuavs3d: env.UAVS3D_COMMIT, \
+#   libvidstab: env.VIDSTAB_VERSION, \
+#   libvmaf: env.VMAF_VERSION, \
+#   libvo_amrwbenc: env.LIBVO_AMRWBENC_VERSION, \
+#   libvorbis: env.VORBIS_VERSION, \
+#   libvpx: env.VPX_VERSION, \
+#   libwebp: env.LIBWEBP_VERSION, \
+#   libx264: env.X264_VERSION, \
+#   libx265: env.X265_VERSION, \
+#   libxavs2: env.XAVS2_VERSION, \
+#   libxevd: env.XEVD_VERSION, \
+#   libxeve: env.XEVE_VERSION, \
+#   libxml2: env.LIBXML2_VERSION, \
+#   libxvid: env.XVID_VERSION, \
+#   libzimg: env.ZIMG_VERSION, \
+#   libzmq: env.LIBZMQ_VERSION, \
+#   openssl: env.OPENSSL_VERSION, \
+#   }' > /versions.json
 
-# make sure binaries has no dependencies, is relro, pie and stack nx
-COPY checkelf /
-RUN \
-  /checkelf /usr/local/bin/ffmpeg && \
-  /checkelf /usr/local/bin/ffprobe
-# workaround for using -Wl,--allow-multiple-definition
-# see comment in checkdupsym for details
-COPY checkdupsym /
-RUN /checkdupsym /ffmpeg-*
+# # make sure binaries has no dependencies, is relro, pie and stack nx
+# COPY checkelf /
+# RUN \
+#   /checkelf /usr/local/bin/ffmpeg && \
+#   /checkelf /usr/local/bin/ffprobe
+# # workaround for using -Wl,--allow-multiple-definition
+# # see comment in checkdupsym for details
+# COPY checkdupsym /
+# RUN /checkdupsym /ffmpeg-*
 
-# some basic fonts that don't take up much space
-RUN apk add $APK_OPTS font-terminus font-inconsolata font-dejavu font-awesome
+# # some basic fonts that don't take up much space
+# RUN apk add $APK_OPTS font-terminus font-inconsolata font-dejavu font-awesome
 
-FROM scratch AS final1
-COPY --from=builder /usr/local/bin/ffmpeg /
-COPY --from=builder /usr/local/bin/ffprobe /
-COPY --from=builder /versions.json /
-COPY --from=builder /usr/local/share/doc/ffmpeg/* /doc/
-COPY --from=builder /etc/ssl/cert.pem /etc/ssl/cert.pem
-COPY --from=builder /etc/fonts/ /etc/fonts/
-COPY --from=builder /usr/share/fonts/ /usr/share/fonts/
-COPY --from=builder /usr/share/consolefonts/ /usr/share/consolefonts/
-COPY --from=builder /var/cache/fontconfig/ /var/cache/fontconfig/
+# FROM scratch AS final1
+# COPY --from=builder /usr/local/bin/ffmpeg /
+# COPY --from=builder /usr/local/bin/ffprobe /
+# COPY --from=builder /versions.json /
+# COPY --from=builder /usr/local/share/doc/ffmpeg/* /doc/
+# COPY --from=builder /etc/ssl/cert.pem /etc/ssl/cert.pem
+# COPY --from=builder /etc/fonts/ /etc/fonts/
+# COPY --from=builder /usr/share/fonts/ /usr/share/fonts/
+# COPY --from=builder /usr/share/consolefonts/ /usr/share/consolefonts/
+# COPY --from=builder /var/cache/fontconfig/ /var/cache/fontconfig/
 
-# sanity tests
-RUN ["/ffmpeg", "-version"]
-RUN ["/ffprobe", "-version"]
-RUN ["/ffmpeg", "-hide_banner", "-buildconf"]
-# stack size
-# RUN ["/ffmpeg", "-f", "lavfi", "-i", "testsrc", "-c:v", "libsvtav1", "-t", "100ms", "-f", "null", "-"]
-# dns
-# RUN ["/ffprobe", "-i", "https://github.com/favicon.ico"]
-# tls/https certs
-# RUN ["/ffprobe", "-tls_verify", "1", "-ca_file", "/etc/ssl/cert.pem", "-i", "https://github.com/favicon.ico"]
-# svg
-# RUN ["/ffprobe", "-i", "https://github.githubassets.com/favicons/favicon.svg"]
-# >1 static rust libs
-RUN ["/ffmpeg", "-f", "lavfi", "-i", "testsrc", "-c:v", "librav1e", "-t", "100ms", "-f", "null", "-"]
+# # sanity tests
+# RUN ["/ffmpeg", "-version"]
+# RUN ["/ffprobe", "-version"]
+# RUN ["/ffmpeg", "-hide_banner", "-buildconf"]
+# # stack size
+# # RUN ["/ffmpeg", "-f", "lavfi", "-i", "testsrc", "-c:v", "libsvtav1", "-t", "100ms", "-f", "null", "-"]
+# # dns
+# # RUN ["/ffprobe", "-i", "https://github.com/favicon.ico"]
+# # tls/https certs
+# # RUN ["/ffprobe", "-tls_verify", "1", "-ca_file", "/etc/ssl/cert.pem", "-i", "https://github.com/favicon.ico"]
+# # svg
+# # RUN ["/ffprobe", "-i", "https://github.githubassets.com/favicons/favicon.svg"]
+# # >1 static rust libs
+# RUN ["/ffmpeg", "-f", "lavfi", "-i", "testsrc", "-c:v", "librav1e", "-t", "100ms", "-f", "null", "-"]
 
-# clamp all files into one layer
-FROM scratch AS final2
-COPY --from=final1 / /
+# # clamp all files into one layer
+# FROM scratch AS final2
+# COPY --from=final1 / /
 
-FROM final2
-LABEL maintainer="Mattias Wadman mattias.wadman@gmail.com"
-ENTRYPOINT ["/ffmpeg"]
+# FROM final2
+# LABEL maintainer="Mattias Wadman mattias.wadman@gmail.com"
+# ENTRYPOINT ["/ffmpeg"]
