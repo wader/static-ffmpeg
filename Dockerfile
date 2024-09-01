@@ -127,9 +127,9 @@ RUN \
 # bump: cairo /CAIRO_VERSION=([\d.]+)/ https://gitlab.freedesktop.org/cairo/cairo.git|^1
 # bump: cairo after ./hashupdate Dockerfile CAIRO $LATEST
 # bump: cairo link "NEWS" https://gitlab.freedesktop.org/cairo/cairo/-/blob/master/NEWS?ref_type=heads
-ARG CAIRO_VERSION=1.18.0
+ARG CAIRO_VERSION=1.18.2
 ARG CAIRO_URL="https://cairographics.org/releases/cairo-$CAIRO_VERSION.tar.xz"
-ARG CAIRO_SHA256=243a0736b978a33dee29f9cca7521733b78a65b5418206fef7bd1c3d4cf10b64
+ARG CAIRO_SHA256=a62b9bb42425e844cc3d6ddde043ff39dbabedd1542eba57a2eb79f85889d45a
 RUN \
   wget $WGET_OPTS -O cairo.tar.xz "$CAIRO_URL" && \
   echo "$CAIRO_SHA256  cairo.tar.xz" | sha256sum --status -c - && \
