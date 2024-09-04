@@ -209,7 +209,7 @@ RUN \
   ./configure \
   --pkg-config-flags="--static" \
   --extra-cflags="-O0 -ggdb -fopenmp" \
-  --extra-ldflags="-fopenmp -Wl,--allow-multiple-definition -Wl,-z,stack-size=2097152" \
+  --extra-ldflags="-fopenmp -Wl,-z,stack-size=2097152" \
   --toolchain=hardened \
   --disable-shared \
   --disable-ffplay \
@@ -339,3 +339,9 @@ RUN \
 # FROM final2
 # LABEL maintainer="Mattias Wadman mattias.wadman@gmail.com"
 # ENTRYPOINT ["/ffmpeg"]
+
+RUN ["wget", "https://github.githubassets.com/favicons/favicon.svg"]
+RUN ["/usr/local/bin/ffprobe", "-i", "favicon.svg"]
+RUN ["/usr/local/bin/ffmpeg", "-f", "lavfi", "-i", "testsrc", "-c:v", "librav1e", "-t", "100ms", "-f", "null", "-"]
+
+
