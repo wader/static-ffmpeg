@@ -28,7 +28,7 @@ jobs:
     needs:
       - tag
     name: Build
-    uses: wader/build-multiarch-on-aws-spots/.github/workflows/build-multiarch-on-aws-spots.yml@359bed825026eeb546816c1b27898d4e5405b658
+    uses: wader/build-multiarch-on-aws-spots/.github/workflows/build-multiarch-on-aws-spots.yml@521b4ed43099eeb9593c0c6180e90c1266da8492
     with:
       DOCKER_IMAGE_TAG: ${{ needs.tag.outputs.TAG }}
       DOCKER_IMAGE_NAME: "mwader/static-ffmpeg"
