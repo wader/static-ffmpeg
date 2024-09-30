@@ -643,7 +643,6 @@ ARG LIBSSH_VERSION=0.11.1
 ARG LIBSSH_URL="https://gitlab.com/libssh/libssh-mirror/-/archive/libssh-$LIBSSH_VERSION/libssh-mirror-libssh-$LIBSSH_VERSION.tar.gz"
 ARG LIBSSH_SHA256=b43ef9c91b6c3db64e7ba3db101eb89dbe645db63489c19d4f88cf6f84911ec6
 # LIBSSH_STATIC=1 is REQUIRED to link statically against libssh.a so add to pkg-config file
-# make does not -j as it seems to be shaky, libssh.a used before created
 RUN \
   wget $WGET_OPTS -O libssh.tar.gz "$LIBSSH_URL" && \
   echo "$LIBSSH_SHA256  libssh.tar.gz" | sha256sum -c - && \
@@ -674,7 +673,8 @@ RUN \
     -DWITH_EXAMPLES=OFF \
     -DWITH_INTERNAL_DOC=OFF \
     .. && \
-  make -j$(nproc) install
+  # make -j seems to be shaky, libssh.a ends up truncated (used before fully created?)
+  make install
 
 # bump: svtav1 /SVTAV1_VERSION=([\d.]+)/ https://gitlab.com/AOMediaCodec/SVT-AV1.git|*
 # bump: svtav1 after ./hashupdate Dockerfile SVTAV1 $LATEST
