@@ -1090,6 +1090,26 @@ RUN \
   cmake --build build -j$(nproc) && \
   cmake --install build
 
+# bump: vvenc /VVENC_VERSION=([\d.]+)/ https://github.com/fraunhoferhhi/vvenc.git|*
+# bump: vvenc after ./hashupdate Dockerfile VVENC $LATEST
+# bump: vvenc link "CHANGELOG" https://github.com/fraunhoferhhi/vvenc/releases/tag/v$LATEST
+ARG VVENC_VERSION=1.12.0
+ARG VVENC_URL="https://github.com/fraunhoferhhi/vvenc/archive/refs/tags/v$VVENC_VERSION.tar.gz"
+ARG VVENC_SHA256=e7311ffcc87d8fcc4b839807061cca1b89be017ae7c449a69436dc2dd07615c2
+RUN \
+  wget $WGET_OPTS -O vvenc.tar.gz "$VVENC_URL" && \
+  echo "$VVENC_SHA256  vvenc.tar.gz" | sha256sum --status -c - && \
+  tar $TAR_OPTS vvenc.tar.gz && cd vvenc-* && \
+  # TODO: https://github.com/fraunhoferhhi/vvenc/pull/422
+  sed -i 's/-Werror;//' source/Lib/vvenc/CMakeLists.txt && \
+  cmake \
+    -S . \
+    -B build/release-static \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_PREFIX=/usr/local && \
+  cmake --build build/release-static -j && \
+  cmake --build build/release-static --target install
+
 # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|*
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
 # bump: ffmpeg link "Changelog" https://github.com/FFmpeg/FFmpeg/blob/n$LATEST/Changelog
@@ -1169,6 +1189,7 @@ RUN \
   --enable-libvorbis \
   --enable-libvpl \
   --enable-libvpx \
+  --enable-libvvenc \
   --enable-libwebp \
   --enable-libx264 \
   --enable-libx265 \
@@ -1246,6 +1267,7 @@ RUN \
   libvorbis: env.VORBIS_VERSION, \
   libvpl: env.LIBVPL_VERSION, \
   libvpx: env.VPX_VERSION, \
+  libvvenc: env.VVENC_VERSION, \
   libwebp: env.LIBWEBP_VERSION, \
   libx264: env.X264_VERSION, \
   libx265: env.X265_VERSION, \
@@ -1295,6 +1317,8 @@ RUN ["/ffprobe", "-i", "https://github.com/favicon.ico"]
 RUN ["/ffprobe", "-tls_verify", "1", "-ca_file", "/etc/ssl/cert.pem", "-i", "https://github.com/favicon.ico"]
 # svg
 RUN ["/ffprobe", "-i", "https://github.githubassets.com/favicons/favicon.svg"]
+# vvenc
+RUN ["/ffmpeg", "-f", "lavfi", "-i", "testsrc", "-c:v", "libvvenc", "-t", "100ms", "-f", "null", "-"]
 
 # clamp all files into one layer
 FROM scratch AS final2

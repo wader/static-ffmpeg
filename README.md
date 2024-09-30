@@ -80,6 +80,7 @@ alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --ent
 - [libvorbis](https://github.com/xiph/vorbis)
 - [libvpl](https://github.com/intel/libvpl)
 - [libvpx](https://github.com/webmproject/libvpx)
+- [libvvenc](https://github.com/fraunhoferhhi/vvenc)
 - [libwebp](https://chromium.googlesource.com/webm/libwebp)
 - [libx264](https://www.videolan.org/developers/x264.html)
 - [libx265](https://www.videolan.org/developers/x265.html) (multilib with support for 10 and 12 bits)
@@ -286,6 +287,5 @@ usage and potential distribution of such.
 ### TODOs and possible things to add
 
 - Add libplacebo, chromaprint, etc. ...
-- Add vvenc/vvdec support once in stable
 - Add acceleration support (GPU, CUDA, ...)
 - Add *.a *.so libraries, headers and pkg-config somehow
