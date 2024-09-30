@@ -931,9 +931,9 @@ RUN \
 # bump: xeve link "CHANGELOG" https://github.com/mpeg5/xeve/releases/tag/v$LATEST
 # TODO: better -DARM? possible to build on non arm and intel?
 # TODO: report upstream about lib/libxeve.a?
-ARG XEVE_VERSION=0.5.0
+ARG XEVE_VERSION=0.5.1
 ARG XEVE_URL="https://github.com/mpeg5/xeve/archive/refs/tags/v$XEVE_VERSION.tar.gz"
-ARG XEVE_SHA256=4fb593921d2a0b48621f410ccd704d67d6ed1d08ab0aa7c5d5fef519ce596e8a
+ARG XEVE_SHA256=238c95ddd1a63105913d9354045eb329ad9002903a407b5cf1ab16bad324c245
 RUN \
   wget $WGET_OPTS -O xeve.tar.gz "$XEVE_URL" && \
   echo "$XEVE_SHA256  xeve.tar.gz" | sha256sum -c - && \
@@ -1094,9 +1094,9 @@ RUN \
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
 # bump: ffmpeg link "Changelog" https://github.com/FFmpeg/FFmpeg/blob/n$LATEST/Changelog
 # bump: ffmpeg link "Source diff $CURRENT..$LATEST" https://github.com/FFmpeg/FFmpeg/compare/n$CURRENT..n$LATEST
-ARG FFMPEG_VERSION=7.0.2
+ARG FFMPEG_VERSION=7.1
 ARG FFMPEG_URL="https://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.bz2"
-ARG FFMPEG_SHA256=1ed250407ea8f955cca2f1139da3229fbc13032a0802e4b744be195865ff1541
+ARG FFMPEG_SHA256=fd59e6160476095082e94150ada5a6032d7dcc282fe38ce682a00c18e7820528
 ARG ENABLE_FDKAAC=
 # sed changes --toolchain=hardened -pie to -static-pie
 #
