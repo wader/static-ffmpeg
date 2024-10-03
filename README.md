@@ -271,9 +271,9 @@ See these references for further discussion and workarounds:
 ](https://github.com/openssl/openssl/discussions/23016)
 - [OpenSSL issue with binary outside container (RedHat/Fedora specific)](https://github.com/wader/static-ffmpeg/issues/462)
 
-### Docker Hub images
+### Thanks
 
-Multi-arch dockerhub images are built using [pyldin601/build-multiarch-on-aws-spots](https://github.com/pyldin601/build-multiarch-on-aws-spots). See [build-multiarch.yml](.github/workflows/build-multiarch.yml) for config. Thanks to [@pyldin601](https://github.com/pyldin601) for making this possible.
+- [@pyldin601](https://github.com/pyldin601) for working on multi arch builds
 
 ### Contribute
 

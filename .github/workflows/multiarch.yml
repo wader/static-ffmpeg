@@ -1,0 +1,93 @@
+name: Multi arch build
+
+on:
+  push:
+    branches:
+      - 'master'
+    tags:
+      - '**'
+  workflow_dispatch:
+
+env:
+  REGISTRY_IMAGE: mwader/static-ffmpeg
+
+jobs:
+  build:
+    name: Build image
+    strategy:
+      matrix:
+        include:
+          - runs_on: ubicloud-standard-8-arm
+            tag: arm64
+          - runs_on: ubuntu-latest
+            tag: amd64
+
+    runs-on: ${{ matrix.runs_on }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Docker build
+        run: docker build --tag image:${{ matrix.tag }} .
+      - name: Docker save
+        run: docker image save --output image-${{ matrix.tag }}.tar image:${{ matrix.tag }}
+      - name: Upload Docker image-${{ matrix.tag }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: image-${{ matrix.tag }}
+          path: image-${{ matrix.tag }}.tar
+          retention-days: 1
+
+  tag:
+    name: Extract tag name
+    runs-on: ubuntu-latest
+    outputs:
+      TAG: ${{ steps.tag.outputs.result }}
+    steps:
+      - name: Extract the tag name
+        id: tag
+        run: |
+          jq -nr '
+            ( env.GITHUB_REF # refs/heads|tags/abc
+            | split("/")[1:]
+            | "result=" + if . == ["heads","master"] then "latest" else .[1] end
+            )
+          ' >> "$GITHUB_OUTPUT"
+
+  merge:
+    name: Merge and push images
+    runs-on: ubuntu-latest
+    needs:
+      - build
+      - tag
+    steps:
+      - name: Download digests
+        uses: actions/download-artifact@v4
+        with:
+          path: /tmp
+          pattern: image-*
+          merge-multiple: true
+      - name: Load Docker images
+        run: |
+          docker image load --input /tmp/image-arm64.tar
+          docker image load --input /tmp/image-amd64.tar
+      - name: Docker meta
+        id: meta
+        uses: docker/metadata-action@v5
+        with:
+          images: ${{ env.REGISTRY_IMAGE }}
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Create manifest list and push
+        run: |
+          docker tag image:arm64 ${{ env.REGISTRY_IMAGE }}:${{ needs.tag.outputs.TAG }}-arm64
+          docker tag image:amd64 ${{ env.REGISTRY_IMAGE }}:${{ needs.tag.outputs.TAG }}-amd64
+          docker push ${{ env.REGISTRY_IMAGE }}:${{ needs.tag.outputs.TAG }}-arm64
+          docker push ${{ env.REGISTRY_IMAGE }}:${{ needs.tag.outputs.TAG }}-amd64
+          docker manifest create \
+            ${{ env.REGISTRY_IMAGE }}:${{ needs.tag.outputs.TAG }} \
+            --amend ${{ env.REGISTRY_IMAGE }}:${{ needs.tag.outputs.TAG }}-arm64 \
+            --amend ${{ env.REGISTRY_IMAGE }}:${{ needs.tag.outputs.TAG }}-amd64
+          docker manifest inspect ${{ env.REGISTRY_IMAGE }}:${{ needs.tag.outputs.TAG }}
+          docker manifest push ${{ env.REGISTRY_IMAGE }}:${{ needs.tag.outputs.TAG }}
