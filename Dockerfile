@@ -874,19 +874,18 @@ RUN \
     --disable-swscale && \
   make -j$(nproc) install
 
-# x265 release is over 1 years old and master branch has a lot of fixes and improvements, so we checkout commit so no hash is needed
-# bump: x265 /X265_VERSION=([[:xdigit:]]+)/ gitrefs:https://bitbucket.org/multicoreware/x265_git.git|re:#^refs/heads/master$#|@commit
+# bump: x265 /X265_VERSION=([\d.]+)/ https://bitbucket.org/multicoreware/x265_git.git|*
 # bump: x265 after ./hashupdate Dockerfile X265 $LATEST
 # bump: x265 link "Source diff $CURRENT..$LATEST" https://bitbucket.org/multicoreware/x265_git/branches/compare/$LATEST..$CURRENT#diff
-ARG X265_VERSION=487105dcd21d0f36a7a9e0ec50de85577b9bed04
-ARG X265_SHA256=f77e093f4fd0a1867bace75357b7844e360b2ce460330558ac4ee85346123fbb
-ARG X265_URL="https://bitbucket.org/multicoreware/x265_git/get/$X265_VERSION.tar.bz2"
+ARG X265_VERSION=4.0
+ARG X265_SHA256=75b4d05629e365913de3100b38a459b04e2a217a8f30efaa91b572d8e6d71282
+ARG X265_URL="https://bitbucket.org/multicoreware/x265_git/downloads/x265_$X265_VERSION.tar.gz"
 # CMAKEFLAGS issue
 # https://bitbucket.org/multicoreware/x265_git/issues/620/support-passing-cmake-flags-to-multilibsh
 RUN \
   wget $WGET_OPTS -O x265_git.tar.bz2 "$X265_URL" && \
   echo "$X265_SHA256  x265_git.tar.bz2" | sha256sum -c - && \
-  tar $TAR_OPTS x265_git.tar.bz2 && cd multicoreware-x265_git-*/build/linux && \
+  tar $TAR_OPTS x265_git.tar.bz2 && cd x265_*/build/linux && \
   sed -i '/^cmake / s/$/ -G "Unix Makefiles" ${CMAKEFLAGS}/' ./multilib.sh && \
   sed -i 's/ -DENABLE_SHARED=OFF//g' ./multilib.sh && \
   MAKEFLAGS="-j$(nproc)" \
@@ -1207,9 +1206,9 @@ RUN \
 RUN \
   EXPAT_VERSION=$(pkg-config --modversion expat) \
   FFTW_VERSION=$(pkg-config --modversion fftw3) \
-  FONTCONFIG_VERSION=$(pkg-config --modversion fontconfig)  \
-  FREETYPE_VERSION=$(pkg-config --modversion freetype2)  \
-  FRIBIDI_VERSION=$(pkg-config --modversion fribidi)  \
+  FONTCONFIG_VERSION=$(pkg-config --modversion fontconfig) \
+  FREETYPE_VERSION=$(pkg-config --modversion freetype2) \
+  FRIBIDI_VERSION=$(pkg-config --modversion fribidi) \
   LIBSAMPLERATE_VERSION=$(pkg-config --modversion samplerate) \
   LIBVO_AMRWBENC_VERSION=$(pkg-config --modversion vo-amrwbenc) \
   LIBXML2_VERSION=$(pkg-config --modversion libxml-2.0) \
@@ -1319,6 +1318,8 @@ RUN ["/ffprobe", "-tls_verify", "1", "-ca_file", "/etc/ssl/cert.pem", "-i", "htt
 RUN ["/ffprobe", "-i", "https://github.githubassets.com/favicons/favicon.svg"]
 # vvenc
 RUN ["/ffmpeg", "-f", "lavfi", "-i", "testsrc", "-c:v", "libvvenc", "-t", "100ms", "-f", "null", "-"]
+# x265 regression
+RUN ["/ffmpeg", "-f", "lavfi", "-i", "testsrc", "-c:v", "libx265", "-t", "100ms", "-f", "null", "-"]
 
 # clamp all files into one layer
 FROM scratch AS final2
