@@ -430,9 +430,9 @@ RUN \
 # bump: libmysofa after ./hashupdate Dockerfile LIBMYSOFA $LATEST
 # bump: libmysofa link "Release" https://github.com/hoene/libmysofa/releases/tag/v$LATEST
 # bump: libmysofa link "Source diff $CURRENT..$LATEST" https://github.com/hoene/libmysofa/compare/v$CURRENT..v$LATEST
-ARG LIBMYSOFA_VERSION=1.3.2
+ARG LIBMYSOFA_VERSION=1.3.3
 ARG LIBMYSOFA_URL="https://github.com/hoene/libmysofa/archive/refs/tags/v$LIBMYSOFA_VERSION.tar.gz"
-ARG LIBMYSOFA_SHA256=6c5224562895977e87698a64cb7031361803d136057bba35ed4979b69ab4ba76
+ARG LIBMYSOFA_SHA256=a15f7236a2b492f8d8da69f6c71b5bde1ef1bac0ef428b94dfca1cabcb24c84f
 RUN \
   wget $WGET_OPTS -O libmysofa.tar.gz "$LIBMYSOFA_URL" && \
   echo "$LIBMYSOFA_SHA256  libmysofa.tar.gz" | sha256sum -c - && \
