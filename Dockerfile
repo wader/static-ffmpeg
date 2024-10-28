@@ -1092,9 +1092,9 @@ RUN \
 # bump: vvenc /VVENC_VERSION=([\d.]+)/ https://github.com/fraunhoferhhi/vvenc.git|*
 # bump: vvenc after ./hashupdate Dockerfile VVENC $LATEST
 # bump: vvenc link "CHANGELOG" https://github.com/fraunhoferhhi/vvenc/releases/tag/v$LATEST
-ARG VVENC_VERSION=1.12.0
+ARG VVENC_VERSION=1.12.1
 ARG VVENC_URL="https://github.com/fraunhoferhhi/vvenc/archive/refs/tags/v$VVENC_VERSION.tar.gz"
-ARG VVENC_SHA256=e7311ffcc87d8fcc4b839807061cca1b89be017ae7c449a69436dc2dd07615c2
+ARG VVENC_SHA256=ba353363779e8f835200f319c801b052a97d592ebc817b52c41bdce093fa2fe2
 RUN \
   wget $WGET_OPTS -O vvenc.tar.gz "$VVENC_URL" && \
   echo "$VVENC_SHA256  vvenc.tar.gz" | sha256sum --status -c - && \
