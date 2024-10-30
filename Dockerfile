@@ -168,9 +168,9 @@ RUN \
 # bump: librsvg /LIBRSVG_VERSION=([\d.]+)/ https://gitlab.gnome.org/GNOME/librsvg.git|^2
 # bump: librsvg after ./hashupdate Dockerfile LIBRSVG $LATEST
 # bump: librsvg link "NEWS" https://gitlab.gnome.org/GNOME/librsvg/-/blob/master/NEWS
-ARG LIBRSVG_VERSION=2.59.1
+ARG LIBRSVG_VERSION=2.59.2
 ARG LIBRSVG_URL="https://download.gnome.org/sources/librsvg/2.59/librsvg-$LIBRSVG_VERSION.tar.xz"
-ARG LIBRSVG_SHA256=6116267c7ddabfd4daaf1c341326da0a773139a7223e885ae40ee09bd6986ef6
+ARG LIBRSVG_SHA256=ecd293fb0cc338c170171bbc7bcfbea6725d041c95f31385dc935409933e4597
 RUN \
   wget $WGET_OPTS -O librsvg.tar.xz "$LIBRSVG_URL" && \
   echo "$LIBRSVG_SHA256  librsvg.tar.xz" | sha256sum --status -c - && \
