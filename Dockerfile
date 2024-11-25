@@ -8,6 +8,7 @@ ARG APK_OPTS=""
 
 RUN apk add --no-cache $APK_OPTS \
   coreutils \
+  pkgconfig \
   wget \
   rust cargo cargo-c \
   openssl-dev openssl-libs-static \
