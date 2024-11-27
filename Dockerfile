@@ -16,6 +16,7 @@ RUN apk add --no-cache $APK_OPTS \
   bash \
   tar \
   build-base \
+  lld \
   autoconf automake \
   libtool \
   diffutils \
@@ -62,7 +63,7 @@ RUN apk add --no-cache $APK_OPTS \
 # other options to get hardened build (same as ffmpeg hardened)
 ARG CFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIC"
 ARG CXXFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIC"
-ARG LDFLAGS="-Wl,-z,relro,-z,now"
+ARG LDFLAGS="-fuse-ld=lld -Wl,-z,relro,-z,now -Wl,-z,pack-relative-relocs"
 
 # retry dns and some http codes that might be transient errors
 ARG WGET_OPTS="--retry-on-host-error --retry-on-http-error=429,500,502,503"
