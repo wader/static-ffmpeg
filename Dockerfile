@@ -1139,7 +1139,7 @@ RUN \
   ./configure \
   --pkg-config-flags="--static" \
   --extra-cflags="-fopenmp" \
-  --extra-ldflags="-fopenmp -Wl,--allow-multiple-definition -Wl,-z,stack-size=2097152" \
+  --extra-ldflags="-fopenmp -Wl,-z,stack-size=2097152" \
   --toolchain=hardened \
   --disable-debug \
   --disable-shared \
@@ -1209,6 +1209,7 @@ RUN \
 
 RUN apk add gdb
 RUN cd ffmpeg* && gdb -ex="set confirm off" -ex=r --args ./ffprobe -i 'https://github.githubassets.com/favicons/favicon.svg'
+RUN cd ffmpeg* && ./ffprobe -i 'https://github.githubassets.com/favicons/favicon.svg'
 
 # svg
 # RUN ["/ffprobe", "-i", "https://github.githubassets.com/favicons/favicon.svg"]
