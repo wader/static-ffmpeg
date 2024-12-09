@@ -173,7 +173,7 @@ RUN \
   sed -i 's/add_ldexeflags -fPIE -pie/add_ldexeflags -fPIE -static-pie/' configure && \
   ./configure \
   --pkg-config-flags="--static" \
-  --extra-cflags="-fopenmp -O0 -gdb" \
+  --extra-cflags="-fopenmp -O0 --gdb" \
   --extra-ldflags="-fopenmp -Wl,-z,stack-size=2097152" \
   --toolchain=hardened \
   --disable-shared \
