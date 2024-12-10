@@ -29,7 +29,28 @@ RUN apk add --no-cache $APK_OPTS \
   libxml2-dev libxml2-static \
   expat-dev expat-static \
   fontconfig-dev fontconfig-static \
-  freetype freetype-dev freetype-static
+  freetype freetype-dev freetype-static \
+  graphite2-static \
+  tiff tiff-dev \
+  libjpeg-turbo libjpeg-turbo-dev \
+  libpng-dev libpng-static \
+  giflib giflib-dev \
+  fribidi-dev fribidi-static \
+  brotli-dev brotli-static \
+  soxr-dev soxr-static \
+  tcl \
+  numactl-dev \
+  cunit cunit-dev \
+  fftw-dev \
+  libsamplerate-dev libsamplerate-static \
+  vo-amrwbenc-dev vo-amrwbenc-static \
+  snappy snappy-dev snappy-static \
+  xxd \
+  xz-dev xz-static \
+  python3 py3-packaging \
+  linux-headers \
+  curl \
+  libdrm-dev
 
 # linux-headers need by rtmpdump
 # python3 py3-packaging needed by glib
@@ -128,6 +149,7 @@ RUN \
     -Dtests=false && \
   ninja -j$(nproc) -vC build install
 
+
 # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|*
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
 # bump: ffmpeg link "Changelog" https://github.com/FFmpeg/FFmpeg/blob/n$LATEST/Changelog
@@ -167,3 +189,4 @@ RUN \
 RUN apk add gdb
 RUN cd ffmpeg* && RUST_BACKTRACE=full gdb -ex="set confirm off" -ex=r -ex="bt full" --args ./ffprobe_g -i 'https://github.githubassets.com/favicons/favicon.svg'
 RUN cd ffmpeg* && RUST_BACKTRACE=full ./ffprobe_g -i 'https://github.githubassets.com/favicons/favicon.svg'
+
