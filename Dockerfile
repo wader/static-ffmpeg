@@ -187,8 +187,8 @@ RUN \
   && make -j$(nproc) install
 
 RUN apk add gdb
-RUN cd ffmpeg* && RUST_BACKTRACE=full gdb -ex="set confirm off" -ex=r -ex="bt full" --args ./ffprobe -i 'https://github.githubassets.com/favicons/favicon.svg'
-RUN cd ffmpeg* && RUST_BACKTRACE=full ./ffprobe -i 'https://github.githubassets.com/favicons/favicon.svg'
+RUN cd ffmpeg* && RUST_BACKTRACE=full gdb -ex="set confirm off" -ex=r -ex="bt full" --args ./ffprobe_g -i 'https://github.githubassets.com/favicons/favicon.svg'
+RUN cd ffmpeg* && RUST_BACKTRACE=full ./ffprobe_g -i 'https://github.githubassets.com/favicons/favicon.svg'
 
 # svg
 # RUN ["/ffprobe", "-i", "https://github.githubassets.com/favicons/favicon.svg"]
