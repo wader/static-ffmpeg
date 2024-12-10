@@ -174,7 +174,7 @@ RUN \
   ./configure \
   --pkg-config-flags="--static" \
   --extra-cflags="-fopenmp -O0 -ggdb" \
-  --extra-ldflags="-fopenmp -Wl,-z,stack-size=2097152" \
+  # --extra-ldflags="-fopenmp -Wl,-z,stack-size=2097152" \
   --toolchain=hardened \
   --disable-shared \
   --disable-ffplay \
@@ -186,10 +186,10 @@ RUN \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install
 
-RUN wget https://github.githubassets.com/favicons/favicon.svg
-RUN RUST_BACKTRACE=full rsvg-convert -o test.png favicon.svg
+# RUN wget https://github.githubassets.com/favicons/favicon.svg
+# RUN RUST_BACKTRACE=full rsvg-convert -o test.png favicon.svg
 
-# RUN apk add gdb
-# RUN cd ffmpeg* && RUST_BACKTRACE=full gdb -ex="set confirm off" -ex=r -ex="bt full" --args ./ffprobe_g -i 'https://github.githubassets.com/favicons/favicon.svg'
-# RUN cd ffmpeg* && RUST_BACKTRACE=full ./ffprobe_g -i 'https://github.githubassets.com/favicons/favicon.svg'
+RUN apk add gdb
+RUN cd ffmpeg* && RUST_BACKTRACE=full gdb -ex="set confirm off" -ex=r -ex="bt full" --args ./ffprobe_g -i 'https://github.githubassets.com/favicons/favicon.svg'
+RUN cd ffmpeg* && RUST_BACKTRACE=full ./ffprobe_g -i 'https://github.githubassets.com/favicons/favicon.svg'
 
