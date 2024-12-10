@@ -139,6 +139,7 @@ RUN \
   echo "$LIBRSVG_SHA256  librsvg.tar.xz" | sha256sum --status -c - && \
   tar $TAR_OPTS librsvg.tar.xz && cd librsvg-* && \
   meson setup build \
+    -Drust_link_args=-Wl,-z,stack-size=2097152 \
     -Dbuildtype=debug \
     -Ddefault_library=static \
     -Ddocs=disabled \
