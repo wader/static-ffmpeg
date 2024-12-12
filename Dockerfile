@@ -174,7 +174,7 @@ RUN \
   ./configure \
   --pkg-config-flags="--static" \
   --extra-cflags="-fopenmp -O0 -ggdb" \
-  --extra-ldflags="-fopenmp -Wl,-z,stack-size=2097152" \
+  --extra-ldflags="-lgcc -fopenmp -Wl,-z,stack-size=2097152" \
   --toolchain=hardened \
   --disable-shared \
   --disable-ffplay \
