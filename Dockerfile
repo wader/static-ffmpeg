@@ -186,8 +186,9 @@ RUN \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install
 
-RUN apk add gdb
+RUN apk add gdb valgrind
 RUN wget 'https://github.githubassets.com/favicons/favicon.svg'
 RUN cd ffmpeg* && RUST_BACKTRACE=full gdb -ex="set confirm off" -ex=r -ex="bt full" --args ./ffprobe_g -i /favicon.svg
+RUN cd ffmpeg* && RUST_BACKTRACE=full valgrind ./ffprobe_g -i /favicon.svg
 RUN cd ffmpeg* && RUST_BACKTRACE=full ./ffprobe_g -i /favicon.svg
 
