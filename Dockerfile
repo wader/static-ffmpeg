@@ -98,9 +98,9 @@ RUN sed -i 's/-lvmaf /-lvmaf -lstdc++ /' /usr/local/lib/pkgconfig/libvmaf.pc
 # bump: glib /GLIB_VERSION=([\d.]+)/ https://gitlab.gnome.org/GNOME/glib.git|^2
 # bump: glib after ./hashupdate Dockerfile GLIB $LATEST
 # bump: glib link "NEWS" https://gitlab.gnome.org/GNOME/glib/-/blob/main/NEWS?ref_type=heads
-ARG GLIB_VERSION=2.83.2
+ARG GLIB_VERSION=2.83.3
 ARG GLIB_URL="https://download.gnome.org/sources/glib/2.83/glib-$GLIB_VERSION.tar.xz"
-ARG GLIB_SHA256=8428d672c8485636d940f03ce8dcdc174f9b3892ac8b2eea76dd281af6a6e937
+ARG GLIB_SHA256=d0c65318bb2e3fa594277cf98a71cffaf5f666c078db39dcec121757b2ba328d
 RUN \
   wget $WGET_OPTS -O glib.tar.xz "$GLIB_URL" && \
   echo "$GLIB_SHA256  glib.tar.xz" | sha256sum --status -c - && \
