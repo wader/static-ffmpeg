@@ -1,6 +1,6 @@
 # bump: alpine /ALPINE_VERSION=alpine:([\d.]+)/ docker:alpine|^3
 # bump: alpine link "Release notes" https://alpinelinux.org/posts/Alpine-$LATEST-released.html
-ARG ALPINE_VERSION=alpine:3.20.3
+ARG ALPINE_VERSION=alpine:3.21.3
 FROM $ALPINE_VERSION AS builder
 
 # Alpine Package Keeper options
@@ -894,24 +894,6 @@ RUN \
   ./multilib.sh && \
   make -C 8bit -j$(nproc) install
 
-# bump: xavs2 /XAVS2_VERSION=([\d.]+)/ https://github.com/pkuvcl/xavs2.git|^1
-# bump: xavs2 after ./hashupdate Dockerfile XAVS2 $LATEST
-# bump: xavs2 link "Release" https://github.com/pkuvcl/xavs2/releases/tag/$LATEST
-# bump: xavs2 link "Source diff $CURRENT..$LATEST" https://github.com/pkuvcl/xavs2/compare/v$CURRENT..v$LATEST
-ARG XAVS2_VERSION=1.4
-ARG XAVS2_URL="https://github.com/pkuvcl/xavs2/archive/refs/tags/$XAVS2_VERSION.tar.gz"
-ARG XAVS2_SHA256=1e6d731cd64cb2a8940a0a3fd24f9c2ac3bb39357d802432a47bc20bad52c6ce
-# TODO: seems to be issues with asm on musl
-RUN \
-  wget $WGET_OPTS -O xavs2.tar.gz "$XAVS2_URL" && \
-  echo "$XAVS2_SHA256  xavs2.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS xavs2.tar.gz && cd xavs2-*/build/linux && \
-  ./configure \
-    --disable-asm \
-    --enable-pic \
-    --disable-cli && \
-  make -j$(nproc) install
-
 # http://websvn.xvid.org/cvs/viewvc.cgi/trunk/xvidcore/build/generic/configure.in?revision=2146&view=markup
 # bump: xvid /XVID_VERSION=([\d.]+)/ svn:https://anonymous:@svn.xvid.org|/^release-(.*)$/|/_/./|^1
 # bump: xvid after ./hashupdate Dockerfile XVID $LATEST
@@ -1193,7 +1175,6 @@ RUN \
   --enable-libwebp \
   --enable-libx264 \
   --enable-libx265 \
-  --enable-libxavs2 \
   --enable-libxevd \
   --enable-libxeve \
   --enable-libxml2 \
