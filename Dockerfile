@@ -150,9 +150,9 @@ RUN \
 # bump: pango /PANGO_VERSION=([\d.]+)/ https://github.com/GNOME/pango.git|/\d+\.\d+\.\d+/|*
 # bump: pango after ./hashupdate Dockerfile PANGO $LATEST
 # bump: pango link "NEWS" https://gitlab.gnome.org/GNOME/pango/-/blob/main/NEWS?ref_type=heads
-ARG PANGO_VERSION=1.56.2
+ARG PANGO_VERSION=1.56.3
 ARG PANGO_URL="https://download.gnome.org/sources/pango/1.56/pango-$PANGO_VERSION.tar.xz"
-ARG PANGO_SHA256=03b7afd7ed730bef651155cbfb5320556b8ef92b0dc04abbb9784dcd4057afe7
+ARG PANGO_SHA256=2606252bc25cd8d24e1b7f7e92c3a272b37acd6734347b73b47a482834ba2491
 # TODO: add -Dbuild-testsuite=false when in stable release
 # TODO: -Ddefault_library=both currently to not fail building tests
 RUN \
