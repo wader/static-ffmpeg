@@ -114,9 +114,9 @@ RUN \
 # bump: harfbuzz /LIBHARFBUZZ_VERSION=([\d.]+)/ https://github.com/harfbuzz/harfbuzz.git|*
 # bump: harfbuzz after ./hashupdate Dockerfile LIBHARFBUZZ $LATEST
 # bump: harfbuzz link "NEWS" https://github.com/harfbuzz/harfbuzz/blob/main/NEWS
-ARG LIBHARFBUZZ_VERSION=11.0.1
+ARG LIBHARFBUZZ_VERSION=11.1.0
 ARG LIBHARFBUZZ_URL="https://github.com/harfbuzz/harfbuzz/releases/download/$LIBHARFBUZZ_VERSION/harfbuzz-$LIBHARFBUZZ_VERSION.tar.xz"
-ARG LIBHARFBUZZ_SHA256=4a7890090538136db64742073af4b4d776ab8b50e6855676a8165eb8b7f60b7a
+ARG LIBHARFBUZZ_SHA256=477f0d48c34dc32093b45304178eb9733361ca1832b5159879c99e6d40227969
 RUN \
   wget $WGET_OPTS -O harfbuzz.tar.xz "$LIBHARFBUZZ_URL" && \
   echo "$LIBHARFBUZZ_SHA256  harfbuzz.tar.xz" | sha256sum --status -c - && \
