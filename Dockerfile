@@ -536,9 +536,9 @@ RUN \
 # bump: rav1e /RAV1E_VERSION=([\d.]+)/ https://github.com/xiph/rav1e.git|/\d+\./|*
 # bump: rav1e after ./hashupdate Dockerfile RAV1E $LATEST
 # bump: rav1e link "Release notes" https://github.com/xiph/rav1e/releases/tag/v$LATEST
-ARG RAV1E_VERSION=0.7.1
+ARG RAV1E_VERSION=0.8.0
 ARG RAV1E_URL="https://github.com/xiph/rav1e/archive/v$RAV1E_VERSION.tar.gz"
-ARG RAV1E_SHA256=da7ae0df2b608e539de5d443c096e109442cdfa6c5e9b4014361211cf61d030c
+ARG RAV1E_SHA256=2580bb4b4efae50e0a228e8ba80db1f73805a0e6f6a8c22bee066c90afb35ba0
 RUN \
   wget $WGET_OPTS -O rav1e.tar.gz "$RAV1E_URL" && \
   echo "$RAV1E_SHA256  rav1e.tar.gz" | sha256sum -c - && \
