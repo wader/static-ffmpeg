@@ -7,7 +7,12 @@ on:
 
 jobs:
   ci:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - runs_on: ubicloud-standard-30
+          - runs_on: ubicloud-standard-30-arm
+    runs-on: ${{ matrix.runs_on }}
     steps:
       - uses: actions/checkout@v3
       - name: Set up Docker Buildx
