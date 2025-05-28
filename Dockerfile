@@ -166,28 +166,28 @@ RUN \
     -Dgtk_doc=false && \
   ninja -j$(nproc) -vC build install
 
-# bump: librsvg /LIBRSVG_VERSION=([\d.]+)/ https://gitlab.gnome.org/GNOME/librsvg.git|^2
-# bump: librsvg after ./hashupdate Dockerfile LIBRSVG $LATEST
-# bump: librsvg link "NEWS" https://gitlab.gnome.org/GNOME/librsvg/-/blob/master/NEWS
-ARG LIBRSVG_VERSION=2.60.0
-ARG LIBRSVG_URL="https://download.gnome.org/sources/librsvg/2.60/librsvg-$LIBRSVG_VERSION.tar.xz"
-ARG LIBRSVG_SHA256=0b6ffccdf6e70afc9876882f5d2ce9ffcf2c713cbaaf1ad90170daa752e1eec3
-RUN \
-  wget $WGET_OPTS -O librsvg.tar.xz "$LIBRSVG_URL" && \
-  echo "$LIBRSVG_SHA256  librsvg.tar.xz" | sha256sum --status -c - && \
-  tar $TAR_OPTS librsvg.tar.xz && cd librsvg-* && \
-  # workaround for https://gitlab.gnome.org/GNOME/librsvg/-/issues/1158
-  sed -i "/^if host_system in \['windows'/s/, 'linux'//" meson.build && \
-  meson setup build \
-    -Dbuildtype=release \
-    -Ddefault_library=static \
-    -Ddocs=disabled \
-    -Dintrospection=disabled \
-    -Dpixbuf=disabled \
-    -Dpixbuf-loader=disabled \
-    -Dvala=disabled \
-    -Dtests=false && \
-  ninja -j$(nproc) -vC build install
+# # bump: librsvg /LIBRSVG_VERSION=([\d.]+)/ https://gitlab.gnome.org/GNOME/librsvg.git|^2
+# # bump: librsvg after ./hashupdate Dockerfile LIBRSVG $LATEST
+# # bump: librsvg link "NEWS" https://gitlab.gnome.org/GNOME/librsvg/-/blob/master/NEWS
+# ARG LIBRSVG_VERSION=2.60.0
+# ARG LIBRSVG_URL="https://download.gnome.org/sources/librsvg/2.60/librsvg-$LIBRSVG_VERSION.tar.xz"
+# ARG LIBRSVG_SHA256=0b6ffccdf6e70afc9876882f5d2ce9ffcf2c713cbaaf1ad90170daa752e1eec3
+# RUN \
+#   wget $WGET_OPTS -O librsvg.tar.xz "$LIBRSVG_URL" && \
+#   echo "$LIBRSVG_SHA256  librsvg.tar.xz" | sha256sum --status -c - && \
+#   tar $TAR_OPTS librsvg.tar.xz && cd librsvg-* && \
+#   # workaround for https://gitlab.gnome.org/GNOME/librsvg/-/issues/1158
+#   sed -i "/^if host_system in \['windows'/s/, 'linux'//" meson.build && \
+#   meson setup build \
+#     -Dbuildtype=release \
+#     -Ddefault_library=static \
+#     -Ddocs=disabled \
+#     -Dintrospection=disabled \
+#     -Dpixbuf=disabled \
+#     -Dpixbuf-loader=disabled \
+#     -Dvala=disabled \
+#     -Dtests=false && \
+#   ninja -j$(nproc) -vC build install
 
 # build after libvmaf
 # bump: aom /AOM_VERSION=([\d.]+)/ git:https://aomedia.googlesource.com/aom|*
@@ -533,20 +533,20 @@ RUN \
     .. && \
   make -j$(nproc) install
 
-# bump: rav1e /RAV1E_VERSION=([\d.]+)/ https://github.com/xiph/rav1e.git|/\d+\./|*
-# bump: rav1e after ./hashupdate Dockerfile RAV1E $LATEST
-# bump: rav1e link "Release notes" https://github.com/xiph/rav1e/releases/tag/v$LATEST
-ARG RAV1E_VERSION=0.7.1
-ARG RAV1E_URL="https://github.com/xiph/rav1e/archive/v$RAV1E_VERSION.tar.gz"
-ARG RAV1E_SHA256=da7ae0df2b608e539de5d443c096e109442cdfa6c5e9b4014361211cf61d030c
-RUN \
-  wget $WGET_OPTS -O rav1e.tar.gz "$RAV1E_URL" && \
-  echo "$RAV1E_SHA256  rav1e.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS rav1e.tar.gz && cd rav1e-* && \
-  # workaround weird cargo problem when on aws (?) weirdly alpine edge seems to work
-  CARGO_REGISTRIES_CRATES_IO_PROTOCOL="sparse" \
-  RUSTFLAGS="-C target-feature=+crt-static" \
-  cargo cinstall --release
+# # bump: rav1e /RAV1E_VERSION=([\d.]+)/ https://github.com/xiph/rav1e.git|/\d+\./|*
+# # bump: rav1e after ./hashupdate Dockerfile RAV1E $LATEST
+# # bump: rav1e link "Release notes" https://github.com/xiph/rav1e/releases/tag/v$LATEST
+# ARG RAV1E_VERSION=0.7.1
+# ARG RAV1E_URL="https://github.com/xiph/rav1e/archive/v$RAV1E_VERSION.tar.gz"
+# ARG RAV1E_SHA256=da7ae0df2b608e539de5d443c096e109442cdfa6c5e9b4014361211cf61d030c
+# RUN \
+#   wget $WGET_OPTS -O rav1e.tar.gz "$RAV1E_URL" && \
+#   echo "$RAV1E_SHA256  rav1e.tar.gz" | sha256sum -c - && \
+#   tar $TAR_OPTS rav1e.tar.gz && cd rav1e-* && \
+#   # workaround weird cargo problem when on aws (?) weirdly alpine edge seems to work
+#   CARGO_REGISTRIES_CRATES_IO_PROTOCOL="sparse" \
+#   RUSTFLAGS="-C target-feature=+crt-static" \
+#   cargo cinstall --release
 
 # bump: librtmp /LIBRTMP_COMMIT=([[:xdigit:]]+)/ gitrefs:https://git.ffmpeg.org/rtmpdump.git|re:#^refs/heads/master$#|@commit
 # bump: librtmp after ./hashupdate Dockerfile LIBRTMP $LATEST
@@ -1175,8 +1175,8 @@ RUN \
   --enable-libopenjpeg \
   --enable-libopus \
   --enable-librabbitmq \
-  --enable-librav1e \
-  --enable-librsvg \
+  # --enable-librav1e \
+  # --enable-librsvg \
   --enable-librtmp \
   --enable-librubberband \
   --enable-libshine \
