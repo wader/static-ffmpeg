@@ -169,25 +169,25 @@ RUN \
 # # bump: librsvg /LIBRSVG_VERSION=([\d.]+)/ https://gitlab.gnome.org/GNOME/librsvg.git|^2
 # # bump: librsvg after ./hashupdate Dockerfile LIBRSVG $LATEST
 # # bump: librsvg link "NEWS" https://gitlab.gnome.org/GNOME/librsvg/-/blob/master/NEWS
-# ARG LIBRSVG_VERSION=2.60.0
-# ARG LIBRSVG_URL="https://download.gnome.org/sources/librsvg/2.60/librsvg-$LIBRSVG_VERSION.tar.xz"
-# ARG LIBRSVG_SHA256=0b6ffccdf6e70afc9876882f5d2ce9ffcf2c713cbaaf1ad90170daa752e1eec3
-# RUN \
-#   wget $WGET_OPTS -O librsvg.tar.xz "$LIBRSVG_URL" && \
-#   echo "$LIBRSVG_SHA256  librsvg.tar.xz" | sha256sum --status -c - && \
-#   tar $TAR_OPTS librsvg.tar.xz && cd librsvg-* && \
-#   # workaround for https://gitlab.gnome.org/GNOME/librsvg/-/issues/1158
-#   sed -i "/^if host_system in \['windows'/s/, 'linux'//" meson.build && \
-#   meson setup build \
-#     -Dbuildtype=release \
-#     -Ddefault_library=static \
-#     -Ddocs=disabled \
-#     -Dintrospection=disabled \
-#     -Dpixbuf=disabled \
-#     -Dpixbuf-loader=disabled \
-#     -Dvala=disabled \
-#     -Dtests=false && \
-#   ninja -j$(nproc) -vC build install
+ARG LIBRSVG_VERSION=2.60.0
+ARG LIBRSVG_URL="https://download.gnome.org/sources/librsvg/2.60/librsvg-$LIBRSVG_VERSION.tar.xz"
+ARG LIBRSVG_SHA256=0b6ffccdf6e70afc9876882f5d2ce9ffcf2c713cbaaf1ad90170daa752e1eec3
+RUN \
+  wget $WGET_OPTS -O librsvg.tar.xz "$LIBRSVG_URL" && \
+  echo "$LIBRSVG_SHA256  librsvg.tar.xz" | sha256sum --status -c - && \
+  tar $TAR_OPTS librsvg.tar.xz && cd librsvg-* && \
+  # workaround for https://gitlab.gnome.org/GNOME/librsvg/-/issues/1158
+  sed -i "/^if host_system in \['windows'/s/, 'linux'//" meson.build && \
+  meson setup build \
+    -Dbuildtype=release \
+    -Ddefault_library=static \
+    -Ddocs=disabled \
+    -Dintrospection=disabled \
+    -Dpixbuf=disabled \
+    -Dpixbuf-loader=disabled \
+    -Dvala=disabled \
+    -Dtests=false && \
+  ninja -j$(nproc) -vC build install
 
 # build after libvmaf
 # bump: aom /AOM_VERSION=([\d.]+)/ git:https://aomedia.googlesource.com/aom|*
@@ -1176,7 +1176,7 @@ RUN \
   --enable-libopus \
   --enable-librabbitmq \
   # --enable-librav1e \
-  # --enable-librsvg \
+  --enable-librsvg \
   --enable-librtmp \
   --enable-librubberband \
   --enable-libshine \
