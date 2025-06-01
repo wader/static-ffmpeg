@@ -60,8 +60,8 @@ RUN apk add --no-cache $APK_OPTS \
 # -static-libgcc is needed to make gcc not include gcc_s as "as-needed" shared library which
 # cmake will include as a implicit library.
 # other options to get hardened build (same as ffmpeg hardened)
-ARG CFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIC"
-ARG CXXFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIC"
+ARG CFLAGS="-static-libgcc -fno-strict-overflow -fstack-protector-all -fPIC"
+ARG CXXFLAGS="-static-libgcc -fno-strict-overflow -fstack-protector-all -fPIC"
 ARG LDFLAGS="-Wl,-z,relro,-z,now"
 
 # retry dns and some http codes that might be transient errors
@@ -1135,12 +1135,12 @@ RUN \
   # workaround for https://gitlab.com/AOMediaCodec/SVT-AV1/-/merge_requests/2387
   sed -i 's/svt_av1_enc_init_handle(&svt_enc->svt_handle, svt_enc, &svt_enc->enc_params)/svt_av1_enc_init_handle(\&svt_enc->svt_handle, \&svt_enc->enc_params)/g' libavcodec/libsvtav1.c && \
   FDKAAC_FLAGS=$(if [[ -n "$ENABLE_FDKAAC" ]] ;then echo " --enable-libfdk-aac --enable-nonfree " ;else echo ""; fi) && \
-  sed -i 's/add_ldexeflags -fPIE -pie/add_ldexeflags -fPIE -static-pie/' configure && \
   ./configure \
   --pkg-config-flags="--static" \
-  --extra-cflags="-fopenmp" \
+  --extra-cflags="$CFLAGS" \
+  --extra-cxxflags="$CXXFLAGS" \
+  --extra-ldexeflags="-fPIE -static-pie" \
   --extra-ldflags="-fopenmp -Wl,--allow-multiple-definition -Wl,-z,stack-size=2097152" \
-  --toolchain=hardened \
   --disable-debug \
   --disable-shared \
   --disable-ffplay \
