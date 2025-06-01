@@ -60,8 +60,8 @@ RUN apk add --no-cache $APK_OPTS \
 # -static-libgcc is needed to make gcc not include gcc_s as "as-needed" shared library which
 # cmake will include as a implicit library.
 # other options to get hardened build (same as ffmpeg hardened)
-ARG CFLAGS="-static-libgcc -fno-strict-overflow -fstack-protector-all -fPIC"
-ARG CXXFLAGS="-static-libgcc -fno-strict-overflow -fstack-protector-all -fPIC"
+ARG CFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIC"
+ARG CXXFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIC"
 ARG LDFLAGS="-Wl,-z,relro,-z,now"
 
 # retry dns and some http codes that might be transient errors
