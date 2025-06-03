@@ -908,6 +908,7 @@ RUN \
   wget $WGET_OPTS -O xavs2.tar.gz "$XAVS2_URL" && \
   echo "$XAVS2_SHA256  xavs2.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS xavs2.tar.gz && cd xavs2-*/build/linux && \
+  CFLAGS="$CFLAGS -Wno-tautological-compare -Wno-incompatible-pointer-types -Wno-unused-const-variable" \
   ./configure \
     --disable-asm \
     --enable-pic \
