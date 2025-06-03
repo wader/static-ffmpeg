@@ -545,7 +545,7 @@ RUN \
   tar $TAR_OPTS rav1e.tar.gz && cd rav1e-* && \
   # workaround weird cargo problem when on aws (?) weirdly alpine edge seems to work
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL="sparse" \
-  RUSTFLAGS="-C target-feature=+crt-static" \
+  RUSTFLAGS="-C target-feature=-crt-static" \
   cargo cinstall --release
 
 # bump: librtmp /LIBRTMP_COMMIT=([[:xdigit:]]+)/ gitrefs:https://git.ffmpeg.org/rtmpdump.git|re:#^refs/heads/master$#|@commit
