@@ -82,7 +82,7 @@ RUN \
   echo "$GLIB_SHA256  glib.tar.xz" | sha256sum --status -c - && \
   tar $TAR_OPTS glib.tar.xz && cd glib-* && \
   meson setup build \
-    -Dbuildtype=release \
+    -Dbuildtype=debug \
     -Ddefault_library=static \
     -Dlibmount=disabled && \
   ninja -j$(nproc) -vC build install
@@ -98,7 +98,7 @@ RUN \
   echo "$LIBHARFBUZZ_SHA256  harfbuzz.tar.xz" | sha256sum --status -c - && \
   tar $TAR_OPTS harfbuzz.tar.xz && cd harfbuzz-* && \
   meson setup build \
-    -Dbuildtype=release \
+    -Dbuildtype=debug \
     -Ddefault_library=static && \
   ninja -j$(nproc) -vC build install
 
@@ -113,7 +113,7 @@ RUN \
   echo "$CAIRO_SHA256  cairo.tar.xz" | sha256sum --status -c - && \
   tar $TAR_OPTS cairo.tar.xz && cd cairo-* && \
   meson setup build \
-    -Dbuildtype=release \
+    -Dbuildtype=debug \
     -Ddefault_library=static \
     -Dtests=disabled \
     -Dquartz=disabled \
@@ -136,7 +136,7 @@ RUN \
   echo "$PANGO_SHA256  pango.tar.xz" | sha256sum --status -c - && \
   tar $TAR_OPTS pango.tar.xz && cd pango-* && \
   meson setup build \
-    -Dbuildtype=release \
+    -Dbuildtype=debug \
     -Ddefault_library=both \
     -Dintrospection=disabled \
     -Dgtk_doc=false && \
@@ -155,7 +155,7 @@ RUN \
   # workaround for https://gitlab.gnome.org/GNOME/librsvg/-/issues/1158
   sed -i "/^if host_system in \['windows'/s/, 'linux'//" meson.build && \
   meson setup build \
-    -Dbuildtype=release \
+    -Dbuildtype=debug \
     -Ddefault_library=static \
     -Ddocs=disabled \
     -Dintrospection=disabled \
@@ -191,16 +191,14 @@ RUN \
   sed -i 's/add_ldexeflags -fPIE -pie/add_ldexeflags -fPIE -static-pie/' configure && \
   ./configure \
   --pkg-config-flags="--static" \
-  --extra-cflags="-fopenmp" \
+  --extra-cflags="-O0 -ggdb -fopenmp" \
   --extra-ldflags="-fopenmp -Wl,--allow-multiple-definition -Wl,-z,stack-size=2097152" \
   --toolchain=hardened \
-  --disable-debug \
   --disable-shared \
   --disable-ffplay \
   --enable-static \
   --enable-gpl \
   --enable-version3 \
-  $FDKAAC_FLAGS \
   --enable-librsvg \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install
