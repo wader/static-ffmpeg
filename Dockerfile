@@ -237,9 +237,9 @@ RUN \
 # bump: libass /LIBASS_VERSION=([\d.]+)/ https://github.com/libass/libass.git|*
 # bump: libass after ./hashupdate Dockerfile LIBASS $LATEST
 # bump: libass link "Release notes" https://github.com/libass/libass/releases/tag/$LATEST
-ARG LIBASS_VERSION=0.17.3
+ARG LIBASS_VERSION=0.17.4
 ARG LIBASS_URL="https://github.com/libass/libass/releases/download/$LIBASS_VERSION/libass-$LIBASS_VERSION.tar.gz"
-ARG LIBASS_SHA256=da7c348deb6fa6c24507afab2dee7545ba5dd5bbf90a137bfe9e738f7df68537
+ARG LIBASS_SHA256=a886b3b80867f437bc55cff3280a652bfa0d37b43d2aff39ddf3c4f288b8c5a8
 RUN \
   wget $WGET_OPTS -O libass.tar.gz "$LIBASS_URL" && \
   echo "$LIBASS_SHA256  libass.tar.gz" | sha256sum -c - && \
