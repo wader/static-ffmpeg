@@ -818,9 +818,9 @@ RUN \
 # bump: libvpx after ./hashupdate Dockerfile VPX $LATEST
 # bump: libvpx link "CHANGELOG" https://github.com/webmproject/libvpx/blob/master/CHANGELOG
 # bump: libvpx link "Source diff $CURRENT..$LATEST" https://github.com/webmproject/libvpx/compare/v$CURRENT..v$LATEST
-ARG VPX_VERSION=1.15.1
+ARG VPX_VERSION=1.15.2
 ARG VPX_URL="https://github.com/webmproject/libvpx/archive/v$VPX_VERSION.tar.gz"
-ARG VPX_SHA256=6cba661b22a552bad729bd2b52df5f0d57d14b9789219d46d38f73c821d3a990
+ARG VPX_SHA256=26fcd3db88045dee380e581862a6ef106f49b74b6396ee95c2993a260b4636aa
 RUN \
   wget $WGET_OPTS -O libvpx.tar.gz "$VPX_URL" && \
   echo "$VPX_SHA256  libvpx.tar.gz" | sha256sum -c - && \
