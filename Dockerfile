@@ -704,9 +704,9 @@ RUN \
 # bump: ogg after ./hashupdate Dockerfile OGG $LATEST
 # bump: ogg link "CHANGES" https://github.com/xiph/ogg/blob/master/CHANGES
 # bump: ogg link "Source diff $CURRENT..$LATEST" https://github.com/xiph/ogg/compare/v$CURRENT..v$LATEST
-ARG OGG_VERSION=1.3.5
+ARG OGG_VERSION=1.3.6
 ARG OGG_URL="https://downloads.xiph.org/releases/ogg/libogg-$OGG_VERSION.tar.gz"
-ARG OGG_SHA256=0eb4b4b9420a0f51db142ba3f9c64b333f826532dc0f48c6410ae51f4799b664
+ARG OGG_SHA256=83e6704730683d004d20e21b8f7f55dcb3383cdf84c0daedf30bde175f774638
 RUN \
   wget $WGET_OPTS -O libogg.tar.gz "$OGG_URL" && \
   echo "$OGG_SHA256  libogg.tar.gz" | sha256sum -c - && \
