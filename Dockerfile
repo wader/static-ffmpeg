@@ -682,9 +682,9 @@ RUN \
 # bump: svtav1 /SVTAV1_VERSION=([\d.]+)/ https://gitlab.com/AOMediaCodec/SVT-AV1.git|*
 # bump: svtav1 after ./hashupdate Dockerfile SVTAV1 $LATEST
 # bump: svtav1 link "Release notes" https://gitlab.com/AOMediaCodec/SVT-AV1/-/releases/v$LATEST
-ARG SVTAV1_VERSION=3.0.2
+ARG SVTAV1_VERSION=3.1.0
 ARG SVTAV1_URL="https://gitlab.com/AOMediaCodec/SVT-AV1/-/archive/v$SVTAV1_VERSION/SVT-AV1-v$SVTAV1_VERSION.tar.bz2"
-ARG SVTAV1_SHA256=7548a380cd58a46998ab4f1a02901ef72c37a7c6317c930cde5df2e6349e437b
+ARG SVTAV1_SHA256=8231b63ea6c50bae46a019908786ebfa2696e5743487270538f3c25fddfa215a
 RUN \
   wget $WGET_OPTS -O svtav1.tar.bz2 "$SVTAV1_URL" && \
   echo "$SVTAV1_SHA256  svtav1.tar.bz2" | sha256sum -c - && \
