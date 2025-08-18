@@ -252,29 +252,21 @@ RUN \
 # bump: libbluray /LIBBLURAY_VERSION=([\d.]+)/ https://code.videolan.org/videolan/libbluray.git|*
 # bump: libbluray after ./hashupdate Dockerfile LIBBLURAY $LATEST
 # bump: libbluray link "ChangeLog" https://code.videolan.org/videolan/libbluray/-/blob/master/ChangeLog
-ARG LIBBLURAY_VERSION=1.3.4
+ARG LIBBLURAY_VERSION=1.4.0
 ARG LIBBLURAY_URL="https://code.videolan.org/videolan/libbluray/-/archive/$LIBBLURAY_VERSION/libbluray-$LIBBLURAY_VERSION.tar.gz"
-ARG LIBBLURAY_SHA256=9820df5c3e87777be116ca225ad7ee026a3ff42b2447c7fe641910fb23aad3c2
+ARG LIBBLURAY_SHA256=0dc218f79435798a62da2a0510e0e921a3f7c1b140507df8e65f48d98046f024
 # TODO: bump config? at least checkout to make commit sticky
-ARG LIBUDFREAD_COMMIT=a35513813819efadca82c4b90edbe1407b1b9e05
-# dec_init rename is to workaround https://code.videolan.org/videolan/libbluray/-/issues/43
+ARG LIBUDFREAD_COMMIT=c3cd5cbb097924557ea4d9da1ff76a74620c51a8
 RUN \
   wget $WGET_OPTS -O libbluray.tar.gz "$LIBBLURAY_URL" && \
   echo "$LIBBLURAY_SHA256  libbluray.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS libbluray.tar.gz && cd libbluray-* && \
-  sed -i 's/dec_init/libbluray_dec_init/' src/libbluray/disc/* && \
   git clone https://code.videolan.org/videolan/libudfread.git contrib/libudfread && \
   (cd contrib/libudfread && git checkout --recurse-submodules $LIBUDFREAD_COMMIT) && \
-  autoreconf -fiv && \
-  ./configure \
-    --with-pic \
-    --disable-doxygen-doc \
-    --disable-doxygen-dot \
-    --enable-static \
-    --disable-shared \
-    --disable-examples \
-    --disable-bdjava-jar && \
-  make -j$(nproc) install
+  meson setup build \
+    -Dbuildtype=release \
+    -Ddefault_library=static && \
+  ninja -j$(nproc) -vC build install
 
 # bump: dav1d /DAV1D_VERSION=([\d.]+)/ https://code.videolan.org/videolan/dav1d.git|*
 # bump: dav1d after ./hashupdate Dockerfile DAV1D $LATEST
