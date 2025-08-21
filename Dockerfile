@@ -538,7 +538,9 @@ RUN \
   # workaround weird cargo problem when on aws (?) weirdly alpine edge seems to work
   CARGO_REGISTRIES_CRATES_IO_PROTOCOL="sparse" \
   RUSTFLAGS="-C target-feature=+crt-static" \
-  cargo cinstall --release
+  cargo cinstall \
+    --release  \
+    --library-type staticlib
 
 # bump: librtmp /LIBRTMP_COMMIT=([[:xdigit:]]+)/ gitrefs:https://git.ffmpeg.org/rtmpdump.git|re:#^refs/heads/master$#|@commit
 # bump: librtmp after ./hashupdate Dockerfile LIBRTMP $LATEST
@@ -900,6 +902,8 @@ RUN \
   wget $WGET_OPTS -O xavs2.tar.gz "$XAVS2_URL" && \
   echo "$XAVS2_SHA256  xavs2.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS xavs2.tar.gz && cd xavs2-*/build/linux && \
+  # new gcc not happy with some of the code
+  CFLAGS="-Wno-incompatible-pointer-types" \
   ./configure \
     --disable-asm \
     --enable-pic \
