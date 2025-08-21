@@ -535,10 +535,10 @@ RUN \
   wget $WGET_OPTS -O rav1e.tar.gz "$RAV1E_URL" && \
   echo "$RAV1E_SHA256  rav1e.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS rav1e.tar.gz && cd rav1e-* && \
-  # workaround weird cargo problem when on aws (?) weirdly alpine edge seems to work
-  CARGO_REGISTRIES_CRATES_IO_PROTOCOL="sparse" \
   RUSTFLAGS="-C target-feature=+crt-static" \
-  cargo cinstall --release
+  cargo cinstall \
+    --release  \
+    --library-type staticlib
 
 # bump: librtmp /LIBRTMP_COMMIT=([[:xdigit:]]+)/ gitrefs:https://git.ffmpeg.org/rtmpdump.git|re:#^refs/heads/master$#|@commit
 # bump: librtmp after ./hashupdate Dockerfile LIBRTMP $LATEST
