@@ -286,6 +286,8 @@ usage and potential distribution of such.
 
 ### TODOs and possible things to add
 
+- Add libopenapv
 - Add libplacebo, chromaprint, etc. ...
 - Add acceleration support (GPU, CUDA, ...)
 - Add *.a *.so libraries, headers and pkg-config somehow
+
