@@ -16,20 +16,20 @@ Use `mwader/static-ffmpeg` from [Docker Hub](https://hub.docker.com/r/mwader/sta
 
 In Dockerfile
 ```Dockerfile
-COPY --from=mwader/static-ffmpeg:7.1.1 /ffmpeg /usr/local/bin/
-COPY --from=mwader/static-ffmpeg:7.1.1 /ffprobe /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:8.0 /ffmpeg /usr/local/bin/
+COPY --from=mwader/static-ffmpeg:8.0 /ffprobe /usr/local/bin/
 ```
 
 Run directly
 ```sh
-docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:7.1.1 -i file.wav file.mp3
-docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:7.1.1 -i file.wav
+docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:8.0 -i file.wav file.mp3
+docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:8.0 -i file.wav
 ```
 
 As shell alias
 ```sh
-alias ffmpeg='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:7.1.1'
-alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:7.1.1'
+alias ffmpeg='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" mwader/static-ffmpeg:8.0'
+alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --entrypoint=/ffprobe mwader/static-ffmpeg:8.0'
 ```
 
 ### Libraries
@@ -155,8 +155,8 @@ EOF
 2. Copy the `ffmpeg` (and `ffprobe`) binaries.
 
 ```Dockerfile
-COPY --from=mwader/static-ffmpeg:7.1.1 /ffmpeg /usr/bin/
-COPY --from=mwader/static-ffmpeg:7.1.1 /ffprobe /usr/bin/
+COPY --from=mwader/static-ffmpeg:8.0 /ffmpeg /usr/bin/
+COPY --from=mwader/static-ffmpeg:8.0 /ffprobe /usr/bin/
 ```
 
 3. Make sure the `/app/fonts` directory exist in your image.
@@ -185,8 +185,8 @@ EOF
 
 FROM base as ffmpeg
 
-COPY --from=mwader/static-ffmpeg:7.1.1 /ffmpeg /usr/bin/
-COPY --from=mwader/static-ffmpeg:7.1.1 /ffprobe /usr/bin/
+COPY --from=mwader/static-ffmpeg:8.0 /ffmpeg /usr/bin/
+COPY --from=mwader/static-ffmpeg:8.0 /ffprobe /usr/bin/
 
 FROM ffmpeg AS app
 
