@@ -857,7 +857,7 @@ RUN \
 # bump: x264 after ./hashupdate Dockerfile X264 $LATEST
 # bump: x264 link "Source diff $CURRENT..$LATEST" https://code.videolan.org/videolan/x264/-/compare/$CURRENT...$LATEST
 ARG X264_URL="https://code.videolan.org/videolan/x264.git"
-ARG X264_VERSION=31e19f92f00c7003fa115047ce50978bc98c3a0d
+ARG X264_VERSION=b35605ace3ddf7c1a5d67a2eb553f034aef41d55
 RUN \
   git clone "$X264_URL" && cd x264 && \
   git checkout --recurse-submodules $X264_VERSION && \
