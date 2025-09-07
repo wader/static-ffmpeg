@@ -525,20 +525,20 @@ RUN \
     .. && \
   make -j$(nproc) install
 
-# bump: rav1e /RAV1E_VERSION=([\d.]+)/ https://github.com/xiph/rav1e.git|/\d+\./|*
-# bump: rav1e after ./hashupdate Dockerfile RAV1E $LATEST
-# bump: rav1e link "Release notes" https://github.com/xiph/rav1e/releases/tag/v$LATEST
-ARG RAV1E_VERSION=0.7.1
-ARG RAV1E_URL="https://github.com/xiph/rav1e/archive/v$RAV1E_VERSION.tar.gz"
-ARG RAV1E_SHA256=da7ae0df2b608e539de5d443c096e109442cdfa6c5e9b4014361211cf61d030c
-RUN \
-  wget $WGET_OPTS -O rav1e.tar.gz "$RAV1E_URL" && \
-  echo "$RAV1E_SHA256  rav1e.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS rav1e.tar.gz && cd rav1e-* && \
-  # workaround weird cargo problem when on aws (?) weirdly alpine edge seems to work
-  CARGO_REGISTRIES_CRATES_IO_PROTOCOL="sparse" \
-  RUSTFLAGS="-C target-feature=+crt-static" \
-  cargo cinstall --release
+# # bump: rav1e /RAV1E_VERSION=([\d.]+)/ https://github.com/xiph/rav1e.git|/\d+\./|*
+# # bump: rav1e after ./hashupdate Dockerfile RAV1E $LATEST
+# # bump: rav1e link "Release notes" https://github.com/xiph/rav1e/releases/tag/v$LATEST
+# ARG RAV1E_VERSION=0.7.1
+# ARG RAV1E_URL="https://github.com/xiph/rav1e/archive/v$RAV1E_VERSION.tar.gz"
+# ARG RAV1E_SHA256=da7ae0df2b608e539de5d443c096e109442cdfa6c5e9b4014361211cf61d030c
+# RUN \
+#   wget $WGET_OPTS -O rav1e.tar.gz "$RAV1E_URL" && \
+#   echo "$RAV1E_SHA256  rav1e.tar.gz" | sha256sum -c - && \
+#   tar $TAR_OPTS rav1e.tar.gz && cd rav1e-* && \
+#   # workaround weird cargo problem when on aws (?) weirdly alpine edge seems to work
+#   CARGO_REGISTRIES_CRATES_IO_PROTOCOL="sparse" \
+#   RUSTFLAGS="-C target-feature=+crt-static" \
+#   cargo cinstall --release
 
 # bump: librtmp /LIBRTMP_COMMIT=([[:xdigit:]]+)/ gitrefs:https://git.ffmpeg.org/rtmpdump.git|re:#^refs/heads/master$#|@commit
 # bump: librtmp after ./hashupdate Dockerfile LIBRTMP $LATEST
@@ -1165,7 +1165,7 @@ RUN \
   --enable-libopenjpeg \
   --enable-libopus \
   --enable-librabbitmq \
-  --enable-librav1e \
+  # --enable-librav1e \
   --enable-librsvg \
   --enable-librtmp \
   --enable-librubberband \
