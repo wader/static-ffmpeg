@@ -59,7 +59,7 @@ alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --ent
 - [libopenjpeg](https://www.openjpeg.org)
 - [libopus](https://opus-codec.org)
 - [librabbitmq](https://github.com/alanxz/rabbitmq-c)
-- [librav1e](https://github.com/xiph/rav1e)
+- [librav1e](https://github.com/xiph/rav1e) skipped for now
 - [librsvg](https://gitlab.gnome.org/GNOME/librsvg)
 - [librtmp](https://rtmpdump.mplayerhq.hu/)
 - [librubberband](https://breakfastquay.com/rubberband/)
