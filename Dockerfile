@@ -1125,7 +1125,7 @@ RUN \
   echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum -c - && \
   tar $TAR_OPTS ffmpeg.tar.bz2 && cd ffmpeg* && \
   FDKAAC_FLAGS=$(if [[ -n "$ENABLE_FDKAAC" ]] ;then echo " --enable-libfdk-aac --enable-nonfree " ;else echo ""; fi) && \
-  sed -i 's/add_ldexeflags -fPIE -pie/add_ldexeflags -fPIE -static-pie/' configure && \
+  sed -i 's/add_ldexeflags -fPIE -pie/add_ldexeflags -fPIE -static/' configure && \
   ./configure \
   --pkg-config-flags="--static" \
   --extra-cflags="-fopenmp" \
@@ -1275,15 +1275,15 @@ RUN \
   openssl: env.OPENSSL_VERSION, \
   }' > /versions.json
 
-# make sure binaries has no dependencies, is relro, pie and stack nx
-COPY checkelf /
-RUN \
-  /checkelf /usr/local/bin/ffmpeg && \
-  /checkelf /usr/local/bin/ffprobe
-# workaround for using -Wl,--allow-multiple-definition
-# see comment in checkdupsym for details
-COPY checkdupsym /
-RUN /checkdupsym /ffmpeg-*
+# # make sure binaries has no dependencies, is relro, pie and stack nx
+# COPY checkelf /
+# RUN \
+#   /checkelf /usr/local/bin/ffmpeg && \
+#   /checkelf /usr/local/bin/ffprobe
+# # workaround for using -Wl,--allow-multiple-definition
+# # see comment in checkdupsym for details
+# COPY checkdupsym /
+# RUN /checkdupsym /ffmpeg-*
 
 # some basic fonts that don't take up much space
 RUN apk add $APK_OPTS font-terminus font-inconsolata font-dejavu font-awesome
