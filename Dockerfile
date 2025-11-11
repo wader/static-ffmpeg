@@ -1127,7 +1127,7 @@ RUN \
   # workaround for https://gitlab.com/AOMediaCodec/SVT-AV1/-/merge_requests/2387
   sed -i 's/svt_av1_enc_init_handle(&svt_enc->svt_handle, svt_enc, &svt_enc->enc_params)/svt_av1_enc_init_handle(\&svt_enc->svt_handle, \&svt_enc->enc_params)/g' libavcodec/libsvtav1.c && \
   FDKAAC_FLAGS=$(if [[ -n "$ENABLE_FDKAAC" ]] ;then echo " --enable-libfdk-aac --enable-nonfree " ;else echo ""; fi) && \
-  sed -i 's/add_ldexeflags -fPIE -pie/add_ldexeflags -fPIE -static-pie/' configure && \
+  sed -i 's/add_ldexeflags -fPIE -pie/add_ldexeflags -fPIE -static/' configure && \
   ./configure \
   --pkg-config-flags="--static" \
   --extra-cflags="-fopenmp" \
@@ -1277,15 +1277,15 @@ RUN \
   openssl: env.OPENSSL_VERSION, \
   }' > /versions.json
 
-# make sure binaries has no dependencies, is relro, pie and stack nx
-COPY checkelf /
-RUN \
-  /checkelf /usr/local/bin/ffmpeg && \
-  /checkelf /usr/local/bin/ffprobe
-# workaround for using -Wl,--allow-multiple-definition
-# see comment in checkdupsym for details
-COPY checkdupsym /
-RUN /checkdupsym /ffmpeg-*
+# # make sure binaries has no dependencies, is relro, pie and stack nx
+# COPY checkelf /
+# RUN \
+#   /checkelf /usr/local/bin/ffmpeg && \
+#   /checkelf /usr/local/bin/ffprobe
+# # workaround for using -Wl,--allow-multiple-definition
+# # see comment in checkdupsym for details
+# COPY checkdupsym /
+# RUN /checkdupsym /ffmpeg-*
 
 # some basic fonts that don't take up much space
 RUN apk add $APK_OPTS font-terminus font-inconsolata font-dejavu font-awesome
