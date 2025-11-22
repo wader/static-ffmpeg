@@ -535,8 +535,6 @@ RUN \
   wget $WGET_OPTS -O rav1e.tar.gz "$RAV1E_URL" && \
   echo "$RAV1E_SHA256  rav1e.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS rav1e.tar.gz && cd rav1e-* && \
-  # workaround weird cargo problem when on aws (?) weirdly alpine edge seems to work
-  CARGO_REGISTRIES_CRATES_IO_PROTOCOL="sparse" \
   RUSTFLAGS="-C target-feature=+crt-static" \
   cargo cinstall --release
 
@@ -1124,8 +1122,6 @@ RUN \
   wget $WGET_OPTS -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
   echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum -c - && \
   tar $TAR_OPTS ffmpeg.tar.bz2 && cd ffmpeg* && \
-  # workaround for https://gitlab.com/AOMediaCodec/SVT-AV1/-/merge_requests/2387
-  sed -i 's/svt_av1_enc_init_handle(&svt_enc->svt_handle, svt_enc, &svt_enc->enc_params)/svt_av1_enc_init_handle(\&svt_enc->svt_handle, \&svt_enc->enc_params)/g' libavcodec/libsvtav1.c && \
   FDKAAC_FLAGS=$(if [[ -n "$ENABLE_FDKAAC" ]] ;then echo " --enable-libfdk-aac --enable-nonfree " ;else echo ""; fi) && \
   sed -i 's/add_ldexeflags -fPIE -pie/add_ldexeflags -fPIE -static-pie/' configure && \
   ./configure \
