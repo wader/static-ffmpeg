@@ -1,6 +1,6 @@
 # bump: alpine /ALPINE_VERSION=alpine:([\d.]+)/ docker:alpine|^3
 # bump: alpine link "Release notes" https://alpinelinux.org/posts/Alpine-$LATEST-released.html
-ARG ALPINE_VERSION=alpine:3.20.3
+ARG ALPINE_VERSION=alpine:3.23.0
 FROM $ALPINE_VERSION AS builder
 
 # Alpine Package Keeper options
@@ -41,7 +41,7 @@ RUN apk add --no-cache $APK_OPTS \
   tcl \
   numactl-dev \
   cunit cunit-dev \
-  fftw-dev \
+  fftw-dev fftw-static \
   libsamplerate-dev libsamplerate-static \
   vo-amrwbenc-dev vo-amrwbenc-static \
   snappy snappy-dev snappy-static \
@@ -166,28 +166,28 @@ RUN \
     -Dgtk_doc=false && \
   ninja -j$(nproc) -vC build install
 
-# bump: librsvg /LIBRSVG_VERSION=([\d.]+)/ https://gitlab.gnome.org/GNOME/librsvg.git|^2
-# bump: librsvg after ./hashupdate Dockerfile LIBRSVG $LATEST
-# bump: librsvg link "NEWS" https://gitlab.gnome.org/GNOME/librsvg/-/blob/master/NEWS
-ARG LIBRSVG_VERSION=2.60.0
-ARG LIBRSVG_URL="https://download.gnome.org/sources/librsvg/2.60/librsvg-$LIBRSVG_VERSION.tar.xz"
-ARG LIBRSVG_SHA256=0b6ffccdf6e70afc9876882f5d2ce9ffcf2c713cbaaf1ad90170daa752e1eec3
-RUN \
-  wget $WGET_OPTS -O librsvg.tar.xz "$LIBRSVG_URL" && \
-  echo "$LIBRSVG_SHA256  librsvg.tar.xz" | sha256sum --status -c - && \
-  tar $TAR_OPTS librsvg.tar.xz && cd librsvg-* && \
-  # workaround for https://gitlab.gnome.org/GNOME/librsvg/-/issues/1158
-  sed -i "/^if host_system in \['windows'/s/, 'linux'//" meson.build && \
-  meson setup build \
-    -Dbuildtype=release \
-    -Ddefault_library=static \
-    -Ddocs=disabled \
-    -Dintrospection=disabled \
-    -Dpixbuf=disabled \
-    -Dpixbuf-loader=disabled \
-    -Dvala=disabled \
-    -Dtests=false && \
-  ninja -j$(nproc) -vC build install
+# # bump: librsvg /LIBRSVG_VERSION=([\d.]+)/ https://gitlab.gnome.org/GNOME/librsvg.git|^2
+# # bump: librsvg after ./hashupdate Dockerfile LIBRSVG $LATEST
+# # bump: librsvg link "NEWS" https://gitlab.gnome.org/GNOME/librsvg/-/blob/master/NEWS
+# ARG LIBRSVG_VERSION=2.60.0
+# ARG LIBRSVG_URL="https://download.gnome.org/sources/librsvg/2.60/librsvg-$LIBRSVG_VERSION.tar.xz"
+# ARG LIBRSVG_SHA256=0b6ffccdf6e70afc9876882f5d2ce9ffcf2c713cbaaf1ad90170daa752e1eec3
+# RUN \
+#   wget $WGET_OPTS -O librsvg.tar.xz "$LIBRSVG_URL" && \
+#   echo "$LIBRSVG_SHA256  librsvg.tar.xz" | sha256sum --status -c - && \
+#   tar $TAR_OPTS librsvg.tar.xz && cd librsvg-* && \
+#   # workaround for https://gitlab.gnome.org/GNOME/librsvg/-/issues/1158
+#   sed -i "/^if host_system in \['windows'/s/, 'linux'//" meson.build && \
+#   meson setup build \
+#     -Dbuildtype=release \
+#     -Ddefault_library=static \
+#     -Ddocs=disabled \
+#     -Dintrospection=disabled \
+#     -Dpixbuf=disabled \
+#     -Dpixbuf-loader=disabled \
+#     -Dvala=disabled \
+#     -Dtests=false && \
+#   ninja -j$(nproc) -vC build install
 
 # build after libvmaf
 # bump: aom /AOM_VERSION=([\d.]+)/ git:https://aomedia.googlesource.com/aom|*
@@ -536,7 +536,7 @@ RUN \
   echo "$RAV1E_SHA256  rav1e.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS rav1e.tar.gz && cd rav1e-* && \
   RUSTFLAGS="-C target-feature=+crt-static" \
-  cargo cinstall --release
+  cargo cinstall --library-type staticlib --release
 
 # bump: librtmp /LIBRTMP_COMMIT=([[:xdigit:]]+)/ gitrefs:https://git.ffmpeg.org/rtmpdump.git|re:#^refs/heads/master$#|@commit
 # bump: librtmp after ./hashupdate Dockerfile LIBRTMP $LATEST
@@ -575,8 +575,10 @@ ARG LIBSHINE_URL="https://github.com/toots/shine/releases/download/$LIBSHINE_VER
 ARG LIBSHINE_SHA256=58e61e70128cf73f88635db495bfc17f0dde3ce9c9ac070d505a0cd75b93d384
 RUN \
   wget $WGET_OPTS -O libshine.tar.gz "$LIBSHINE_URL" && \
+  # https://github.com/toots/shine/commit/098b9aaa6770a41bdf3f9c049307c1398f04d2d3
   echo "$LIBSHINE_SHA256  libshine.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS libshine.tar.gz && cd shine* && \
+  sed -i 's/shine_mdct_initialise()/shine_mdct_initialise(shine_global_config *config)/' src/lib/l3mdct.h && \
   ./configure \
     --with-pic \
     --enable-static \
@@ -612,7 +614,7 @@ RUN \
   echo "$SRT_SHA256  libsrt.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS libsrt.tar.gz && cd srt-* && \
   mkdir build && cd build && \
-  cmake \
+  cmake3.5 \
     -G"Unix Makefiles" \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DCMAKE_BUILD_TYPE=Release \
@@ -754,7 +756,7 @@ RUN \
   git clone "$UAVS3D_URL" && cd uavs3d && \
   git checkout --recurse-submodules $UAVS3D_COMMIT && \
   mkdir build/linux && cd build/linux && \
-  cmake \
+  cmake3.5 \
     -G"Unix Makefiles" \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DCMAKE_BUILD_TYPE=Release \
@@ -776,7 +778,7 @@ RUN \
   # This line workarounds the issue that happens when the image builds in emulated (buildx) arm64 environment.
   # Since in emulated container the /proc is mounted from the host, the cmake not able to detect CPU features correctly.
   sed -i 's/include (FindSSE)/if(CMAKE_SYSTEM_ARCH MATCHES "amd64")\ninclude (FindSSE)\nendif()/' ../CMakeLists.txt && \
-  cmake \
+  cmake3.5 \
     -G"Unix Makefiles" \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DCMAKE_SYSTEM_ARCH=$(arch) \
@@ -881,6 +883,11 @@ RUN \
   tar $TAR_OPTS x265_git.tar.bz2 && cd x265_*/build/linux && \
   sed -i '/^cmake / s/$/ -G "Unix Makefiles" ${CMAKEFLAGS}/' ./multilib.sh && \
   sed -i 's/ -DENABLE_SHARED=OFF//g' ./multilib.sh && \
+  # https://bitbucket.org/multicoreware/x265_git/commits/b354c009a60bcd6d7fc04014e200a1ee9c45c167
+  sed -i 's/cmake_policy(SET CMP0025 OLD)/cmake_policy(SET CMP0025 NEW)/g' ../../source/CMakeLists.txt && \
+  sed -i 's/cmake_policy(SET CMP0054 OLD)/cmake_policy(SET CMP0054 NEW)/g' ../../source/CMakeLists.txt && \
+  # https://bitbucket.org/multicoreware/x265_git/issues/1008/build-fails-with-cmake-4
+  sed -i 's/cmake/cmake3.5/g' ./multilib.sh && \
   MAKEFLAGS="-j$(nproc)" \
   CMAKEFLAGS="-DENABLE_SHARED=OFF -DCMAKE_VERBOSE_MAKEFILE=ON -DENABLE_AGGRESSIVE_CHECKS=ON -DENABLE_NASM=ON -DCMAKE_BUILD_TYPE=Release" \
   ./multilib.sh && \
@@ -898,6 +905,8 @@ RUN \
   wget $WGET_OPTS -O xavs2.tar.gz "$XAVS2_URL" && \
   echo "$XAVS2_SHA256  xavs2.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS xavs2.tar.gz && cd xavs2-*/build/linux && \
+  # new gcc not happy with some of the code
+  CFLAGS="-Wno-incompatible-pointer-types -Wno-unused-function" \
   ./configure \
     --disable-asm \
     --enable-pic \
@@ -915,7 +924,8 @@ RUN \
   wget $WGET_OPTS -O libxvid.tar.gz "$XVID_URL" && \
   echo "$XVID_SHA256  libxvid.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS libxvid.tar.gz && cd xvidcore/build/generic && \
-  CFLAGS="$CFLAGS -fstrength-reduce -ffast-math" ./configure && \
+  # gnu18 to fix issue type own bool typedef
+  CFLAGS="$CFLAGS -std=gnu18 -fstrength-reduce -ffast-math" ./configure && \
   make -j$(nproc) && make install
 
 # bump: xeve /XEVE_VERSION=([\d.]+)/ https://github.com/mpeg5/xeve.git|*
@@ -955,7 +965,10 @@ RUN \
   echo "$XEVD_SHA256  xevd.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS xevd.tar.gz && cd xevd-* && \
   echo v$XEVD_VERSION > version.txt && \
+  # https://github.com/mpeg5/xevd/pull/58
   sed -i 's/mc_filter_bilin/xevdm_mc_filter_bilin/' src_main/sse/xevdm_mc_sse.c && \
+  # https://github.com/mpeg5/xevd/pull/68
+  sed -i 's/_XEVD_DBK_NOEN_H_/_XEVD_DBK_NEON_H_/' src_base/neon/xevd_dbk_neon.h && \
   mkdir build && cd build && \
   cmake \
     -G"Unix Makefiles" \
@@ -1164,7 +1177,7 @@ RUN \
   --enable-libopus \
   --enable-librabbitmq \
   --enable-librav1e \
-  --enable-librsvg \
+  # --enable-librsvg \
   --enable-librtmp \
   --enable-librubberband \
   --enable-libshine \
@@ -1240,7 +1253,7 @@ RUN \
   libopus: env.OPUS_VERSION, \
   librabbitmq: env.LIBRABBITMQ_VERSION, \
   librav1e: env.RAV1E_VERSION, \
-  librsvg: env.LIBRSVG_VERSION, \
+  # librsvg: env.LIBRSVG_VERSION, \
   librtmp: env.LIBRTMP_COMMIT, \
   librubberband: env.RUBBERBAND_VERSION, \
   libsamplerate: env.LIBSAMPLERATE_VERSION, \
@@ -1310,7 +1323,7 @@ RUN ["/ffprobe", "-i", "https://github.com/favicon.ico"]
 # tls/https certs
 RUN ["/ffprobe", "-tls_verify", "1", "-ca_file", "/etc/ssl/cert.pem", "-i", "https://github.com/favicon.ico"]
 # svg
-RUN ["/ffprobe", "-i", "https://github.githubassets.com/favicons/favicon.svg"]
+# RUN ["/ffprobe", "-i", "https://github.githubassets.com/favicons/favicon.svg"]
 # vvenc
 RUN ["/ffmpeg", "-f", "lavfi", "-i", "testsrc", "-c:v", "libvvenc", "-t", "100ms", "-f", "null", "-"]
 # x265 regression
