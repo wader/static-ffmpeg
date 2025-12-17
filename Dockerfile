@@ -1165,7 +1165,7 @@ RUN \
   --enable-libfreetype \
   --enable-libfribidi \
   --enable-libgme \
-  --enable-libgsm \
+  #--enable-libgsm \
   --enable-libharfbuzz \
   --enable-libjxl \
   --enable-libkvazaar \
