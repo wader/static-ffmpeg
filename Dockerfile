@@ -1,6 +1,6 @@
 # bump: alpine /ALPINE_VERSION=alpine:([\d.]+)/ docker:alpine|^3
 # bump: alpine link "Release notes" https://alpinelinux.org/posts/Alpine-$LATEST-released.html
-ARG ALPINE_VERSION=alpine:3.20.3
+ARG ALPINE_VERSION=alpine:3.22.2
 FROM $ALPINE_VERSION AS builder
 
 # Alpine Package Keeper options
@@ -525,18 +525,26 @@ RUN \
     .. && \
   make -j$(nproc) install
 
+# TODO: disable rav1e for now as linking with two rust crate type staticlib
+# libraries in static-pie mode seems to be unstable
+# see https://gitlab.gnome.org/GNOME/librsvg/-/issues/1144
+# rsvg is ther other rust library but i disable rav1e as we use other av1
+# encoders like svtav1. hopefully we can enable rav1e again in the future.
+#
 # bump: rav1e /RAV1E_VERSION=([\d.]+)/ https://github.com/xiph/rav1e.git|/\d+\./|*
 # bump: rav1e after ./hashupdate Dockerfile RAV1E $LATEST
 # bump: rav1e link "Release notes" https://github.com/xiph/rav1e/releases/tag/v$LATEST
-ARG RAV1E_VERSION=0.7.1
-ARG RAV1E_URL="https://github.com/xiph/rav1e/archive/v$RAV1E_VERSION.tar.gz"
-ARG RAV1E_SHA256=da7ae0df2b608e539de5d443c096e109442cdfa6c5e9b4014361211cf61d030c
-RUN \
-  wget $WGET_OPTS -O rav1e.tar.gz "$RAV1E_URL" && \
-  echo "$RAV1E_SHA256  rav1e.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS rav1e.tar.gz && cd rav1e-* && \
-  RUSTFLAGS="-C target-feature=+crt-static" \
-  cargo cinstall --release
+#ARG RAV1E_VERSION=0.7.1
+#ARG RAV1E_URL="https://github.com/xiph/rav1e/archive/v$RAV1E_VERSION.tar.gz"
+#ARG RAV1E_SHA256=da7ae0df2b608e539de5d443c096e109442cdfa6c5e9b4014361211cf61d030c
+#RUN \
+#  wget $WGET_OPTS -O rav1e.tar.gz "$RAV1E_URL" && \
+#  echo "$RAV1E_SHA256  rav1e.tar.gz" | sha256sum -c - && \
+#  tar $TAR_OPTS rav1e.tar.gz && cd rav1e-* && \
+#  RUSTFLAGS="-C target-feature=+crt-static" \
+#  cargo cinstall \
+#    --library-type staticlib \
+#    --profile release-no-lto
 
 # bump: librtmp /LIBRTMP_COMMIT=([[:xdigit:]]+)/ gitrefs:https://git.ffmpeg.org/rtmpdump.git|re:#^refs/heads/master$#|@commit
 # bump: librtmp after ./hashupdate Dockerfile LIBRTMP $LATEST
@@ -898,6 +906,8 @@ RUN \
   wget $WGET_OPTS -O xavs2.tar.gz "$XAVS2_URL" && \
   echo "$XAVS2_SHA256  xavs2.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS xavs2.tar.gz && cd xavs2-*/build/linux && \
+  # new gcc not happy with some of the code
+  CFLAGS="-Wno-incompatible-pointer-types -Wno-unused-function" \
   ./configure \
     --disable-asm \
     --enable-pic \
@@ -1163,7 +1173,6 @@ RUN \
   --enable-libopenjpeg \
   --enable-libopus \
   --enable-librabbitmq \
-  --enable-librav1e \
   --enable-librsvg \
   --enable-librtmp \
   --enable-librubberband \
@@ -1239,7 +1248,6 @@ RUN \
   libopenjpeg: env.OPENJPEG_VERSION, \
   libopus: env.OPUS_VERSION, \
   librabbitmq: env.LIBRABBITMQ_VERSION, \
-  librav1e: env.RAV1E_VERSION, \
   librsvg: env.LIBRSVG_VERSION, \
   librtmp: env.LIBRTMP_COMMIT, \
   librubberband: env.RUBBERBAND_VERSION, \
