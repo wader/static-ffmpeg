@@ -1,6 +1,6 @@
 # bump: alpine /ALPINE_VERSION=alpine:([\d.]+)/ docker:alpine|^3
 # bump: alpine link "Release notes" https://alpinelinux.org/posts/Alpine-$LATEST-released.html
-ARG ALPINE_VERSION=alpine:3.23.0
+ARG ALPINE_VERSION=alpine:3.23.2
 FROM $ALPINE_VERSION AS builder
 
 # Alpine Package Keeper options
@@ -8,7 +8,6 @@ ARG APK_OPTS=""
 
 RUN apk add --no-cache $APK_OPTS \
   coreutils \
-  mold \
   pkgconfig \
   wget \
   rust cargo cargo-c \
@@ -1143,7 +1142,7 @@ RUN \
   ./configure \
   --pkg-config-flags="--static" \
   --extra-cflags="-fopenmp" \
-  --extra-ldflags="-fuse-ld=mold -fopenmp -Wl,--allow-multiple-definition -Wl,-z,stack-size=2097152" \
+  --extra-ldflags="-fopenmp -Wl,--allow-multiple-definition -Wl,-z,stack-size=2097152" \
   --toolchain=hardened \
   --disable-debug \
   --disable-shared \
