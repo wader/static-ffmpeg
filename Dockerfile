@@ -145,6 +145,7 @@ RUN \
 
 
 
+# -C relocation-model=pie
 
 
 # bump: librsvg /LIBRSVG_VERSION=([\d.]+)/ https://gitlab.gnome.org/GNOME/librsvg.git|^2
@@ -180,45 +181,45 @@ RUN RUST_BACKTRACE=full gdb -ex="set confirm off" -ex=r -ex="bt full" --args /te
 
 # RUN RUST_BACKTRACE=full gdb -ex="set confirm off" -ex=r -ex="bt full" --args /usr/local/bin/rsvg-convert -o bla.png /favicon.svg
 
-# # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|*
-# # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
-# # bump: ffmpeg link "Changelog" https://github.com/FFmpeg/FFmpeg/blob/n$LATEST/Changelog
-# # bump: ffmpeg link "Source diff $CURRENT..$LATEST" https://github.com/FFmpeg/FFmpeg/compare/n$CURRENT..n$LATEST
-# ARG FFMPEG_VERSION=8.0.1
-# ARG FFMPEG_URL="https://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.bz2"
-# ARG FFMPEG_SHA256=65ff433fab5727fb2dc41f1d508dc60e6192fea44cab2e0301194feee4bcf1d7
-# ARG ENABLE_FDKAAC=
-# # sed changes --toolchain=hardened -pie to -static-pie
-# #
-# # ldflags stack-size=2097152 is to increase default stack size from 128KB (musl default) to something
-# # more similar to glibc (2MB). This fixing segfault with libaom-av1 and libsvtav1 as they seems to pass
-# # large things on the stack.
-# #
-# # ldfalgs -Wl,--allow-multiple-definition is a workaround for linking with multiple rust staticlib to
-# # not cause collision in toolchain symbols, see comment in checkdupsym script for details.
-# RUN \
-#   wget $WGET_OPTS -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
-#   echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum -c - && \
-#   tar $TAR_OPTS ffmpeg.tar.bz2 && cd ffmpeg* && \
-#   FDKAAC_FLAGS=$(if [[ -n "$ENABLE_FDKAAC" ]] ;then echo " --enable-libfdk-aac --enable-nonfree " ;else echo ""; fi) && \
-#   sed -i 's/add_ldexeflags -fPIE -pie/add_ldexeflags -fPIE -static-pie/' configure && \
-#   ./configure \
-#   --pkg-config-flags="--static" \
-#   --extra-cflags="-O0 -ggdb -fopenmp" \
-#   --extra-ldflags="-fopenmp -Wl,-z,stack-size=2097152" \
-#   --toolchain=hardened \
-#   --disable-shared \
-#   --disable-ffplay \
-#   --enable-static \
-#   --enable-gpl \
-#   --enable-version3 \
-#   --enable-librsvg \
-#   || (cat ffbuild/config.log ; false) \
-#   && make -j$(nproc) install
+# bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|*
+# bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
+# bump: ffmpeg link "Changelog" https://github.com/FFmpeg/FFmpeg/blob/n$LATEST/Changelog
+# bump: ffmpeg link "Source diff $CURRENT..$LATEST" https://github.com/FFmpeg/FFmpeg/compare/n$CURRENT..n$LATEST
+ARG FFMPEG_VERSION=8.0.1
+ARG FFMPEG_URL="https://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.bz2"
+ARG FFMPEG_SHA256=65ff433fab5727fb2dc41f1d508dc60e6192fea44cab2e0301194feee4bcf1d7
+ARG ENABLE_FDKAAC=
+# sed changes --toolchain=hardened -pie to -static-pie
+#
+# ldflags stack-size=2097152 is to increase default stack size from 128KB (musl default) to something
+# more similar to glibc (2MB). This fixing segfault with libaom-av1 and libsvtav1 as they seems to pass
+# large things on the stack.
+#
+# ldfalgs -Wl,--allow-multiple-definition is a workaround for linking with multiple rust staticlib to
+# not cause collision in toolchain symbols, see comment in checkdupsym script for details.
+RUN \
+  wget $WGET_OPTS -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
+  echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum -c - && \
+  tar $TAR_OPTS ffmpeg.tar.bz2 && cd ffmpeg* && \
+  FDKAAC_FLAGS=$(if [[ -n "$ENABLE_FDKAAC" ]] ;then echo " --enable-libfdk-aac --enable-nonfree " ;else echo ""; fi) && \
+  sed -i 's/add_ldexeflags -fPIE -pie/add_ldexeflags -fPIE -static-pie/' configure && \
+  ./configure \
+  --pkg-config-flags="--static" \
+  --extra-cflags="-O0 -ggdb -fopenmp" \
+  --extra-ldflags="-fopenmp -Wl,-z,stack-size=2097152" \
+  --toolchain=hardened \
+  --disable-shared \
+  --disable-ffplay \
+  --enable-static \
+  --enable-gpl \
+  --enable-version3 \
+  --enable-librsvg \
+  || (cat ffbuild/config.log ; false) \
+  && make -j$(nproc) install
 
 
 
-# RUN wget 'https://github.githubassets.com/favicons/favicon.svg'
-# RUN cd ffmpeg* && RUST_BACKTRACE=full gdb -ex="set confirm off" -ex=r -ex="bt full" --args ./ffprobe_g -i /favicon.svg
-# RUN cd ffmpeg* && RUST_BACKTRACE=full valgrind ./ffprobe_g -i /favicon.svg
-# RUN cd ffmpeg* && RUST_BACKTRACE=full ./ffprobe_g -i /favicon.svg
+RUN wget 'https://github.githubassets.com/favicons/favicon.svg'
+RUN cd ffmpeg* && RUST_BACKTRACE=full gdb -ex="set confirm off" -ex=r -ex="bt full" --args ./ffprobe_g -i /favicon.svg
+RUN cd ffmpeg* && RUST_BACKTRACE=full valgrind ./ffprobe_g -i /favicon.svg
+RUN cd ffmpeg* && RUST_BACKTRACE=full ./ffprobe_g -i /favicon.svg
