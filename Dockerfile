@@ -160,7 +160,7 @@ RUN \
   # workaround for https://gitlab.gnome.org/GNOME/librsvg/-/issues/1158
   sed -i "/^if host_system in \['windows'/s/, 'linux'//" meson.build && \
   meson setup build \
-    -Dbuildtype=release \
+    -Dbuildtype=debug \
     -Ddefault_library=static \
     -Ddocs=disabled \
     -Dintrospection=disabled \
@@ -169,6 +169,10 @@ RUN \
     -Dvala=disabled \
     -Dtests=false && \
   ninja -j$(nproc) -vC build install
+
+RUN apk add gdb valgrind
+
+RUN RUST_BACKTRACE=full gdb -ex="set confirm off" -ex=r -ex="bt full" --args /usr/local/bin/rsvg-convert -o bla.png /favicon.svg
 
 # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|*
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
@@ -206,7 +210,8 @@ RUN \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install
 
-RUN apk add gdb valgrind
+
+
 RUN wget 'https://github.githubassets.com/favicons/favicon.svg'
 RUN cd ffmpeg* && RUST_BACKTRACE=full gdb -ex="set confirm off" -ex=r -ex="bt full" --args ./ffprobe_g -i /favicon.svg
 RUN cd ffmpeg* && RUST_BACKTRACE=full valgrind ./ffprobe_g -i /favicon.svg
