@@ -1087,9 +1087,9 @@ RUN sed -i 's/-lvpl /-lvpl -lstdc++ /' /usr/local/lib/pkgconfig/vpl.pc
 # bump: vvenc /VVENC_VERSION=([\d.]+)/ https://github.com/fraunhoferhhi/vvenc.git|*
 # bump: vvenc after ./hashupdate Dockerfile VVENC $LATEST
 # bump: vvenc link "CHANGELOG" https://github.com/fraunhoferhhi/vvenc/releases/tag/v$LATEST
-ARG VVENC_VERSION=1.13.1
+ARG VVENC_VERSION=1.14.0
 ARG VVENC_URL="https://github.com/fraunhoferhhi/vvenc/archive/refs/tags/v$VVENC_VERSION.tar.gz"
-ARG VVENC_SHA256=9d0d88319b9c200ebf428471a3f042ea7dcd868e8be096c66e19120a671a0bc8
+ARG VVENC_SHA256=dd43d061d59dbc0d9b9ae5b99cb40672877dd811646228938f065798939ee174
 RUN \
   wget $WGET_OPTS -O vvenc.tar.gz "$VVENC_URL" && \
   echo "$VVENC_SHA256  vvenc.tar.gz" | sha256sum --status -c - && \
