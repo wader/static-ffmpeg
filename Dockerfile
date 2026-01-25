@@ -1125,12 +1125,12 @@ RUN \
   echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum -c - && \
   tar $TAR_OPTS ffmpeg.tar.bz2 && cd ffmpeg* && \
   FDKAAC_FLAGS=$(if [[ -n "$ENABLE_FDKAAC" ]] ;then echo " --enable-libfdk-aac --enable-nonfree " ;else echo ""; fi) && \
-  sed -i 's/add_ldexeflags -fPIE -pie/add_ldexeflags -fPIE -static-pie/' configure && \
   ./configure \
   --pkg-config-flags="--static" \
-  --extra-cflags="-fopenmp" \
+  --extra-cflags="$CFLAGS" \
+  --extra-cxxflags="$CXXFLAGS" \
+  --extra-ldexeflags="-fPIE -static-pie" \
   --extra-ldflags="-fopenmp -Wl,--allow-multiple-definition -Wl,-z,stack-size=2097152" \
-  --toolchain=hardened \
   --disable-debug \
   --disable-shared \
   --disable-ffplay \
