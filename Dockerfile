@@ -252,9 +252,9 @@ RUN \
 # bump: libbluray /LIBBLURAY_VERSION=([\d.]+)/ https://code.videolan.org/videolan/libbluray.git|*
 # bump: libbluray after ./hashupdate Dockerfile LIBBLURAY $LATEST
 # bump: libbluray link "ChangeLog" https://code.videolan.org/videolan/libbluray/-/blob/master/ChangeLog
-ARG LIBBLURAY_VERSION=1.4.0
+ARG LIBBLURAY_VERSION=1.4.1
 ARG LIBBLURAY_URL="https://code.videolan.org/videolan/libbluray/-/archive/$LIBBLURAY_VERSION/libbluray-$LIBBLURAY_VERSION.tar.gz"
-ARG LIBBLURAY_SHA256=0dc218f79435798a62da2a0510e0e921a3f7c1b140507df8e65f48d98046f024
+ARG LIBBLURAY_SHA256=e22381a313a231d94ddf9180564b36d803f33bdfc7c0b53c03868bc43e5d163d
 # TODO: bump config? at least checkout to make commit sticky
 ARG LIBUDFREAD_COMMIT=c3cd5cbb097924557ea4d9da1ff76a74620c51a8
 RUN \
