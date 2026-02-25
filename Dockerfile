@@ -1,6 +1,6 @@
 # bump: alpine /ALPINE_VERSION=alpine:([\d.]+)/ docker:alpine|^3
 # bump: alpine link "Release notes" https://alpinelinux.org/posts/Alpine-$LATEST-released.html
-ARG ALPINE_VERSION=alpine:3.20.3
+ARG ALPINE_VERSION=alpine:3.23.2
 FROM $ALPINE_VERSION AS builder
 
 # Alpine Package Keeper options
@@ -169,9 +169,15 @@ RUN \
 # bump: librsvg /LIBRSVG_VERSION=([\d.]+)/ https://gitlab.gnome.org/GNOME/librsvg.git|^2
 # bump: librsvg after ./hashupdate Dockerfile LIBRSVG $LATEST
 # bump: librsvg link "NEWS" https://gitlab.gnome.org/GNOME/librsvg/-/blob/master/NEWS
+
+#ARG LIBRSVG_VERSION=2.61.90
+#ARG LIBRSVG_URL="https://download.gnome.org/sources/librsvg/2.61/librsvg-$LIBRSVG_VERSION.tar.xz"
+#ARG LIBRSVG_SHA256=8991685ab71a8e59ce597553946034a9282a2713744e8b94877cb0e757b42b76
+
 ARG LIBRSVG_VERSION=2.60.0
 ARG LIBRSVG_URL="https://download.gnome.org/sources/librsvg/2.60/librsvg-$LIBRSVG_VERSION.tar.xz"
 ARG LIBRSVG_SHA256=0b6ffccdf6e70afc9876882f5d2ce9ffcf2c713cbaaf1ad90170daa752e1eec3
+
 RUN \
   wget $WGET_OPTS -O librsvg.tar.xz "$LIBRSVG_URL" && \
   echo "$LIBRSVG_SHA256  librsvg.tar.xz" | sha256sum --status -c - && \
@@ -528,15 +534,15 @@ RUN \
 # bump: rav1e /RAV1E_VERSION=([\d.]+)/ https://github.com/xiph/rav1e.git|/\d+\./|*
 # bump: rav1e after ./hashupdate Dockerfile RAV1E $LATEST
 # bump: rav1e link "Release notes" https://github.com/xiph/rav1e/releases/tag/v$LATEST
-ARG RAV1E_VERSION=0.7.1
+ARG RAV1E_VERSION=0.8.1
 ARG RAV1E_URL="https://github.com/xiph/rav1e/archive/v$RAV1E_VERSION.tar.gz"
-ARG RAV1E_SHA256=da7ae0df2b608e539de5d443c096e109442cdfa6c5e9b4014361211cf61d030c
+ARG RAV1E_SHA256=06d1523955fb6ed9cf9992eace772121067cca7e8926988a1ee16492febbe01e
 RUN \
   wget $WGET_OPTS -O rav1e.tar.gz "$RAV1E_URL" && \
   echo "$RAV1E_SHA256  rav1e.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS rav1e.tar.gz && cd rav1e-* && \
   RUSTFLAGS="-C target-feature=+crt-static" \
-  cargo cinstall --release
+  cargo cinstall --release --library-type staticlib 
 
 # bump: librtmp /LIBRTMP_COMMIT=([[:xdigit:]]+)/ gitrefs:https://git.ffmpeg.org/rtmpdump.git|re:#^refs/heads/master$#|@commit
 # bump: librtmp after ./hashupdate Dockerfile LIBRTMP $LATEST
@@ -898,6 +904,8 @@ RUN \
   wget $WGET_OPTS -O xavs2.tar.gz "$XAVS2_URL" && \
   echo "$XAVS2_SHA256  xavs2.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS xavs2.tar.gz && cd xavs2-*/build/linux && \
+  # new gcc not happy with some of the code
+  CFLAGS="-Wno-incompatible-pointer-types -Wno-unused-function" \
   ./configure \
     --disable-asm \
     --enable-pic \
