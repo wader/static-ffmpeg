@@ -81,7 +81,14 @@ ARG VMAF_SHA256=80090e29d7fd0db472ddc663513f5be89bc936815e62b767e630c1d627279fe2
 RUN \
   wget $WGET_OPTS -O vmaf.tar.gz "$VMAF_URL" && \
   echo "$VMAF_SHA256  vmaf.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS vmaf.tar.gz && cd vmaf-*/libvmaf && \
+  tar $TAR_OPTS vmaf.tar.gz && \
+  cd vmaf-* && \
+  git init && \
+  git config user.name "vmaf" && \
+  git config user.email "vmaf@example.com" && \
+  git add . && \
+  git commit -m "Initial commit" && \
+  cd libvmaf && \  
   meson setup build \
     -Dbuildtype=release \
     -Ddefault_library=static \
