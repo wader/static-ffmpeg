@@ -1176,8 +1176,8 @@ RUN \
   --enable-libopenjpeg \
   --enable-libopus \
   --enable-librabbitmq \
-  #--enable-librav1e \
-  --enable-librsvg \
+  --enable-librav1e \
+  #--enable-librsvg \
   --enable-librtmp \
   --enable-librubberband \
   --enable-libshine \
