@@ -8,10 +8,30 @@ on:
 jobs:
   ci:
     strategy:
+      fail-fast: false
       matrix:
         include:
+          # default static build, both arches
           - runs_on: ubicloud-standard-30
+            variant: default
+            target: ""
+            build_args: |
+              ENABLE_FDKAAC=1
           - runs_on: ubicloud-standard-30-arm
+            variant: default
+            target: ""
+            build_args: |
+              ENABLE_FDKAAC=1
+          # CUDA variant (NVENC/NVDEC/CUVID), amd64 only for now.
+          # No GPU on the runner — the build only verifies that the binary
+          # links and that nvenc/cuvid/cuda show up in -encoders/-hwaccels.
+          - runs_on: ubicloud-standard-30
+            variant: cuda
+            target: final-cuda
+            build_args: |
+              ENABLE_FDKAAC=1
+              ENABLE_CUDA=1
+    name: ci (${{ matrix.variant }} / ${{ matrix.runs_on }})
     runs-on: ${{ matrix.runs_on }}
     steps:
       - uses: actions/checkout@v3
@@ -21,7 +41,7 @@ jobs:
         with:
           context: .
           push: false
-          cache-from: type=gha
-          cache-to: type=gha,mode=max
-          build-args: |
-            ENABLE_FDKAAC=1
+          cache-from: type=gha,scope=${{ matrix.variant }}-${{ matrix.runs_on }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.variant }}-${{ matrix.runs_on }}
+          target: ${{ matrix.target }}
+          build-args: ${{ matrix.build_args }}

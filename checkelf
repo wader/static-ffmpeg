@@ -1,14 +1,35 @@
 #!/bin/sh
 set -eu
 
-NOEXTLIBS=$(test "$(ldd "$1" | wc -l)" -eq 1 && echo yes || echo no)
+# Usage: checkelf [--cuda] <binary>
+#
+# In default mode the binary must have NO external library deps (fully static-pie).
+# In --cuda mode the binary is a musl dynamic-PIE: only the musl loader and libc
+# (which are the same .so) are allowed as NEEDED entries, so that ffmpeg can
+# dlopen() the NVIDIA driver libs (libcuda.so.1, libnvcuvid.so, libnvidia-encode.so)
+# at runtime when the container is started with `--gpus all`.
+
+MODE=default
+if [ "${1:-}" = "--cuda" ]; then
+    MODE=cuda
+    shift
+fi
+
+if [ "$MODE" = "cuda" ]; then
+    # Allow only the musl loader / libc lines from `ldd`. Anything else is unexpected.
+    EXTRA=$(ldd "$1" 2>/dev/null | grep -E -v 'ld-musl|libc\.musl|statically linked' || true)
+    NOEXTLIBS=$(test -z "$EXTRA" && echo yes || echo no)
+else
+    NOEXTLIBS=$(test "$(ldd "$1" | wc -l)" -eq 1 && echo yes || echo no)
+fi
 RELRO=$(readelf -l "$1" | grep -q GNU_RELRO && echo yes || echo no)
 BIND_NOW=$(readelf -d "$1" | grep -q BIND_NOW && echo yes || echo no)
 PIE=$(readelf -h "$1" | grep -q DYN && echo yes || echo no)
 STACKNX=$(readelf -W -l "$1" | grep GNU_STACK | grep -q -v RWE && echo yes || echo no)
 
 file "$1"
-echo "No external libs: $NOEXTLIBS"
+echo "Mode: $MODE"
+echo "No unexpected external libs: $NOEXTLIBS"
 echo "Relocate read-only: $RELRO"
 echo "Resolve at startup: $BIND_NOW"
 echo "Position independent code: $PIE"
