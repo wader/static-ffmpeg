@@ -1063,9 +1063,9 @@ RUN \
 # bump: libvpl /LIBVPL_VERSION=([\d.]+)/ https://github.com/intel/libvpl.git|^2
 # bump: libvpl after ./hashupdate Dockerfile LIBVPL $LATEST
 # bump: libvpl link "Changelog" https://github.com/intel/libvpl/blob/main/CHANGELOG.md
-ARG LIBVPL_VERSION=2.16.0
+ARG LIBVPL_VERSION=2.17.0
 ARG LIBVPL_URL="https://github.com/intel/libvpl/archive/refs/tags/v${LIBVPL_VERSION}.tar.gz"
-ARG LIBVPL_SHA256=d60931937426130ddad9f1975c010543f0da99e67edb1c6070656b7947f633b6
+ARG LIBVPL_SHA256=d5558cd419c8d46bdc958064cb97f963d1ea793866414c025906ec15033512ed
 RUN \
   wget $WGET_OPTS -O libvpl.tar.gz "$LIBVPL_URL" && \
   echo "$LIBVPL_SHA256  libvpl.tar.gz" | sha256sum -c - && \
