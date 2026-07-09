@@ -389,9 +389,9 @@ RUN \
 # bump: mp3lame /MP3LAME_VERSION=([\d.]+)/ svn:http://svn.code.sf.net/p/lame/svn|/^RELEASE__(.*)$/|/_/./|*
 # bump: mp3lame after ./hashupdate Dockerfile MP3LAME $LATEST
 # bump: mp3lame link "ChangeLog" http://svn.code.sf.net/p/lame/svn/trunk/lame/ChangeLog
-ARG MP3LAME_VERSION=3.100
+ARG MP3LAME_VERSION=3.101
 ARG MP3LAME_URL="https://sourceforge.net/projects/lame/files/lame/$MP3LAME_VERSION/lame-$MP3LAME_VERSION.tar.gz/download"
-ARG MP3LAME_SHA256=ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e
+ARG MP3LAME_SHA256=7578af6eebd578b2bd64e468fac4ae1f03670a7e028166e67f855674b9b6aeac
 RUN \
   wget $WGET_OPTS -O lame.tar.gz "$MP3LAME_URL" && \
   echo "$MP3LAME_SHA256  lame.tar.gz" | sha256sum -c - && \
