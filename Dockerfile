@@ -386,12 +386,28 @@ RUN \
     --enable-static && \
   make -j$(nproc) install
 
+# build before lame as lame depend on libmpg123
+# bump: mpg123 /MPG123_VERSION=([\d.]+)/ fetch:https://sourceforge.net/projects/mpg123/files/mpg123/|/mpg123-([\d.]+).tar.bz2/
+# bump: mpg123 after ./hashupdate Dockerfile MPG123 $LATEST
+# bump: mpg123 link "Changes" https://mpg123.org
+ARG MPG123_VERSION=1.33.6
+ARG MPG123_URL="https://sourceforge.net/projects/mpg123/files/mpg123/$MPG123_VERSION/mpg123-$MPG123_VERSION.tar.bz2/download"
+ARG MPG123_SHA256=929a7c18ba662b8927aed4de229ad9ae8ab2b4806dd0f30b90113eb1b4e2195a
+RUN \
+  wget $WGET_OPTS -O mpg123.tar.bz2 "$MPG123_URL" && \
+  echo "$MPG123_SHA256  mpg123.tar.bz2" | sha256sum -c - && \
+  tar $TAR_OPTS mpg123.tar.bz2 && cd mpg123-* && \
+  ./configure \
+    --disable-shared \
+    --enable-static && \
+  make -j$(nproc) install
+
 # bump: mp3lame /MP3LAME_VERSION=([\d.]+)/ svn:http://svn.code.sf.net/p/lame/svn|/^RELEASE__(.*)$/|/_/./|*
 # bump: mp3lame after ./hashupdate Dockerfile MP3LAME $LATEST
 # bump: mp3lame link "ChangeLog" http://svn.code.sf.net/p/lame/svn/trunk/lame/ChangeLog
-ARG MP3LAME_VERSION=3.100
+ARG MP3LAME_VERSION=4.0
 ARG MP3LAME_URL="https://sourceforge.net/projects/lame/files/lame/$MP3LAME_VERSION/lame-$MP3LAME_VERSION.tar.gz/download"
-ARG MP3LAME_SHA256=ddfe36cab873794038ae2c1210557ad34857a4b6bdc515785d1da9e175b1da1e
+ARG MP3LAME_SHA256=3df5124d5ad3a98312ffd7ba6a9b36230e4f8a3e66d3ce0f425e336c32d216eb
 RUN \
   wget $WGET_OPTS -O lame.tar.gz "$MP3LAME_URL" && \
   echo "$MP3LAME_SHA256  lame.tar.gz" | sha256sum -c - && \
@@ -404,6 +420,8 @@ RUN \
     --disable-cpml \
     --disable-frontend && \
   make -j$(nproc) install
+# libmp3lame.a now needs libmpg123 (lame 4.0), fix pkg-config file
+RUN echo "Libs.private: -lmpg123" >> /usr/local/lib/pkgconfig/lame.pc
 
 # bump: lcms2 /LCMS2_VERSION=([\d.]+)/ https://github.com/mm2/Little-CMS.git|^2
 # bump: lcms2 after ./hashupdate Dockerfile LCMS2 $LATEST
@@ -1126,6 +1144,7 @@ RUN \
   tar $TAR_OPTS ffmpeg.tar.bz2 && cd ffmpeg* && \
   FDKAAC_FLAGS=$(if [[ -n "$ENABLE_FDKAAC" ]] ;then echo " --enable-libfdk-aac --enable-nonfree " ;else echo ""; fi) && \
   sed -i 's/add_ldexeflags -fPIE -pie/add_ldexeflags -fPIE -static-pie/' configure && \
+  sed -i 's/require "libmp3lame/require_pkg_config libmp3lame "lame/' configure && \
   ./configure \
   --pkg-config-flags="--static" \
   --extra-cflags="-fopenmp" \
@@ -1232,6 +1251,7 @@ RUN \
   libjxl: env.LIBJXL_VERSION, \
   libkvazaar: env.KVAZAAR_VERSION, \
   libmodplug: env.LIBMODPLUG_VERSION, \
+  libmpg123: env.MPG123_VERSION, \
   libmp3lame: env.MP3LAME_VERSION, \
   libmysofa: env.LIBMYSOFA_VERSION, \
   libogg: env.OGG_VERSION, \
