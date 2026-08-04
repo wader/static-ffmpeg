@@ -75,9 +75,9 @@ ARG TAR_OPTS="--no-same-owner --extract --file"
 # bump: vmaf after ./hashupdate Dockerfile VMAF $LATEST
 # bump: vmaf link "Release" https://github.com/Netflix/vmaf/releases/tag/v$LATEST
 # bump: vmaf link "Source diff $CURRENT..$LATEST" https://github.com/Netflix/vmaf/compare/v$CURRENT..v$LATEST
-ARG VMAF_VERSION=3.1.0
+ARG VMAF_VERSION=3.2.0
 ARG VMAF_URL="https://github.com/Netflix/vmaf/archive/refs/tags/v$VMAF_VERSION.tar.gz"
-ARG VMAF_SHA256=80090e29d7fd0db472ddc663513f5be89bc936815e62b767e630c1d627279fe2
+ARG VMAF_SHA256=a28f93f3b4fa65601be324587072e32a6a704a304ba7b1aec9b70b3f709bc1dc
 RUN \
   wget $WGET_OPTS -O vmaf.tar.gz "$VMAF_URL" && \
   echo "$VMAF_SHA256  vmaf.tar.gz" | sha256sum -c - && \
