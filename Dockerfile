@@ -1108,9 +1108,9 @@ RUN \
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
 # bump: ffmpeg link "Changelog" https://github.com/FFmpeg/FFmpeg/blob/n$LATEST/Changelog
 # bump: ffmpeg link "Source diff $CURRENT..$LATEST" https://github.com/FFmpeg/FFmpeg/compare/n$CURRENT..n$LATEST
-ARG FFMPEG_VERSION=9.0
+ARG FFMPEG_VERSION=9.0.1
 ARG FFMPEG_URL="https://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.bz2"
-ARG FFMPEG_SHA256=ce84a9d01766eacd271bef8fa6447593ccc691801b48ac4e7b9dc90a9483a422
+ARG FFMPEG_SHA256=3317ad21d5e2c2eab8423ae6f49b12463960055925f39a025496964afeb9042c
 ARG ENABLE_FDKAAC=
 # sed changes --toolchain=hardened -pie to -static-pie
 #
