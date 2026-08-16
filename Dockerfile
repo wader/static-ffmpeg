@@ -1,6 +1,6 @@
 # bump: alpine /ALPINE_VERSION=alpine:([\d.]+)/ docker:alpine|^3
 # bump: alpine link "Release notes" https://alpinelinux.org/posts/Alpine-$LATEST-released.html
-ARG ALPINE_VERSION=alpine:3.20.3
+ARG ALPINE_VERSION=alpine:3.22.1
 FROM $ALPINE_VERSION AS builder
 
 # Alpine Package Keeper options
@@ -94,22 +94,22 @@ RUN \
 # extra libs stdc++ is for vmaf https://github.com/Netflix/vmaf/issues/788
 RUN sed -i 's/-lvmaf /-lvmaf -lstdc++ /' /usr/local/lib/pkgconfig/libvmaf.pc
 
-# own build as alpine glib links with libmount etc
-# bump: glib /GLIB_VERSION=([\d.]+)/ https://gitlab.gnome.org/GNOME/glib.git|^2
-# bump: glib after ./hashupdate Dockerfile GLIB $LATEST
-# bump: glib link "NEWS" https://gitlab.gnome.org/GNOME/glib/-/blob/main/NEWS?ref_type=heads
-ARG GLIB_VERSION=2.84.1
-ARG GLIB_URL="https://download.gnome.org/sources/glib/2.84/glib-$GLIB_VERSION.tar.xz"
-ARG GLIB_SHA256=2b4bc2ec49611a5fc35f86aca855f2ed0196e69e53092bab6bb73396bf30789a
-RUN \
-  wget $WGET_OPTS -O glib.tar.xz "$GLIB_URL" && \
-  echo "$GLIB_SHA256  glib.tar.xz" | sha256sum --status -c - && \
-  tar $TAR_OPTS glib.tar.xz && cd glib-* && \
-  meson setup build \
-    -Dbuildtype=release \
-    -Ddefault_library=static \
-    -Dlibmount=disabled && \
-  ninja -j$(nproc) -vC build install
+# # own build as alpine glib links with libmount etc
+# # bump: glib /GLIB_VERSION=([\d.]+)/ https://gitlab.gnome.org/GNOME/glib.git|^2
+# # bump: glib after ./hashupdate Dockerfile GLIB $LATEST
+# # bump: glib link "NEWS" https://gitlab.gnome.org/GNOME/glib/-/blob/main/NEWS?ref_type=heads
+# ARG GLIB_VERSION=2.84.1
+# ARG GLIB_URL="https://download.gnome.org/sources/glib/2.84/glib-$GLIB_VERSION.tar.xz"
+# ARG GLIB_SHA256=2b4bc2ec49611a5fc35f86aca855f2ed0196e69e53092bab6bb73396bf30789a
+# RUN \
+#   wget $WGET_OPTS -O glib.tar.xz "$GLIB_URL" && \
+#   echo "$GLIB_SHA256  glib.tar.xz" | sha256sum --status -c - && \
+#   tar $TAR_OPTS glib.tar.xz && cd glib-* && \
+#   meson setup build \
+#     -Dbuildtype=release \
+#     -Ddefault_library=static \
+#     -Dlibmount=disabled && \
+#   ninja -j$(nproc) -vC build install
 
 # bump: harfbuzz /LIBHARFBUZZ_VERSION=([\d.]+)/ https://github.com/harfbuzz/harfbuzz.git|*
 # bump: harfbuzz after ./hashupdate Dockerfile LIBHARFBUZZ $LATEST
@@ -126,68 +126,68 @@ RUN \
     -Ddefault_library=static && \
   ninja -j$(nproc) -vC build install
 
-# bump: cairo /CAIRO_VERSION=([\d.]+)/ https://gitlab.freedesktop.org/cairo/cairo.git|^1
-# bump: cairo after ./hashupdate Dockerfile CAIRO $LATEST
-# bump: cairo link "NEWS" https://gitlab.freedesktop.org/cairo/cairo/-/blob/master/NEWS?ref_type=heads
-ARG CAIRO_VERSION=1.18.4
-ARG CAIRO_URL="https://cairographics.org/releases/cairo-$CAIRO_VERSION.tar.xz"
-ARG CAIRO_SHA256=445ed8208a6e4823de1226a74ca319d3600e83f6369f99b14265006599c32ccb
-RUN \
-  wget $WGET_OPTS -O cairo.tar.xz "$CAIRO_URL" && \
-  echo "$CAIRO_SHA256  cairo.tar.xz" | sha256sum --status -c - && \
-  tar $TAR_OPTS cairo.tar.xz && cd cairo-* && \
-  meson setup build \
-    -Dbuildtype=release \
-    -Ddefault_library=static \
-    -Dtests=disabled \
-    -Dquartz=disabled \
-    -Dxcb=disabled \
-    -Dxlib=disabled \
-    -Dxlib-xcb=disabled && \
-  ninja -j$(nproc) -vC build install
+# # bump: cairo /CAIRO_VERSION=([\d.]+)/ https://gitlab.freedesktop.org/cairo/cairo.git|^1
+# # bump: cairo after ./hashupdate Dockerfile CAIRO $LATEST
+# # bump: cairo link "NEWS" https://gitlab.freedesktop.org/cairo/cairo/-/blob/master/NEWS?ref_type=heads
+# ARG CAIRO_VERSION=1.18.4
+# ARG CAIRO_URL="https://cairographics.org/releases/cairo-$CAIRO_VERSION.tar.xz"
+# ARG CAIRO_SHA256=445ed8208a6e4823de1226a74ca319d3600e83f6369f99b14265006599c32ccb
+# RUN \
+#   wget $WGET_OPTS -O cairo.tar.xz "$CAIRO_URL" && \
+#   echo "$CAIRO_SHA256  cairo.tar.xz" | sha256sum --status -c - && \
+#   tar $TAR_OPTS cairo.tar.xz && cd cairo-* && \
+#   meson setup build \
+#     -Dbuildtype=release \
+#     -Ddefault_library=static \
+#     -Dtests=disabled \
+#     -Dquartz=disabled \
+#     -Dxcb=disabled \
+#     -Dxlib=disabled \
+#     -Dxlib-xcb=disabled && \
+#   ninja -j$(nproc) -vC build install
 
-# TODO: there is weird "1.90" tag, skip it
-# bump: pango /PANGO_VERSION=([\d.]+)/ https://github.com/GNOME/pango.git|/\d+\.\d+\.\d+/|*
-# bump: pango after ./hashupdate Dockerfile PANGO $LATEST
-# bump: pango link "NEWS" https://gitlab.gnome.org/GNOME/pango/-/blob/main/NEWS?ref_type=heads
-ARG PANGO_VERSION=1.56.4
-ARG PANGO_URL="https://download.gnome.org/sources/pango/1.56/pango-$PANGO_VERSION.tar.xz"
-ARG PANGO_SHA256=17065e2fcc5f5a5bdbffc884c956bfc7c451a96e8c4fb2f8ad837c6413cb5a01
-# TODO: add -Dbuild-testsuite=false when in stable release
-# TODO: -Ddefault_library=both currently to not fail building tests
-RUN \
-  wget $WGET_OPTS -O pango.tar.xz "$PANGO_URL" && \
-  echo "$PANGO_SHA256  pango.tar.xz" | sha256sum --status -c - && \
-  tar $TAR_OPTS pango.tar.xz && cd pango-* && \
-  meson setup build \
-    -Dbuildtype=release \
-    -Ddefault_library=both \
-    -Dintrospection=disabled \
-    -Dgtk_doc=false && \
-  ninja -j$(nproc) -vC build install
+# # TODO: there is weird "1.90" tag, skip it
+# # bump: pango /PANGO_VERSION=([\d.]+)/ https://github.com/GNOME/pango.git|/\d+\.\d+\.\d+/|*
+# # bump: pango after ./hashupdate Dockerfile PANGO $LATEST
+# # bump: pango link "NEWS" https://gitlab.gnome.org/GNOME/pango/-/blob/main/NEWS?ref_type=heads
+# ARG PANGO_VERSION=1.56.4
+# ARG PANGO_URL="https://download.gnome.org/sources/pango/1.56/pango-$PANGO_VERSION.tar.xz"
+# ARG PANGO_SHA256=17065e2fcc5f5a5bdbffc884c956bfc7c451a96e8c4fb2f8ad837c6413cb5a01
+# # TODO: add -Dbuild-testsuite=false when in stable release
+# # TODO: -Ddefault_library=both currently to not fail building tests
+# RUN \
+#   wget $WGET_OPTS -O pango.tar.xz "$PANGO_URL" && \
+#   echo "$PANGO_SHA256  pango.tar.xz" | sha256sum --status -c - && \
+#   tar $TAR_OPTS pango.tar.xz && cd pango-* && \
+#   meson setup build \
+#     -Dbuildtype=release \
+#     -Ddefault_library=both \
+#     -Dintrospection=disabled \
+#     -Dgtk_doc=false && \
+#   ninja -j$(nproc) -vC build install
 
-# bump: librsvg /LIBRSVG_VERSION=([\d.]+)/ https://gitlab.gnome.org/GNOME/librsvg.git|^2
-# bump: librsvg after ./hashupdate Dockerfile LIBRSVG $LATEST
-# bump: librsvg link "NEWS" https://gitlab.gnome.org/GNOME/librsvg/-/blob/master/NEWS
-ARG LIBRSVG_VERSION=2.60.0
-ARG LIBRSVG_URL="https://download.gnome.org/sources/librsvg/2.60/librsvg-$LIBRSVG_VERSION.tar.xz"
-ARG LIBRSVG_SHA256=0b6ffccdf6e70afc9876882f5d2ce9ffcf2c713cbaaf1ad90170daa752e1eec3
-RUN \
-  wget $WGET_OPTS -O librsvg.tar.xz "$LIBRSVG_URL" && \
-  echo "$LIBRSVG_SHA256  librsvg.tar.xz" | sha256sum --status -c - && \
-  tar $TAR_OPTS librsvg.tar.xz && cd librsvg-* && \
-  # workaround for https://gitlab.gnome.org/GNOME/librsvg/-/issues/1158
-  sed -i "/^if host_system in \['windows'/s/, 'linux'//" meson.build && \
-  meson setup build \
-    -Dbuildtype=release \
-    -Ddefault_library=static \
-    -Ddocs=disabled \
-    -Dintrospection=disabled \
-    -Dpixbuf=disabled \
-    -Dpixbuf-loader=disabled \
-    -Dvala=disabled \
-    -Dtests=false && \
-  ninja -j$(nproc) -vC build install
+# # bump: librsvg /LIBRSVG_VERSION=([\d.]+)/ https://gitlab.gnome.org/GNOME/librsvg.git|^2
+# # bump: librsvg after ./hashupdate Dockerfile LIBRSVG $LATEST
+# # bump: librsvg link "NEWS" https://gitlab.gnome.org/GNOME/librsvg/-/blob/master/NEWS
+# ARG LIBRSVG_VERSION=2.60.0
+# ARG LIBRSVG_URL="https://download.gnome.org/sources/librsvg/2.60/librsvg-$LIBRSVG_VERSION.tar.xz"
+# ARG LIBRSVG_SHA256=0b6ffccdf6e70afc9876882f5d2ce9ffcf2c713cbaaf1ad90170daa752e1eec3
+# RUN \
+#   wget $WGET_OPTS -O librsvg.tar.xz "$LIBRSVG_URL" && \
+#   echo "$LIBRSVG_SHA256  librsvg.tar.xz" | sha256sum --status -c - && \
+#   tar $TAR_OPTS librsvg.tar.xz && cd librsvg-* && \
+#   # workaround for https://gitlab.gnome.org/GNOME/librsvg/-/issues/1158
+#   sed -i "/^if host_system in \['windows'/s/, 'linux'//" meson.build && \
+#   meson setup build \
+#     -Dbuildtype=release \
+#     -Ddefault_library=static \
+#     -Ddocs=disabled \
+#     -Dintrospection=disabled \
+#     -Dpixbuf=disabled \
+#     -Dpixbuf-loader=disabled \
+#     -Dvala=disabled \
+#     -Dtests=false && \
+#   ninja -j$(nproc) -vC build install
 
 # build after libvmaf
 # bump: aom /AOM_VERSION=([\d.]+)/ git:https://aomedia.googlesource.com/aom|*
@@ -528,15 +528,17 @@ RUN \
 # bump: rav1e /RAV1E_VERSION=([\d.]+)/ https://github.com/xiph/rav1e.git|/\d+\./|*
 # bump: rav1e after ./hashupdate Dockerfile RAV1E $LATEST
 # bump: rav1e link "Release notes" https://github.com/xiph/rav1e/releases/tag/v$LATEST
-ARG RAV1E_VERSION=0.7.1
+ARG RAV1E_VERSION=0.8.1
 ARG RAV1E_URL="https://github.com/xiph/rav1e/archive/v$RAV1E_VERSION.tar.gz"
-ARG RAV1E_SHA256=da7ae0df2b608e539de5d443c096e109442cdfa6c5e9b4014361211cf61d030c
+ARG RAV1E_SHA256=06d1523955fb6ed9cf9992eace772121067cca7e8926988a1ee16492febbe01e
 RUN \
   wget $WGET_OPTS -O rav1e.tar.gz "$RAV1E_URL" && \
   echo "$RAV1E_SHA256  rav1e.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS rav1e.tar.gz && cd rav1e-* && \
   RUSTFLAGS="-C target-feature=+crt-static" \
-  cargo cinstall --release
+  cargo cinstall \
+    --release  \
+    --library-type staticlib
 
 # bump: librtmp /LIBRTMP_COMMIT=([[:xdigit:]]+)/ gitrefs:https://git.ffmpeg.org/rtmpdump.git|re:#^refs/heads/master$#|@commit
 # bump: librtmp after ./hashupdate Dockerfile LIBRTMP $LATEST
@@ -898,6 +900,8 @@ RUN \
   wget $WGET_OPTS -O xavs2.tar.gz "$XAVS2_URL" && \
   echo "$XAVS2_SHA256  xavs2.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS xavs2.tar.gz && cd xavs2-*/build/linux && \
+  # new gcc not happy with some of the code
+  CFLAGS="-Wno-incompatible-pointer-types" \
   ./configure \
     --disable-asm \
     --enable-pic \
@@ -1164,7 +1168,7 @@ RUN \
   --enable-libopus \
   --enable-librabbitmq \
   --enable-librav1e \
-  --enable-librsvg \
+  # --enable-librsvg \
   --enable-librtmp \
   --enable-librubberband \
   --enable-libshine \
