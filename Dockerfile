@@ -604,9 +604,9 @@ RUN \
 # bump: srt /SRT_VERSION=([\d.]+)/ https://github.com/Haivision/srt.git|^1
 # bump: srt after ./hashupdate Dockerfile SRT $LATEST
 # bump: srt link "Release notes" https://github.com/Haivision/srt/releases/tag/v$LATEST
-ARG SRT_VERSION=1.5.6
+ARG SRT_VERSION=1.5.7
 ARG SRT_URL="https://github.com/Haivision/srt/archive/v$SRT_VERSION.tar.gz"
-ARG SRT_SHA256=2c4980c2c4cfd142d21b829d939dc51db9c6628af5967fff62fd7290769569c7
+ARG SRT_SHA256=fee6aee6b4933f01ba8b7e18d5d9e4896ad604053fdad2ac55df4a4f1561f30a
 RUN \
   wget $WGET_OPTS -O libsrt.tar.gz "$SRT_URL" && \
   echo "$SRT_SHA256  libsrt.tar.gz" | sha256sum -c - && \
