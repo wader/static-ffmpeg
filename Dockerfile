@@ -606,7 +606,7 @@ RUN \
 # bump: srt link "Release notes" https://github.com/Haivision/srt/releases/tag/v$LATEST
 ARG SRT_VERSION=1.5.7
 ARG SRT_URL="https://github.com/Haivision/srt/archive/v$SRT_VERSION.tar.gz"
-ARG SRT_SHA256=fee6aee6b4933f01ba8b7e18d5d9e4896ad604053fdad2ac55df4a4f1561f30a
+ARG SRT_SHA256=017cd1e437ef2073a4dd10ddf7b55e86bc3d6ebac0393d13bd22f6a57055d32b
 RUN \
   wget $WGET_OPTS -O libsrt.tar.gz "$SRT_URL" && \
   echo "$SRT_SHA256  libsrt.tar.gz" | sha256sum -c - && \
