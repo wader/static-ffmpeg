@@ -197,10 +197,9 @@ RUN \
 ARG AOM_VERSION=3.15.1
 ARG AOM_URL="https://aomedia.googlesource.com/aom"
 ARG AOM_COMMIT=44d0a57786f432d933ff64b653347c66f4d0fa1d
-RUN git clone --depth 1 --branch v$AOM_VERSION "$AOM_URL"
-RUN cd aom && test $(git rev-parse HEAD) = $AOM_COMMIT
 RUN \
-  cd aom && \
+  git clone --depth 1 --branch v$AOM_VERSION "$AOM_URL" && \
+  cd aom && test $(git rev-parse HEAD) = $AOM_COMMIT && \
   mkdir build_tmp && cd build_tmp && \
   cmake \
     -G"Unix Makefiles" \
@@ -249,20 +248,31 @@ RUN \
     --enable-static && \
   make -j$(nproc) && make install
 
+# bump: libudfread /LIBUDFREAD_VERSION=([\d.]+)/ https://code.videolan.org/videolan/libudfread.git|*
+# bump: libudfread after ./hashupdate Dockerfile LIBUDFREAD $LATEST
+# bump: libudfread link "Source diff $CURRENT..$LATEST" https://code.videolan.org/videolan/libudfread/-/compare/$CURRENT...$LATEST
+ARG LIBUDFREAD_VERSION=1.2.0
+ARG LIBUDFREAD_URL="https://download.videolan.org/pub/videolan/libudfread/libudfread-$LIBUDFREAD_VERSION.tar.xz"
+ARG LIBUDFREAD_SHA256=bb477cbd4cfbfc7787d9d05b71ee5e70430f5cfebf1297497f7e83547958050f
+RUN \
+  wget $WGET_OPTS -O libudfread.tar.xz "$LIBUDFREAD_URL" && \
+  echo "$LIBUDFREAD_SHA256  libudfread.tar.xz" | sha256sum -c - && \
+  tar $TAR_OPTS libudfread.tar.xz && cd libudfread-* && \
+  meson setup build \
+    -Dbuildtype=release \
+    -Ddefault_library=static && \
+  ninja -j$(nproc) -vC build install
+
 # bump: libbluray /LIBBLURAY_VERSION=([\d.]+)/ https://code.videolan.org/videolan/libbluray.git|*
 # bump: libbluray after ./hashupdate Dockerfile LIBBLURAY $LATEST
 # bump: libbluray link "ChangeLog" https://code.videolan.org/videolan/libbluray/-/blob/master/ChangeLog
 ARG LIBBLURAY_VERSION=1.5.0
 ARG LIBBLURAY_URL="https://code.videolan.org/videolan/libbluray/-/archive/$LIBBLURAY_VERSION/libbluray-$LIBBLURAY_VERSION.tar.gz"
 ARG LIBBLURAY_SHA256=7a5d945a9c2b0064a748b77a4c5ab563175bb7219e9d562b2b2399790726a388
-# TODO: bump config? at least checkout to make commit sticky
-ARG LIBUDFREAD_COMMIT=c3cd5cbb097924557ea4d9da1ff76a74620c51a8
 RUN \
   wget $WGET_OPTS -O libbluray.tar.gz "$LIBBLURAY_URL" && \
   echo "$LIBBLURAY_SHA256  libbluray.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS libbluray.tar.gz && cd libbluray-* && \
-  git clone https://code.videolan.org/videolan/libudfread.git contrib/libudfread && \
-  (cd contrib/libudfread && git checkout --recurse-submodules $LIBUDFREAD_COMMIT) && \
   meson setup build \
     -Dbuildtype=release \
     -Ddefault_library=static && \
@@ -1101,7 +1111,7 @@ RUN \
     -DVVENC_ENABLE_WERROR=OFF \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr/local && \
-  cmake --build build/release-static -j && \
+  cmake --build build/release-static -j$(nproc) && \
   cmake --build build/release-static --target install
 
 # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|*
