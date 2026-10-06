@@ -257,8 +257,11 @@ ARG LIBUDFREAD_SHA256=bb477cbd4cfbfc7787d9d05b71ee5e70430f5cfebf1297497f7e835479
 RUN \
   wget $WGET_OPTS -O libudfread.tar.xz "$LIBUDFREAD_URL" && \
   echo "$LIBUDFREAD_SHA256  libudfread.tar.xz" | sha256sum -c - && \
-  mkdir libudfread && \
-  tar $TAR_OPTS libudfread.tar.xz -C libudfread --strip-components=1
+  tar $TAR_OPTS libudfread.tar.xz && cd libudfread-* && \
+  meson setup build \
+    -Dbuildtype=release \
+    -Ddefault_library=static && \
+  ninja -j$(nproc) -vC build install
 
 # bump: libbluray /LIBBLURAY_VERSION=([\d.]+)/ https://code.videolan.org/videolan/libbluray.git|*
 # bump: libbluray after ./hashupdate Dockerfile LIBBLURAY $LATEST
@@ -270,7 +273,6 @@ RUN \
   wget $WGET_OPTS -O libbluray.tar.gz "$LIBBLURAY_URL" && \
   echo "$LIBBLURAY_SHA256  libbluray.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS libbluray.tar.gz && cd libbluray-* && \
-  mkdir -p contrib/libudfread && cp -a /libudfread/. contrib/libudfread && \
   meson setup build \
     -Dbuildtype=release \
     -Ddefault_library=static && \
