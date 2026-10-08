@@ -110,6 +110,8 @@ RUN \
     -Ddefault_library=static \
     -Dlibmount=disabled && \
   ninja -j$(nproc) -vC build install
+# exported symbols keep rust thread locals as unresolved relocations that a static pie never applies
+RUN sed -i 's/-Wl,--export-dynamic//' /usr/local/lib/pkgconfig/gmodule-2.0.pc /usr/local/lib/pkgconfig/gmodule-export-2.0.pc
 
 # bump: harfbuzz /LIBHARFBUZZ_VERSION=([\d.]+)/ https://github.com/harfbuzz/harfbuzz.git|*
 # bump: harfbuzz after ./hashupdate Dockerfile LIBHARFBUZZ $LATEST
