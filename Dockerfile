@@ -192,27 +192,29 @@ RUN \
   ninja -j$(nproc) -vC build install
 
 # build after libvmaf
-# bump: aom /AOM_VERSION=([\d.]+)/ git:https://aomedia.googlesource.com/aom|*
+# bump: aom /AOM_VERSION=([\d.]+)/ fetch:https://storage.googleapis.com/aom-releases/|/libaom-([\d.]+)\.tar\.gz/|*
 # bump: aom after ./hashupdate Dockerfile AOM $LATEST
-# bump: aom after COMMIT=$(git ls-remote https://aomedia.googlesource.com/aom v$LATEST^{} | awk '{print $1}') && sed -i -E "s/^ARG AOM_COMMIT=.*/ARG AOM_COMMIT=$COMMIT/" Dockerfile
 # bump: aom link "CHANGELOG" https://aomedia.googlesource.com/aom/+/refs/tags/v$LATEST/CHANGELOG
 ARG AOM_VERSION=3.15.1
-ARG AOM_URL="https://aomedia.googlesource.com/aom"
-ARG AOM_COMMIT=44d0a57786f432d933ff64b653347c66f4d0fa1d
+ARG AOM_URL="https://storage.googleapis.com/aom-releases/libaom-$AOM_VERSION.tar.gz"
+ARG AOM_SHA256=8ca0c52746174603500f0adb6f2a215d69c9ca2aab2acb3caa06fb791d8d01bf
 RUN \
-  git clone --depth 1 --branch v$AOM_VERSION "$AOM_URL" && \
-  cd aom && test $(git rev-parse HEAD) = $AOM_COMMIT && \
+  wget $WGET_OPTS -O aom.tar.gz "$AOM_URL" && \
+  echo "$AOM_SHA256  aom.tar.gz" | sha256sum -c - && \
+  tar $TAR_OPTS aom.tar.gz && cd libaom-* && \
   mkdir build_tmp && cd build_tmp && \
   cmake \
     -G"Unix Makefiles" \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=OFF \
+    -DENABLE_APPS=NO \
     -DENABLE_EXAMPLES=NO \
     -DENABLE_DOCS=NO \
     -DENABLE_TESTS=NO \
     -DENABLE_TOOLS=NO \
     -DCONFIG_TUNE_VMAF=1 \
+    -DCONFIG_LIBYUV=0 \
     -DENABLE_NASM=ON \
     -DCMAKE_INSTALL_LIBDIR=lib \
     .. && \
