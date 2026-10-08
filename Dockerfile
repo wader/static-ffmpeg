@@ -248,7 +248,7 @@ RUN \
     --enable-static && \
   make -j$(nproc) && make install
 
-# bump: libudfread /LIBUDFREAD_VERSION=([\d.]+)/ https://code.videolan.org/videolan/libudfread.git|*
+# bump: libudfread /LIBUDFREAD_VERSION=([\d.]+)/ fetch:https://download.videolan.org/pub/videolan/libudfread/|/libudfread-([\d.]+)\.tar\.xz/|*
 # bump: libudfread after ./hashupdate Dockerfile LIBUDFREAD $LATEST
 # bump: libudfread link "Source diff $CURRENT..$LATEST" https://code.videolan.org/videolan/libudfread/-/compare/$CURRENT...$LATEST
 ARG LIBUDFREAD_VERSION=1.2.0
@@ -263,31 +263,31 @@ RUN \
     -Ddefault_library=static && \
   ninja -j$(nproc) -vC build install
 
-# bump: libbluray /LIBBLURAY_VERSION=([\d.]+)/ https://code.videolan.org/videolan/libbluray.git|*
+# bump: libbluray /LIBBLURAY_VERSION=([\d.]+)/ fetch:https://download.videolan.org/pub/videolan/libbluray/last/|/libbluray-([\d.]+)\.tar\.xz/
 # bump: libbluray after ./hashupdate Dockerfile LIBBLURAY $LATEST
 # bump: libbluray link "ChangeLog" https://code.videolan.org/videolan/libbluray/-/blob/master/ChangeLog
 ARG LIBBLURAY_VERSION=1.5.0
-ARG LIBBLURAY_URL="https://code.videolan.org/videolan/libbluray/-/archive/$LIBBLURAY_VERSION/libbluray-$LIBBLURAY_VERSION.tar.gz"
-ARG LIBBLURAY_SHA256=7a5d945a9c2b0064a748b77a4c5ab563175bb7219e9d562b2b2399790726a388
+ARG LIBBLURAY_URL="https://download.videolan.org/pub/videolan/libbluray/$LIBBLURAY_VERSION/libbluray-$LIBBLURAY_VERSION.tar.xz"
+ARG LIBBLURAY_SHA256=f676408e91a5d321abf8b8d4dfdae36205c297dab5c54c3ec519639025f474a2
 RUN \
-  wget $WGET_OPTS -O libbluray.tar.gz "$LIBBLURAY_URL" && \
-  echo "$LIBBLURAY_SHA256  libbluray.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS libbluray.tar.gz && cd libbluray-* && \
+  wget $WGET_OPTS -O libbluray.tar.xz "$LIBBLURAY_URL" && \
+  echo "$LIBBLURAY_SHA256  libbluray.tar.xz" | sha256sum -c - && \
+  tar $TAR_OPTS libbluray.tar.xz && cd libbluray-* && \
   meson setup build \
     -Dbuildtype=release \
     -Ddefault_library=static && \
   ninja -j$(nproc) -vC build install
 
-# bump: dav1d /DAV1D_VERSION=([\d.]+)/ https://code.videolan.org/videolan/dav1d.git|*
+# bump: dav1d /DAV1D_VERSION=([\d.]+)/ fetch:https://download.videolan.org/pub/videolan/dav1d/last/|/dav1d-([\d.]+)\.tar\.xz/
 # bump: dav1d after ./hashupdate Dockerfile DAV1D $LATEST
 # bump: dav1d link "Release notes" https://code.videolan.org/videolan/dav1d/-/tags/$LATEST
 ARG DAV1D_VERSION=1.5.4
-ARG DAV1D_URL="https://code.videolan.org/videolan/dav1d/-/archive/$DAV1D_VERSION/dav1d-$DAV1D_VERSION.tar.gz"
-ARG DAV1D_SHA256=a1d5b63d2d38ec9bd03acf643caa51fa22edd1e89c5a109c4807717216bbec07
+ARG DAV1D_URL="https://download.videolan.org/pub/videolan/dav1d/$DAV1D_VERSION/dav1d-$DAV1D_VERSION.tar.xz"
+ARG DAV1D_SHA256=686616b7c69eb88d44459391ab25cac13b6647a3b288835c5784e71c1514a5c5
 RUN \
-  wget $WGET_OPTS -O dav1d.tar.gz "$DAV1D_URL" && \
-  echo "$DAV1D_SHA256  dav1d.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS dav1d.tar.gz && cd dav1d-* && \
+  wget $WGET_OPTS -O dav1d.tar.xz "$DAV1D_URL" && \
+  echo "$DAV1D_SHA256  dav1d.tar.xz" | sha256sum -c - && \
+  tar $TAR_OPTS dav1d.tar.xz && cd dav1d-* && \
   meson setup build \
     -Dbuildtype=release \
     -Ddefault_library=static && \
