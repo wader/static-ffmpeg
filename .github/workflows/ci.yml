@@ -10,8 +10,11 @@ jobs:
     strategy:
       matrix:
         include:
-          - runs_on: ubicloud-standard-30
-          - runs_on: ubicloud-standard-30-arm
+          - arch: amd64
+            runs_on: ubicloud-standard-30
+          - arch: arm64
+            runs_on: ubicloud-standard-30-arm
+    name: Build image ${{ matrix.arch }} (${{ matrix.runs_on }})
     runs-on: ${{ matrix.runs_on }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1

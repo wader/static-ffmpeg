@@ -13,27 +13,26 @@ env:
 
 jobs:
   build:
-    name: Build image
     strategy:
       matrix:
         include:
-          - runs_on: ubicloud-standard-8-arm
-            tag: arm64
-          - runs_on: ubuntu-latest
-            tag: amd64
-
+          - arch: amd64
+            runs_on: ubicloud-standard-30
+          - arch: arm64
+            runs_on: ubicloud-standard-30-arm
+    name: Build image ${{ matrix.arch }} (${{ matrix.runs_on }})
     runs-on: ${{ matrix.runs_on }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Docker build
-        run: docker build --tag image:${{ matrix.tag }} .
+        run: docker build --tag image:${{ matrix.arch }} .
       - name: Docker save
-        run: docker image save --output image-${{ matrix.tag }}.tar image:${{ matrix.tag }}
-      - name: Upload Docker image-${{ matrix.tag }}
+        run: docker image save --output image-${{ matrix.arch }}.tar image:${{ matrix.arch }}
+      - name: Upload Docker image-${{ matrix.arch }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          name: image-${{ matrix.tag }}
-          path: image-${{ matrix.tag }}.tar
+          name: image-${{ matrix.arch }}
+          path: image-${{ matrix.arch }}.tar
           retention-days: 1
 
   tag:
