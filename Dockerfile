@@ -188,6 +188,7 @@ RUN \
     -Dpixbuf=disabled \
     -Dpixbuf-loader=disabled \
     -Dvala=disabled \
+    -Drsvg-convert=disabled \
     -Dtests=false && \
   ninja -j$(nproc) -vC build install
 
@@ -551,7 +552,12 @@ RUN \
   echo "$RAV1E_SHA256  rav1e.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS rav1e.tar.gz && cd rav1e-* && \
   RUSTFLAGS="-C target-feature=+crt-static" \
-  cargo cinstall --library-type staticlib --release
+  CARGO_PROFILE_RELEASE_LTO=false \
+  CARGO_PROFILE_RELEASE_DEBUG=false \
+  cargo cinstall --release \
+    --library-type staticlib \
+    --no-default-features \
+    --features asm,threading,git_version,capi
 
 # bump: librtmp /LIBRTMP_COMMIT=([[:xdigit:]]+)/ gitrefs:https://git.ffmpeg.org/rtmpdump.git|re:#^refs/heads/master$#|@commit
 # bump: librtmp after ./hashupdate Dockerfile LIBRTMP $LATEST
@@ -1141,9 +1147,6 @@ ARG ENABLE_FDKAAC=
 # ldflags stack-size=2097152 is to increase default stack size from 128KB (musl default) to something
 # more similar to glibc (2MB). This fixing segfault with libaom-av1 and libsvtav1 as they seems to pass
 # large things on the stack.
-#
-# ldfalgs -Wl,--allow-multiple-definition is a workaround for linking with multiple rust staticlib to
-# not cause collision in toolchain symbols, see comment in checkdupsym script for details.
 RUN \
   wget $WGET_OPTS -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
   echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum -c - && \
@@ -1153,7 +1156,7 @@ RUN \
   ./configure \
   --pkg-config-flags="--static" \
   --extra-cflags="-fopenmp" \
-  --extra-ldflags="-fopenmp -Wl,--allow-multiple-definition -Wl,-z,stack-size=2097152" \
+  --extra-ldflags="-fopenmp -Wl,-z,stack-size=2097152" \
   --toolchain=hardened \
   --disable-debug \
   --disable-shared \
@@ -1306,8 +1309,8 @@ RUN \
   /checkelf /usr/local/bin/ffprobe
 # workaround for using -Wl,--allow-multiple-definition
 # see comment in checkdupsym for details
-COPY checkdupsym /
-RUN /checkdupsym /ffmpeg-*
+# COPY checkdupsym /
+# RUN /checkdupsym /ffmpeg-*
 
 # some basic fonts that don't take up much space
 RUN apk add $APK_OPTS font-terminus font-inconsolata font-dejavu font-awesome
