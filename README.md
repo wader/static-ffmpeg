@@ -100,7 +100,7 @@ alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --ent
 - `/ffprobe` ffprobe binary
 - `/doc` Documentation
 - `/versions.json` JSON file with build versions of ffmpeg and libraries.
-- `/etc/ssl/cert.pem` CA certs to make `-tls_verify 1 -ca_file /etc/ssl/cert.pem` work if running image directly
+- `/etc/ssl/cert.pem` CA certs to make `-ca_file /etc/ssl/cert.pem` work if running image directly
 - Fonts, fontconfig config and pre-populated cache:
   - `/etc/fonts`
   - `/usr/share/fonts`
@@ -227,9 +227,10 @@ Opening an input file: color=white,drawtext=text=Test:fontfile=Arial.
 
 ### TLS
 
-Binaries are built with TLS support but, by default, ffmpeg currently do
-not do certificate verification. To enable verification you need to run
-ffmpeg with `-tls_verify 1` and `-ca_file /path/to/cert.pem`.
+Binaries are built with TLS support. Since ffmpeg 9.0 certificate verification
+is enabled by default. Before 9.0 verification was off by
+default and had to be enabled with `-tls_verify 1`. To verify, ffmpeg needs CA
+certificates, use `-ca_file /path/to/cert.pem` to point to them:
 
 - Alpine Linux at `/etc/ssl/cert.pem`
 - Debian/Ubuntu install the `ca-certificates` package at it will be available at `/etc/ssl/certs/ca-certificates.crt`.
