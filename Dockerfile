@@ -977,10 +977,9 @@ RUN \
 # bump: xevd after ./hashupdate Dockerfile XEVD $LATEST
 # bump: xevd link "CHANGELOG" https://github.com/mpeg5/xevd/releases/tag/v$LATEST
 # TODO: better -DARM? possible to build on non arm and intel?
-# TODO: report upstream about lib/libxevd.a?
-ARG XEVD_VERSION=0.7.0
+ARG XEVD_VERSION=0.8.0
 ARG XEVD_URL="https://github.com/mpeg5/xevd/archive/refs/tags/v$XEVD_VERSION.tar.gz"
-ARG XEVD_SHA256=febfdb532819bbf36b1b04e74d3ef328ad0f0f2db6224ddb7640fce6bd0014f4
+ARG XEVD_SHA256=258d626fbb6c7ea1677b4fb0ffed3eaca2ec312810d6a76f67359fdc16068472
 RUN \
   wget $WGET_OPTS -O xevd.tar.gz "$XEVD_URL" && \
   echo "$XEVD_SHA256  xevd.tar.gz" | sha256sum -c - && \
@@ -992,8 +991,7 @@ RUN \
     -DARM="$(if [ $(uname -m) == aarch64 ]; then echo TRUE; else echo FALSE; fi)" \
     -DCMAKE_BUILD_TYPE=Release \
     .. && \
-  make -j$(nproc) install && \
-  ln -s /usr/local/lib/xevd/libxevd.a /usr/local/lib/libxevd.a
+  make -j$(nproc) install
 
 # bump: zimg /ZIMG_VERSION=([\d.]+)/ https://github.com/sekrit-twc/zimg.git|*
 # bump: zimg after ./hashupdate Dockerfile ZIMG $LATEST
