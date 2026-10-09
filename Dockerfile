@@ -1331,8 +1331,8 @@ RUN ["/ffmpeg", "-hide_banner", "-buildconf"]
 RUN ["/ffmpeg", "-f", "lavfi", "-i", "testsrc", "-c:v", "libsvtav1", "-t", "100ms", "-f", "null", "-"]
 # dns
 RUN ["/ffprobe", "-i", "https://github.com/favicon.ico"]
-# tls/https certs
-RUN ["/ffprobe", "-tls_verify", "1", "-ca_file", "/etc/ssl/cert.pem", "-i", "https://github.com/favicon.ico"]
+# tls/https certs and check that -tls_verify 1 is default in 9.0
+RUN ["/ffprobe", "-ca_file", "/etc/ssl/cert.pem", "-i", "https://github.com/favicon.ico"]
 # svg
 RUN ["/ffprobe", "-i", "https://github.githubassets.com/favicons/favicon.svg"]
 # vvenc
