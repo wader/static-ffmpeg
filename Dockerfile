@@ -1303,10 +1303,25 @@ RUN \
   }' > /versions.json
 
 # make sure binaries has no dependencies, is relro, pie and stack nx
-COPY checkelf /
 RUN \
-  /checkelf /usr/local/bin/ffmpeg && \
-  /checkelf /usr/local/bin/ffprobe
+  for f in /usr/local/bin/ffmpeg /usr/local/bin/ffprobe; do \
+    NOEXTLIBS=$(test "$(ldd "$f" | wc -l)" -eq 1 && echo yes || echo no) && \
+    RELRO=$(readelf -l "$f" | grep -q GNU_RELRO && echo yes || echo no) && \
+    BIND_NOW=$(readelf -d "$f" | grep -q BIND_NOW && echo yes || echo no) && \
+    PIE=$(readelf -h "$f" | grep -q DYN && echo yes || echo no) && \
+    STACKNX=$(readelf -W -l "$f" | grep GNU_STACK | grep -q -v RWE && echo yes || echo no) && \
+    file "$f" && \
+    echo "No external libs: $NOEXTLIBS" && \
+    echo "Relocate read-only: $RELRO" && \
+    echo "Resolve at startup: $BIND_NOW" && \
+    echo "Position independent code: $PIE" && \
+    echo "Stack non-executable: $STACKNX" && \
+    [ "$NOEXTLIBS" = "yes" ] && \
+    [ "$RELRO" = "yes" ] && \
+    [ "$BIND_NOW" = "yes" ] && \
+    [ "$PIE" = "yes" ] && \
+    [ "$STACKNX" = "yes" ] || exit 1; \
+  done
 
 # some basic fonts that don't take up much space
 RUN apk add $APK_OPTS font-terminus font-inconsolata font-dejavu font-awesome
