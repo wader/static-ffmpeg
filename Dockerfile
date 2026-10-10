@@ -953,10 +953,9 @@ RUN \
 # bump: xeve after ./hashupdate Dockerfile XEVE $LATEST
 # bump: xeve link "CHANGELOG" https://github.com/mpeg5/xeve/releases/tag/v$LATEST
 # TODO: better -DARM? possible to build on non arm and intel?
-# TODO: report upstream about lib/libxeve.a?
-ARG XEVE_VERSION=0.7.0
+ARG XEVE_VERSION=0.7.1
 ARG XEVE_URL="https://github.com/mpeg5/xeve/archive/refs/tags/v$XEVE_VERSION.tar.gz"
-ARG XEVE_SHA256=f60950d063f52adf11ed7196c0bbb0503fa107b0e43af06bdc81fecc24f2a62e
+ARG XEVE_SHA256=5d1249212f431816b4723937c9ec8491b45ee1bb75c0f46692deaf7f59fbf19c
 RUN \
   wget $WGET_OPTS -O xeve.tar.gz "$XEVE_URL" && \
   echo "$XEVE_SHA256  xeve.tar.gz" | sha256sum -c - && \
@@ -970,8 +969,7 @@ RUN \
     -DARM="$(if [ $(uname -m) == aarch64 ]; then echo TRUE; else echo FALSE; fi)" \
     -DCMAKE_BUILD_TYPE=Release \
     .. && \
-  make -j$(nproc) install && \
-  ln -s /usr/local/lib/xeve/libxeve.a /usr/local/lib/libxeve.a
+  make -j$(nproc) install
 
 # bump: xevd /XEVD_VERSION=([\d.]+)/ https://github.com/mpeg5/xevd.git|*
 # bump: xevd after ./hashupdate Dockerfile XEVD $LATEST
