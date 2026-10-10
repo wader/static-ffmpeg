@@ -108,6 +108,7 @@ RUN \
   meson setup build \
     -Dbuildtype=release \
     -Ddefault_library=static \
+    -Dglib_debug=disabled \
     -Dlibmount=disabled && \
   ninja -j$(nproc) -vC build install
 # exported symbols keep rust thread locals as unresolved relocations that a static pie never applies
@@ -214,7 +215,6 @@ RUN \
     -DENABLE_DOCS=NO \
     -DENABLE_TESTS=NO \
     -DENABLE_TOOLS=NO \
-    -DENABLE_APPS=NO \
     -DCONFIG_TUNE_VMAF=1 \
     -DCONFIG_LIBYUV=0 \
     -DENABLE_NASM=ON \
@@ -489,7 +489,6 @@ RUN \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=OFF \
-    -DBUILD_PKGCONFIG_FILES=ON \
     -DBUILD_CODEC=OFF \
     -DWITH_ASTYLE=OFF \
     -DBUILD_TESTING=OFF \
@@ -534,7 +533,7 @@ RUN \
     -DCMAKE_INSTALL_PREFIX=/usr/local \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_TESTS=OFF \
+    -DBUILD_TESTING=OFF \
     -DBUILD_TOOLS=OFF \
     -DBUILD_TOOLS_DOCS=OFF \
     -DRUN_SYSTEM_TESTS=OFF \
@@ -567,7 +566,7 @@ ARG LIBRTMP_COMMIT=138fdb258d9fc26f1843fd1b891180416c9dc575
 RUN \
   git clone "$LIBRTMP_URL" && cd rtmpdump && \
   git checkout --recurse-submodules $LIBRTMP_COMMIT && \
-  make SYS=posix SHARED=off -j$(nproc) install
+  make SYS=posix SHARED=off XCFLAGS="$CFLAGS" OPT= -j$(nproc) install
 
 # bump: rubberband /RUBBERBAND_VERSION=([\d.]+)/ https://github.com/breakfastquay/rubberband.git|^2
 # bump: rubberband after ./hashupdate Dockerfile RUBBERBAND $LATEST
@@ -600,6 +599,7 @@ RUN \
   echo "$LIBSHINE_SHA256  libshine.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS libshine.tar.gz && cd shine* && \
   sed -i 's/shine_mdct_initialise()/shine_mdct_initialise(shine_global_config *config)/' src/lib/l3mdct.h && \
+  sed -i '/^CFLAGS = /s/ -O2//' Makefile.in && \
   ./configure \
     --with-pic \
     --enable-static \
@@ -635,7 +635,7 @@ RUN \
   echo "$SRT_SHA256  libsrt.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS libsrt.tar.gz && cd srt-* && \
   mkdir build && cd build && \
-  cmake3.5 \
+  cmake \
     -G"Unix Makefiles" \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DCMAKE_BUILD_TYPE=Release \
@@ -643,7 +643,7 @@ RUN \
     -DENABLE_APPS=OFF \
     -DENABLE_CXX11=ON \
     -DUSE_STATIC_LIBSTDCXX=ON \
-    -DOPENSSL_USE_STATIC_LIBS=ON \
+    -DSRT_USE_OPENSSL_STATIC_LIBS=ON \
     -DENABLE_LOGGING=OFF \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DCMAKE_INSTALL_INCLUDEDIR=include \
@@ -668,11 +668,8 @@ RUN \
   cmake \
     -G"Unix Makefiles" \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
-    -DCMAKE_SYSTEM_ARCH=$(arch) \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DCMAKE_BUILD_TYPE=Release \
-    -DPICKY_DEVELOPER=ON \
-    -DBUILD_STATIC_LIB=ON \
     -DBUILD_SHARED_LIBS=OFF \
     -DWITH_GSSAPI=OFF \
     -DWITH_BLOWFISH_CIPHER=ON \
@@ -689,8 +686,7 @@ RUN \
     -DWITH_EXAMPLES=OFF \
     -DWITH_INTERNAL_DOC=OFF \
     .. && \
-  # make -j seems to be shaky, libssh.a ends up truncated (used before fully created?)
-  make install
+  make -j$(nproc) install
 
 # bump: svtav1 /SVTAV1_VERSION=([\d.]+)/ https://gitlab.com/AOMediaCodec/SVT-AV1.git|*
 # bump: svtav1 after ./hashupdate Dockerfile SVTAV1 $LATEST
@@ -799,7 +795,7 @@ RUN \
   # This line workarounds the issue that happens when the image builds in emulated (buildx) arm64 environment.
   # Since in emulated container the /proc is mounted from the host, the cmake not able to detect CPU features correctly.
   sed -i 's/include (FindSSE)/if(CMAKE_SYSTEM_ARCH MATCHES "amd64")\ninclude (FindSSE)\nendif()/' ../CMakeLists.txt && \
-  cmake3.5 \
+  cmake \
     -G"Unix Makefiles" \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DCMAKE_SYSTEM_ARCH=$(arch) \
@@ -885,9 +881,7 @@ RUN \
   ./configure \
     --enable-pic \
     --enable-static \
-    --disable-cli \
-    --disable-lavf \
-    --disable-swscale && \
+    --disable-cli && \
   make -j$(nproc) install
 
 # bump: x265 /X265_VERSION=([\d.]+)/ https://bitbucket.org/multicoreware/x265_git.git|*
@@ -904,13 +898,8 @@ RUN \
   tar $TAR_OPTS x265_git.tar.bz2 && cd x265_*/build/linux && \
   sed -i '/^cmake / s/$/ -G "Unix Makefiles" ${CMAKEFLAGS}/' ./multilib.sh && \
   sed -i 's/ -DENABLE_SHARED=OFF//g' ./multilib.sh && \
-  # https://bitbucket.org/multicoreware/x265_git/commits/b354c009a60bcd6d7fc04014e200a1ee9c45c167
-  sed -i 's/cmake_policy(SET CMP0025 OLD)/cmake_policy(SET CMP0025 NEW)/g' ../../source/CMakeLists.txt && \
-  sed -i 's/cmake_policy(SET CMP0054 OLD)/cmake_policy(SET CMP0054 NEW)/g' ../../source/CMakeLists.txt && \
-  # https://bitbucket.org/multicoreware/x265_git/issues/1008/build-fails-with-cmake-4
-  sed -i 's/cmake/cmake3.5/g' ./multilib.sh && \
   MAKEFLAGS="-j$(nproc)" \
-  CMAKEFLAGS="-DENABLE_SHARED=OFF -DCMAKE_VERBOSE_MAKEFILE=ON -DENABLE_AGGRESSIVE_CHECKS=ON -DENABLE_NASM=ON -DCMAKE_BUILD_TYPE=Release" \
+  CMAKEFLAGS="-DENABLE_SHARED=OFF -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Release" \
   ./multilib.sh && \
   make -C 8bit -j$(nproc) install
 
@@ -927,7 +916,7 @@ RUN \
   echo "$XAVS2_SHA256  xavs2.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS xavs2.tar.gz && cd xavs2-*/build/linux && \
   # new gcc not happy with some of the code
-  CFLAGS="-Wno-incompatible-pointer-types -Wno-unused-function" \
+  CFLAGS="$CFLAGS -Wno-incompatible-pointer-types -Wno-unused-function" \
   ./configure \
     --disable-asm \
     --enable-pic \
