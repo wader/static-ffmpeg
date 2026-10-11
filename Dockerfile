@@ -322,9 +322,9 @@ RUN \
 # bump: fdk-aac after ./hashupdate Dockerfile FDK_AAC $LATEST
 # bump: fdk-aac link "ChangeLog" https://github.com/mstorsjo/fdk-aac/blob/master/ChangeLog
 # bump: fdk-aac link "Source diff $CURRENT..$LATEST" https://github.com/mstorsjo/fdk-aac/compare/v$CURRENT..v$LATEST
-ARG FDK_AAC_VERSION=2.0.3
+ARG FDK_AAC_VERSION=3.0.0
 ARG FDK_AAC_URL="https://github.com/mstorsjo/fdk-aac/archive/v$FDK_AAC_VERSION.tar.gz"
-ARG FDK_AAC_SHA256=e25671cd96b10bad896aa42ab91a695a9e573395262baed4e4a2ff178d6a3a78
+ARG FDK_AAC_SHA256=8538ea8f0f9915e460c106a13e1866a9e13c7ee48c1b67d0b2cf7b4e8159bd1a
 RUN \
   wget $WGET_OPTS -O fdk-aac.tar.gz "$FDK_AAC_URL" && \
   echo "$FDK_AAC_SHA256  fdk-aac.tar.gz" | sha256sum -c - && \
