@@ -49,8 +49,7 @@ RUN apk add --no-cache $APK_OPTS \
   xz-dev xz-static \
   python3 py3-packaging \
   linux-headers \
-  curl \
-  libdrm-dev
+  curl
 
 # linux-headers need by rtmpdump
 # python3 py3-packaging needed by glib
@@ -1053,53 +1052,6 @@ RUN \
     --enable-static && \
   make -j$(nproc) install
 
-# requires libdrm
-# bump: libva /LIBVA_VERSION=([\d.]+)/ https://github.com/intel/libva.git|^2
-# bump: libva after ./hashupdate Dockerfile LIBVA $LATEST
-# bump: libva link "Changelog" https://github.com/intel/libva/blob/master/NEWS
-ARG LIBVA_VERSION=2.24.1
-ARG LIBVA_URL="https://github.com/intel/libva/archive/refs/tags/${LIBVA_VERSION}.tar.gz"
-ARG LIBVA_SHA256=0b4a3649ee8d683b9cce2ef094df4fb039d276c0cef7e49337c43d3b297b9f42
-RUN \
-  wget $WGET_OPTS -O libva.tar.gz "$LIBVA_URL" && \
-  echo "$LIBVA_SHA256  libva.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS libva.tar.gz && cd libva-* && \
-  meson setup build \
-    -Dbuildtype=release \
-    -Ddefault_library=static \
-    -Ddisable_drm=false \
-    -Dwith_x11=no \
-    -Dwith_glx=no \
-    -Dwith_wayland=no \
-    -Dwith_win32=no \
-    -Dwith_legacy=[] \
-    -Denable_docs=false && \
-  ninja -j$(nproc) -vC build install
-
-# bump: libvpl /LIBVPL_VERSION=([\d.]+)/ https://github.com/intel/libvpl.git|^2
-# bump: libvpl after ./hashupdate Dockerfile LIBVPL $LATEST
-# bump: libvpl link "Changelog" https://github.com/intel/libvpl/blob/main/CHANGELOG.md
-ARG LIBVPL_VERSION=2.17.0
-ARG LIBVPL_URL="https://github.com/intel/libvpl/archive/refs/tags/v${LIBVPL_VERSION}.tar.gz"
-ARG LIBVPL_SHA256=4de3e2faf1e8307fb282e4a43f443191810f6a6b0a484fffa7995ba1c814c6ec
-RUN \
-  wget $WGET_OPTS -O libvpl.tar.gz "$LIBVPL_URL" && \
-  echo "$LIBVPL_SHA256  libvpl.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS libvpl.tar.gz && cd libvpl-* && \
-  cmake -B build \
-    -G"Unix Makefiles" \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_VERBOSE_MAKEFILE=ON \
-    -DCMAKE_INSTALL_LIBDIR=lib \
-    -DCMAKE_INSTALL_PREFIX=/usr/local \
-    -DBUILD_SHARED_LIBS=OFF \
-    -DBUILD_TESTS=OFF \
-    -DENABLE_WARNING_AS_ERROR=ON && \
-  cmake --build build -j$(nproc) && \
-  cmake --install build
-# not sure why this is needed, used to work
-RUN sed -i 's/-lvpl /-lvpl -lstdc++ /' /usr/local/lib/pkgconfig/vpl.pc
-
 # bump: vvenc /VVENC_VERSION=([\d.]+)/ https://github.com/fraunhoferhhi/vvenc.git|*
 # bump: vvenc after ./hashupdate Dockerfile VVENC $LATEST
 # bump: vvenc link "CHANGELOG" https://github.com/fraunhoferhhi/vvenc/releases/tag/v$LATEST
@@ -1194,7 +1146,6 @@ RUN \
   --enable-libvmaf \
   --enable-libvo-amrwbenc \
   --enable-libvorbis \
-  --enable-libvpl \
   --enable-libvpx \
   --enable-libvvenc \
   --enable-libwebp \
@@ -1267,12 +1218,10 @@ RUN \
   libtheora: env.THEORA_VERSION, \
   libtwolame: env.TWOLAME_VERSION, \
   libuavs3d: env.UAVS3D_COMMIT, \
-  libva: env.LIBVA_VERSION, \
   libvidstab: env.VIDSTAB_VERSION, \
   libvmaf: env.VMAF_VERSION, \
   libvo_amrwbenc: env.LIBVO_AMRWBENC_VERSION, \
   libvorbis: env.VORBIS_VERSION, \
-  libvpl: env.LIBVPL_VERSION, \
   libvpx: env.VPX_VERSION, \
   libvvenc: env.VVENC_VERSION, \
   libwebp: env.LIBWEBP_VERSION, \

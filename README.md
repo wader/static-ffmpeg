@@ -73,12 +73,10 @@ alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --ent
 - [libtheora](https://github.com/xiph/theora)
 - [libtwolame](https://github.com/njh/twolame)
 - [libuavs3d](https://github.com/uavs3/uavs3d)
-- [libva](https://github.com/intel/libva)
 - [libvidstab](https://github.com/georgmartius/vid.stab)
 - [libvmaf](https://github.com/Netflix/vmaf)
 - [libvo-amrwbenc](https://github.com/mstorsjo/vo-amrwbenc)
 - [libvorbis](https://github.com/xiph/vorbis)
-- [libvpl](https://github.com/intel/libvpl)
 - [libvpx](https://github.com/webmproject/libvpx)
 - [libvvenc](https://github.com/fraunhoferhhi/vvenc)
 - [libwebp](https://chromium.googlesource.com/webm/libwebp)
@@ -272,6 +270,16 @@ See these references for further discussion and workarounds:
 ](https://github.com/openssl/openssl/discussions/23016)
 - [OpenSSL issue with binary outside container (RedHat/Fedora specific)](https://github.com/wader/static-ffmpeg/issues/462)
 
+#### Hardware acceleration (VAAPI, QSV, Vulkan and similar) is not supported
+
+The binaries are fully static: even the C library is linked in, and they have no dependencies on the system. That is more than what other builds mean by static. There the ffmpeg libraries are linked into the executable, but the C library and the loader still come from the system, so such a build can load drivers.
+
+Hardware acceleration needs a driver that belongs to the system and is loaded when ffmpeg runs. A fully static binary cannot load anything, so the two do not go together. This does not depend on the GPU or its vendor.
+
+ffmpeg still runs on such hardware, it encodes and decodes in software. If you need hardware acceleration, use a dynamically linked ffmpeg, for example the one of your distribution.
+
+See [#833](https://github.com/wader/static-ffmpeg/pull/833) for the details.
+
 ### Thanks
 
 - [@pyldin601](https://github.com/pyldin601) for working on multi arch builds
@@ -288,7 +296,6 @@ usage and potential distribution of such.
 ### TODOs and possible things to add
 
 - Add libopenapv
-- Add libplacebo, chromaprint, etc. ...
-- Add acceleration support (GPU, CUDA, ...)
+- Add chromaprint, etc. ...
 - Add *.a *.so libraries, headers and pkg-config somehow
 
