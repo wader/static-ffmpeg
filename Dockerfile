@@ -1052,9 +1052,6 @@ RUN \
     --enable-static && \
   make -j$(nproc) install
 
-# libva and libvpl are not built: libva 2.24.1 only builds shared libraries, so the static link drops vaapi,
-# qsv has no device without vaapi, and a static musl binary cannot dlopen the drivers either way
-
 # bump: vvenc /VVENC_VERSION=([\d.]+)/ https://github.com/fraunhoferhhi/vvenc.git|*
 # bump: vvenc after ./hashupdate Dockerfile VVENC $LATEST
 # bump: vvenc link "CHANGELOG" https://github.com/fraunhoferhhi/vvenc/releases/tag/v$LATEST
