@@ -884,18 +884,18 @@ RUN \
     --disable-cli && \
   make -j$(nproc) install
 
-# bump: x265 /X265_VERSION=([\d.]+)/ https://bitbucket.org/multicoreware/x265_git.git|*
+# bump: x265 /X265_VERSION=([\d.]+)/ https://github.com/Multicorewareinc/x265.git|*
 # bump: x265 after ./hashupdate Dockerfile X265 $LATEST
-# bump: x265 link "Source diff $CURRENT..$LATEST" https://bitbucket.org/multicoreware/x265_git/branches/compare/$LATEST..$CURRENT#diff
-ARG X265_VERSION=4.2
-ARG X265_SHA256=40b1ea0453e0309f0eba934e0ddf533f8f6295966679e8894e8f1c1c8d5e1210
-ARG X265_URL="https://bitbucket.org/multicoreware/x265_git/downloads/x265_$X265_VERSION.tar.gz"
+# bump: x265 link "Source diff $CURRENT..$LATEST" https://github.com/Multicorewareinc/x265/compare/$CURRENT..$LATEST
+ARG X265_VERSION=4.3
+ARG X265_SHA256=83c53e4c8bbb8f1e33ed59e10a7d621d1d7801ca853910c3eb41f038b8ffb121
+ARG X265_URL="https://github.com/Multicorewareinc/x265/releases/download/$X265_VERSION/x265_$X265_VERSION.tar.gz"
 # CMAKEFLAGS issue
 # https://bitbucket.org/multicoreware/x265_git/issues/620/support-passing-cmake-flags-to-multilibsh
 RUN \
-  wget $WGET_OPTS -O x265_git.tar.bz2 "$X265_URL" && \
-  echo "$X265_SHA256  x265_git.tar.bz2" | sha256sum -c - && \
-  tar $TAR_OPTS x265_git.tar.bz2 && cd x265_*/build/linux && \
+  wget $WGET_OPTS -O x265.tar.gz "$X265_URL" && \
+  echo "$X265_SHA256  x265.tar.gz" | sha256sum -c - && \
+  tar $TAR_OPTS x265.tar.gz && cd x265_*/build/linux && \
   sed -i '/^cmake / s/$/ -G "Unix Makefiles" ${CMAKEFLAGS}/' ./multilib.sh && \
   sed -i 's/ -DENABLE_SHARED=OFF//g' ./multilib.sh && \
   MAKEFLAGS="-j$(nproc)" \
