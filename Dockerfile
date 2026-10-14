@@ -568,13 +568,13 @@ RUN \
   git checkout --recurse-submodules $LIBRTMP_COMMIT && \
   make SYS=posix SHARED=off XCFLAGS="$CFLAGS" OPT= -j$(nproc) install
 
-# bump: rubberband /RUBBERBAND_VERSION=([\d.]+)/ https://github.com/breakfastquay/rubberband.git|^2
+# bump: rubberband /RUBBERBAND_VERSION=([\d.]+)/ https://github.com/breakfastquay/rubberband.git|*
 # bump: rubberband after ./hashupdate Dockerfile RUBBERBAND $LATEST
 # bump: rubberband link "CHANGELOG" https://github.com/breakfastquay/rubberband/blob/default/CHANGELOG
 # bump: rubberband link "Source diff $CURRENT..$LATEST" https://github.com/breakfastquay/rubberband/compare/$CURRENT..$LATEST
-ARG RUBBERBAND_VERSION=2.0.2
+ARG RUBBERBAND_VERSION=4.0.0
 ARG RUBBERBAND_URL="https://breakfastquay.com/files/releases/rubberband-$RUBBERBAND_VERSION.tar.bz2"
-ARG RUBBERBAND_SHA256=b9eac027e797789ae99611c9eaeaf1c3a44cc804f9c8a0441a0d1d26f3d6bdf9
+ARG RUBBERBAND_SHA256=af050313ee63bc18b35b2e064e5dce05b276aaf6d1aa2b8a82ced1fe2f8028e9
 RUN \
   wget $WGET_OPTS -O rubberband.tar.bz2 "$RUBBERBAND_URL" && \
   echo "$RUBBERBAND_SHA256  rubberband.tar.bz2" | sha256sum -c - && \
@@ -583,8 +583,7 @@ RUN \
     -Ddefault_library=static \
     -Dfft=fftw \
     -Dresampler=libsamplerate && \
-  ninja -j$(nproc) -vC build install && \
-  echo "Requires.private: fftw3 samplerate" >> /usr/local/lib/pkgconfig/rubberband.pc
+  ninja -j$(nproc) -vC build install
 
 # bump: libshine /LIBSHINE_VERSION=([\d.]+)/ https://github.com/toots/shine.git|*
 # bump: libshine after ./hashupdate Dockerfile LIBSHINE $LATEST
