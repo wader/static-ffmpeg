@@ -64,7 +64,7 @@ ARG CXXFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPI
 ARG LDFLAGS="-Wl,-z,relro,-z,now"
 
 # retry dns and some http codes that might be transient errors
-ARG WGET_OPTS="--tries=10 --timeout=10 --retry-connrefused --retry-on-host-error --retry-on-http-error=429,500,502,503,504"
+ARG WGET_OPTS="--tries=10 --connect-timeout=10 --retry-connrefused --retry-on-host-error --retry-on-http-error=429,500,502,503,504"
 
 # --no-same-owner as we don't care about uid/gid even if we run as root. fixes invalid gid/uid issue.
 ARG TAR_OPTS="--no-same-owner --extract --file"
