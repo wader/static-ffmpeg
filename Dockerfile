@@ -132,12 +132,12 @@ RUN \
 # bump: cairo after ./hashupdate Dockerfile CAIRO $LATEST
 # bump: cairo link "NEWS" https://gitlab.freedesktop.org/cairo/cairo/-/blob/master/NEWS?ref_type=heads
 ARG CAIRO_VERSION=1.18.6
-ARG CAIRO_URL="https://cairographics.org/releases/cairo-$CAIRO_VERSION.tar.xz"
-ARG CAIRO_SHA256=1c767308174337a74694da0f3ec069c271452163a1ef4540964c50c301f157d4
+ARG CAIRO_URL="https://gitlab.freedesktop.org/cairo/cairo/-/archive/$CAIRO_VERSION/cairo-$CAIRO_VERSION.tar.gz"
+ARG CAIRO_SHA256=a95ae4f522ef24312af7339563f65e0a03b1ad3d58a46df73d2ef690fe15ae7f
 RUN \
-  wget $WGET_OPTS -O cairo.tar.xz "$CAIRO_URL" && \
-  echo "$CAIRO_SHA256  cairo.tar.xz" | sha256sum -c - && \
-  tar $TAR_OPTS cairo.tar.xz && cd cairo-* && \
+  wget $WGET_OPTS -O cairo.tar.gz "$CAIRO_URL" && \
+  echo "$CAIRO_SHA256  cairo.tar.gz" | sha256sum -c - && \
+  tar $TAR_OPTS cairo.tar.gz && cd cairo-* && \
   meson setup build \
     -Dbuildtype=release \
     -Ddefault_library=static \
