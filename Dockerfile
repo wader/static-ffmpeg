@@ -64,7 +64,7 @@ ARG CXXFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPI
 ARG LDFLAGS="-Wl,-z,relro,-z,now"
 
 # retry dns and some http codes that might be transient errors
-ARG WGET_OPTS="--retry-on-host-error --retry-on-http-error=429,500,502,503"
+ARG WGET_OPTS="--tries=10 --connect-timeout=10 --retry-connrefused --retry-on-host-error --retry-on-http-error=429,500,502,503,504"
 
 # --no-same-owner as we don't care about uid/gid even if we run as root. fixes invalid gid/uid issue.
 ARG TAR_OPTS="--no-same-owner --extract --file"
@@ -102,7 +102,7 @@ ARG GLIB_URL="https://download.gnome.org/sources/glib/2.90/glib-$GLIB_VERSION.ta
 ARG GLIB_SHA256=93c941aa17d5eb1d53fe838365f29a8b4e539c222a256d974ec8f30fc413e396
 RUN \
   wget $WGET_OPTS -O glib.tar.xz "$GLIB_URL" && \
-  echo "$GLIB_SHA256  glib.tar.xz" | sha256sum --status -c - && \
+  echo "$GLIB_SHA256  glib.tar.xz" | sha256sum -c - && \
   tar $TAR_OPTS glib.tar.xz && cd glib-* && \
   meson setup build \
     -Dbuildtype=release \
@@ -121,7 +121,7 @@ ARG LIBHARFBUZZ_URL="https://github.com/harfbuzz/harfbuzz/releases/download/$LIB
 ARG LIBHARFBUZZ_SHA256=d07a007327277708a2a73ae437887cdbaf282937f6d03ca5467723e9099af586
 RUN \
   wget $WGET_OPTS -O harfbuzz.tar.xz "$LIBHARFBUZZ_URL" && \
-  echo "$LIBHARFBUZZ_SHA256  harfbuzz.tar.xz" | sha256sum --status -c - && \
+  echo "$LIBHARFBUZZ_SHA256  harfbuzz.tar.xz" | sha256sum -c - && \
   tar $TAR_OPTS harfbuzz.tar.xz && cd harfbuzz-* && \
   meson setup build \
     -Dbuildtype=release \
@@ -132,12 +132,12 @@ RUN \
 # bump: cairo after ./hashupdate Dockerfile CAIRO $LATEST
 # bump: cairo link "NEWS" https://gitlab.freedesktop.org/cairo/cairo/-/blob/master/NEWS?ref_type=heads
 ARG CAIRO_VERSION=1.18.6
-ARG CAIRO_URL="https://cairographics.org/releases/cairo-$CAIRO_VERSION.tar.xz"
-ARG CAIRO_SHA256=1c767308174337a74694da0f3ec069c271452163a1ef4540964c50c301f157d4
+ARG CAIRO_URL="https://gitlab.freedesktop.org/cairo/cairo/-/archive/$CAIRO_VERSION/cairo-$CAIRO_VERSION.tar.gz"
+ARG CAIRO_SHA256=a95ae4f522ef24312af7339563f65e0a03b1ad3d58a46df73d2ef690fe15ae7f
 RUN \
-  wget $WGET_OPTS -O cairo.tar.xz "$CAIRO_URL" && \
-  echo "$CAIRO_SHA256  cairo.tar.xz" | sha256sum --status -c - && \
-  tar $TAR_OPTS cairo.tar.xz && cd cairo-* && \
+  wget $WGET_OPTS -O cairo.tar.gz "$CAIRO_URL" && \
+  echo "$CAIRO_SHA256  cairo.tar.gz" | sha256sum -c - && \
+  tar $TAR_OPTS cairo.tar.gz && cd cairo-* && \
   meson setup build \
     -Dbuildtype=release \
     -Ddefault_library=static \
@@ -159,7 +159,7 @@ ARG PANGO_SHA256=342385b6ca3b7c73455d7c80a13b7dbe4489e00bc3bd4c5bd6ed4dce421e374
 # TODO: -Ddefault_library=both currently to not fail building tests
 RUN \
   wget $WGET_OPTS -O pango.tar.xz "$PANGO_URL" && \
-  echo "$PANGO_SHA256  pango.tar.xz" | sha256sum --status -c - && \
+  echo "$PANGO_SHA256  pango.tar.xz" | sha256sum -c - && \
   tar $TAR_OPTS pango.tar.xz && cd pango-* && \
   meson setup build \
     -Dbuildtype=release \
@@ -176,7 +176,7 @@ ARG LIBRSVG_URL="https://download.gnome.org/sources/librsvg/2.63/librsvg-$LIBRSV
 ARG LIBRSVG_SHA256=852b18e1a00b8605528825a27dc7748bff2a5dd254028f59dc22a34ea57e81b6
 RUN \
   wget $WGET_OPTS -O librsvg.tar.xz "$LIBRSVG_URL" && \
-  echo "$LIBRSVG_SHA256  librsvg.tar.xz" | sha256sum --status -c - && \
+  echo "$LIBRSVG_SHA256  librsvg.tar.xz" | sha256sum -c - && \
   tar $TAR_OPTS librsvg.tar.xz && cd librsvg-* && \
   # workaround for https://gitlab.gnome.org/GNOME/librsvg/-/issues/1158
   sed -i "/^if host_system in \['windows'/s/, 'linux'//" meson.build && \
@@ -324,7 +324,9 @@ RUN \
 ARG FDK_AAC_VERSION=3.0.0
 ARG FDK_AAC_URL="https://github.com/mstorsjo/fdk-aac/archive/v$FDK_AAC_VERSION.tar.gz"
 ARG FDK_AAC_SHA256=8538ea8f0f9915e460c106a13e1866a9e13c7ee48c1b67d0b2cf7b4e8159bd1a
+ARG ENABLE_FDKAAC=
 RUN \
+  if [[ -n "$ENABLE_FDKAAC" ]]; then \
   wget $WGET_OPTS -O fdk-aac.tar.gz "$FDK_AAC_URL" && \
   echo "$FDK_AAC_SHA256  fdk-aac.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS fdk-aac.tar.gz && cd fdk-aac-* && \
@@ -332,7 +334,8 @@ RUN \
   ./configure \
     --disable-shared \
     --enable-static && \
-  make -j$(nproc) install
+  make -j$(nproc) install; \
+  fi
 
 # bump: libgme /LIBGME_COMMIT=([[:xdigit:]]+)/ gitrefs:https://github.com/libgme/game-music-emu.git|re:#^refs/heads/master$#|@commit
 # bump: libgme after ./hashupdate Dockerfile LIBGME $LATEST
@@ -394,7 +397,7 @@ ARG LIBMODPLUG_URL="https://downloads.sourceforge.net/modplug-xmms/libmodplug-$L
 ARG LIBMODPLUG_SHA256=457ca5a6c179656d66c01505c0d95fafaead4329b9dbaa0f997d00a3508ad9de
 RUN \
   wget $WGET_OPTS -O libmodplug.tar.gz "$LIBMODPLUG_URL" && \
-  echo "$LIBMODPLUG_SHA256  libmodplug.tar.gz" | sha256sum -c && \
+  echo "$LIBMODPLUG_SHA256  libmodplug.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS libmodplug.tar.gz && cd libmodplug-* && \
   ./configure \
     --disable-shared \
@@ -553,7 +556,7 @@ RUN \
   RUSTFLAGS="-C target-feature=+crt-static" \
   CARGO_PROFILE_RELEASE_LTO=false \
   CARGO_PROFILE_RELEASE_DEBUG=false \
-  cargo cinstall --release \
+  cargo cinstall --release --locked \
     --library-type staticlib \
     --no-default-features \
     --features asm,threading,git_version,capi
@@ -596,7 +599,7 @@ RUN \
   wget $WGET_OPTS -O libshine.tar.gz "$LIBSHINE_URL" && \
   # https://github.com/toots/shine/commit/098b9aaa6770a41bdf3f9c049307c1398f04d2d3
   echo "$LIBSHINE_SHA256  libshine.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS libshine.tar.gz && cd shine* && \
+  tar $TAR_OPTS libshine.tar.gz && cd shine-* && \
   sed -i 's/shine_mdct_initialise()/shine_mdct_initialise(shine_global_config *config)/' src/lib/l3mdct.h && \
   sed -i '/^CFLAGS = /s/ -O2//' Makefile.in && \
   ./configure \
@@ -661,7 +664,7 @@ ARG LIBSSH_SHA256=92fef8a348070a6786667ed724d5e808d2530464bac37559a8d59c70ab1f1a
 RUN \
   wget $WGET_OPTS -O libssh.tar.gz "$LIBSSH_URL" && \
   echo "$LIBSSH_SHA256  libssh.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS libssh.tar.gz && cd libssh* && \
+  tar $TAR_OPTS libssh.tar.gz && cd libssh-* && \
   mkdir build && cd build && \
   echo -e 'Requires.private: libssl libcrypto zlib \nLibs.private: -DLIBSSH_STATIC=1 -lssh\nCflags.private: -DLIBSSH_STATIC=1 -I${CMAKE_INSTALL_FULL_INCLUDEDIR}' >> ../libssh.pc.cmake && \
   cmake \
@@ -729,12 +732,12 @@ RUN \
 # bump: theora link "Release notes" https://github.com/xiph/theora/releases/tag/v$LATEST
 # bump: theora link "Source diff $CURRENT..$LATEST" https://github.com/xiph/theora/compare/v$CURRENT..v$LATEST
 ARG THEORA_VERSION=1.2.0
-ARG THEORA_URL="http://downloads.xiph.org/releases/theora/libtheora-$THEORA_VERSION.tar.gz"
+ARG THEORA_URL="https://downloads.xiph.org/releases/theora/libtheora-$THEORA_VERSION.tar.gz"
 ARG THEORA_SHA256=279327339903b544c28a92aeada7d0dcfd0397b59c2f368cc698ac56f515906e
 RUN \
-  wget $WGET_OPTS -O libtheora.tar.bz2 "$THEORA_URL" && \
-  echo "$THEORA_SHA256  libtheora.tar.bz2" | sha256sum -c - && \
-  tar $TAR_OPTS libtheora.tar.bz2 && cd libtheora-* && \
+  wget $WGET_OPTS -O libtheora.tar.gz "$THEORA_URL" && \
+  echo "$THEORA_SHA256  libtheora.tar.gz" | sha256sum -c - && \
+  tar $TAR_OPTS libtheora.tar.gz && cd libtheora-* && \
   # --build=$(arch)-unknown-linux-gnu helps with guessing the correct build. For some reason,
   # build script can't guess the build type in arm64 (hardware and emulated) environment.
  ./configure \
@@ -1059,7 +1062,7 @@ ARG VVENC_URL="https://github.com/fraunhoferhhi/vvenc/archive/refs/tags/v$VVENC_
 ARG VVENC_SHA256=dd43d061d59dbc0d9b9ae5b99cb40672877dd811646228938f065798939ee174
 RUN \
   wget $WGET_OPTS -O vvenc.tar.gz "$VVENC_URL" && \
-  echo "$VVENC_SHA256  vvenc.tar.gz" | sha256sum --status -c - && \
+  echo "$VVENC_SHA256  vvenc.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS vvenc.tar.gz && cd vvenc-* && \
   sed -i 's/-Werror;//' source/Lib/vvenc/CMakeLists.txt && \
   cmake \
@@ -1078,7 +1081,6 @@ RUN \
 ARG FFMPEG_VERSION=9.0.2
 ARG FFMPEG_URL="https://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.bz2"
 ARG FFMPEG_SHA256=ee80a25a5621df84498cef46917be87eab3b4f01951e85c2c7cbe5c94914ee70
-ARG ENABLE_FDKAAC=
 # sed changes --toolchain=hardened -pie to -static-pie
 #
 # ldflags stack-size=2097152 is to increase default stack size from 128KB (musl default) to something
@@ -1087,7 +1089,7 @@ ARG ENABLE_FDKAAC=
 RUN \
   wget $WGET_OPTS -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
   echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum -c - && \
-  tar $TAR_OPTS ffmpeg.tar.bz2 && cd ffmpeg* && \
+  tar $TAR_OPTS ffmpeg.tar.bz2 && cd ffmpeg-* && \
   FDKAAC_FLAGS=$(if [[ -n "$ENABLE_FDKAAC" ]] ;then echo " --enable-libfdk-aac --enable-nonfree " ;else echo ""; fi) && \
   sed -i 's/add_ldexeflags -fPIE -pie/add_ldexeflags -fPIE -static-pie/' configure && \
   ./configure \
@@ -1234,7 +1236,8 @@ RUN \
   libzimg: env.ZIMG_VERSION, \
   libzmq: env.LIBZMQ_VERSION, \
   openssl: env.OPENSSL_VERSION, \
-  }' > /versions.json
+  } \
+  | if env.ENABLE_FDKAAC == "" then del(."libfdk-aac") end' > /versions.json
 
 # make sure binaries has no dependencies, is relro, pie and stack nx
 RUN \
