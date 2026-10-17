@@ -2,7 +2,10 @@
 set -euo pipefail
 
 # Usage: hashupdate <FILE> <NAME> <VERSION>
+# Note: URL can use Dockerfile/POSIX parameter expansion of ${NAME}_VERSION,
+# for example "https://download.gnome.org/sources/glib/${GLIB_VERSION%.*}/glib-$GLIB_VERSION.tar.xz"
 URL_TEMPLATE=$(grep "$2_URL=" "$1" | sed -E 's/.*="(.*)"/\1/')
-URL=$(echo "$URL_TEMPLATE" | sed "s/\$$2_VERSION/$3/g")
+export "$2_VERSION=$3"
+URL=$(eval "printf '%s' \"$URL_TEMPLATE\"")
 SHA256=$(curl -sL "$URL" | sha256sum | sed -e 's/  -//g')
 sed -i -E "s/$2_SHA256=.*/$2_SHA256=$SHA256/" "$1"
