@@ -30,17 +30,11 @@ RUN apk add --no-cache $APK_OPTS \
   expat-dev expat-static \
   fontconfig-dev fontconfig-static \
   freetype freetype-dev freetype-static \
-  graphite2-static \
-  tiff tiff-dev \
-  libjpeg-turbo libjpeg-turbo-dev \
   libpng-dev libpng-static \
-  giflib giflib-dev \
   fribidi-dev fribidi-static \
   brotli-dev brotli-static \
   soxr-dev soxr-static \
-  tcl \
   numactl-dev \
-  cunit cunit-dev \
   fftw-dev fftw-static \
   libsamplerate-dev libsamplerate-static \
   vo-amrwbenc-dev vo-amrwbenc-static \
@@ -87,6 +81,7 @@ RUN \
     -Dbuilt_in_models=true \
     -Denable_tests=false \
     -Denable_docs=false \
+    -Denable_tools=false \
     -Denable_avx512=true \
     -Denable_float=true && \
   ninja -j$(nproc) -vC build install
@@ -107,9 +102,13 @@ RUN \
   meson setup build \
     -Dbuildtype=release \
     -Ddefault_library=static \
+    -Dtests=false \
+    -Dsysprof=disabled \
     -Dglib_debug=disabled \
     -Dlibmount=disabled && \
-  ninja -j$(nproc) -vC build install
+  # only the targets with the install tags devel and bin-devel: libraries, headers, .pc files and build tools
+  ninja -j$(nproc) -vC build $(jq -r --arg b "$PWD/build/" '.targets | to_entries[] | select(.value.tag == "devel" or .value.tag == "bin-devel") | .key | ltrimstr($b)' build/meson-info/intro-install_plan.json) && \
+  meson install -C build --no-rebuild --tags devel,bin-devel
 # exported symbols keep rust thread locals as unresolved relocations that a static pie never applies
 RUN sed -i 's/-Wl,--export-dynamic//' /usr/local/lib/pkgconfig/gmodule-2.0.pc /usr/local/lib/pkgconfig/gmodule-export-2.0.pc
 
@@ -125,7 +124,14 @@ RUN \
   tar $TAR_OPTS harfbuzz.tar.xz && cd harfbuzz-* && \
   meson setup build \
     -Dbuildtype=release \
-    -Ddefault_library=static && \
+    -Ddefault_library=static \
+    -Dgobject=disabled \
+    -Dsubset=disabled \
+    -Draster=disabled \
+    -Dvector=disabled \
+    -Dgpu=disabled \
+    -Dtests=disabled \
+    -Dutilities=disabled && \
   ninja -j$(nproc) -vC build install
 
 # bump: cairo /CAIRO_VERSION=([\d.]+)/ https://gitlab.freedesktop.org/cairo/cairo.git|^1
@@ -142,11 +148,13 @@ RUN \
     -Dbuildtype=release \
     -Ddefault_library=static \
     -Dtests=disabled \
+    -Dtee=disabled \
     -Dquartz=disabled \
     -Dxcb=disabled \
     -Dxlib=disabled \
     -Dxlib-xcb=disabled && \
-  ninja -j$(nproc) -vC build install
+  ninja -j$(nproc) -vC build $(jq -r --arg b "$PWD/build/" '.targets | to_entries[] | select(.value.tag == "devel" or .value.tag == "bin-devel") | .key | ltrimstr($b)' build/meson-info/intro-install_plan.json) && \
+  meson install -C build --no-rebuild --tags devel,bin-devel
 
 # TODO: there is weird "1.90" tag, skip it
 # bump: pango /PANGO_VERSION=([\d.]+)/ https://github.com/GNOME/pango.git|/\d+\.\d+\.\d+/|*
@@ -155,18 +163,19 @@ RUN \
 ARG PANGO_VERSION=1.58.2
 ARG PANGO_URL="https://download.gnome.org/sources/pango/${PANGO_VERSION%.*}/pango-$PANGO_VERSION.tar.xz"
 ARG PANGO_SHA256=342385b6ca3b7c73455d7c80a13b7dbe4489e00bc3bd4c5bd6ed4dce421e374a
-# TODO: add -Dbuild-testsuite=false when in stable release
-# TODO: -Ddefault_library=both currently to not fail building tests
 RUN \
   wget $WGET_OPTS -O pango.tar.xz "$PANGO_URL" && \
   echo "$PANGO_SHA256  pango.tar.xz" | sha256sum -c - && \
   tar $TAR_OPTS pango.tar.xz && cd pango-* && \
   meson setup build \
     -Dbuildtype=release \
-    -Ddefault_library=both \
+    -Ddefault_library=static \
     -Dintrospection=disabled \
+    -Dbuild-testsuite=false \
+    -Dbuild-examples=false \
     -Dgtk_doc=false && \
-  ninja -j$(nproc) -vC build install
+  ninja -j$(nproc) -vC build $(jq -r --arg b "$PWD/build/" '.targets | to_entries[] | select(.value.tag == "devel" or .value.tag == "bin-devel") | .key | ltrimstr($b)' build/meson-info/intro-install_plan.json) && \
+  meson install -C build --no-rebuild --tags devel,bin-devel
 
 # bump: librsvg /LIBRSVG_VERSION=([\d.]+)/ https://gitlab.gnome.org/GNOME/librsvg.git|^2
 # bump: librsvg after ./hashupdate Dockerfile LIBRSVG $LATEST
@@ -218,8 +227,10 @@ RUN \
     -DCONFIG_LIBYUV=0 \
     -DENABLE_NASM=ON \
     -DCMAKE_INSTALL_LIBDIR=lib \
+    -DCMAKE_SKIP_INSTALL_ALL_DEPENDENCY=ON \
     .. && \
-  make -j$(nproc) install
+  make -j$(nproc) aom aom_pc && \
+  make install
 
 # bump: libaribb24 /LIBARIBB24_VERSION=([\d.]+)/ https://github.com/nkoriyama/aribb24.git|*
 # bump: libaribb24 after ./hashupdate Dockerfile LIBARIBB24 $LATEST
@@ -280,7 +291,9 @@ RUN \
   tar $TAR_OPTS libbluray.tar.xz && cd libbluray-* && \
   meson setup build \
     -Dbuildtype=release \
-    -Ddefault_library=static && \
+    -Ddefault_library=static \
+    -Denable_tools=false \
+    -Dfreetype=disabled && \
   ninja -j$(nproc) -vC build install
 
 # bump: dav1d /DAV1D_VERSION=([\d.]+)/ fetch:https://download.videolan.org/pub/videolan/dav1d/last/|/dav1d-([\d.]+)\.tar\.xz/
@@ -295,7 +308,9 @@ RUN \
   tar $TAR_OPTS dav1d.tar.xz && cd dav1d-* && \
   meson setup build \
     -Dbuildtype=release \
-    -Ddefault_library=static && \
+    -Ddefault_library=static \
+    -Denable_tools=false \
+    -Denable_tests=false && \
   ninja -j$(nproc) -vC build install
 
 # bump: davs2 /DAVS2_VERSION=([\d.]+)/ https://github.com/pkuvcl/davs2.git|^1
@@ -387,7 +402,7 @@ RUN \
   ./configure \
     --disable-shared \
     --enable-static && \
-  make -j$(nproc) install
+  make -j$(nproc) bin_PROGRAMS= install
 
 # bump: libmodplug /LIBMODPLUG_VERSION=([\d.]+)/ fetch:https://sourceforge.net/projects/modplug-xmms/files/|/libmodplug-([\d.]+).tar.gz/
 # bump: libmodplug after ./hashupdate Dockerfile LIBMODPLUG $LATEST
@@ -414,6 +429,8 @@ RUN \
   wget $WGET_OPTS -O lame.tar.gz "$MP3LAME_URL" && \
   echo "$MP3LAME_SHA256  lame.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS lame.tar.gz && cd lame-* && \
+  # configure never sets NDEBUG, the encoder is full of asserts
+  CFLAGS="$CFLAGS -DNDEBUG" \
   ./configure \
     --disable-shared \
     --enable-static \
@@ -422,7 +439,8 @@ RUN \
     --disable-cpml \
     --disable-decoder \
     --disable-frontend && \
-  make -j$(nproc) install
+  make -j$(nproc) -C libmp3lame install && \
+  make -C include install
 
 # bump: lcms2 /LCMS2_VERSION=([\d.]+)/ https://github.com/mm2/Little-CMS.git|^2
 # bump: lcms2 after ./hashupdate Dockerfile LCMS2 $LATEST
@@ -437,8 +455,10 @@ RUN \
   ./autogen.sh && \
   ./configure \
     --enable-static \
+    --without-jpeg \
+    --without-tiff \
     --disable-shared && \
-  make -j$(nproc) install
+  make -j$(nproc) SUBDIRS="src include" install
 
 # bump: libmysofa /LIBMYSOFA_VERSION=([\d.]+)/ https://github.com/hoene/libmysofa.git|^1
 # bump: libmysofa after ./hashupdate Dockerfile LIBMYSOFA $LATEST
@@ -537,6 +557,7 @@ RUN \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_TESTING=OFF \
+    -DENABLE_SSL_SUPPORT=OFF \
     -DBUILD_TOOLS=OFF \
     -DBUILD_TOOLS_DOCS=OFF \
     -DRUN_SYSTEM_TESTS=OFF \
@@ -569,7 +590,7 @@ ARG LIBRTMP_COMMIT=138fdb258d9fc26f1843fd1b891180416c9dc575
 RUN \
   git clone "$LIBRTMP_URL" && cd rtmpdump && \
   git checkout --recurse-submodules $LIBRTMP_COMMIT && \
-  make SYS=posix SHARED=off XCFLAGS="$CFLAGS" OPT= -j$(nproc) install
+  make -C librtmp SYS=posix SHARED=off XCFLAGS="$CFLAGS" OPT= -j$(nproc) install
 
 # bump: rubberband /RUBBERBAND_VERSION=([\d.]+)/ https://github.com/breakfastquay/rubberband.git|*
 # bump: rubberband after ./hashupdate Dockerfile RUBBERBAND $LATEST
@@ -607,7 +628,7 @@ RUN \
     --enable-static \
     --disable-shared \
     --disable-fast-install && \
-  make -j$(nproc) install
+  make -j$(nproc) bin_PROGRAMS= install
 
 # bump: speex /SPEEX_VERSION=([\d.]+)/ https://github.com/xiph/speex.git|*
 # bump: speex after ./hashupdate Dockerfile SPEEX $LATEST
@@ -678,7 +699,7 @@ RUN \
     -DWITH_SFTP=ON \
     -DWITH_SERVER=OFF \
     -DWITH_ZLIB=ON \
-    -DWITH_PCAP=ON \
+    -DWITH_PCAP=OFF \
     -DWITH_DEBUG_CRYPTO=OFF \
     -DWITH_DEBUG_PACKET=OFF \
     -DWITH_DEBUG_CALLTRACE=OFF \
@@ -705,6 +726,8 @@ RUN \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DBUILD_SHARED_LIBS=OFF \
+    -DBUILD_APPS=OFF \
+    -DSVT_AV1_LTO=OFF \
     -DENABLE_AVX512=ON \
     -DCMAKE_BUILD_TYPE=Release \
     .. && \
@@ -725,7 +748,7 @@ RUN \
   ./configure \
     --disable-shared \
     --enable-static && \
-  make -j$(nproc) install
+  make -j$(nproc) noinst_PROGRAMS= check_PROGRAMS= install
 
 # bump: theora /THEORA_VERSION=([\d.]+)/ https://github.com/xiph/theora.git|*
 # bump: theora after ./hashupdate Dockerfile THEORA $LATEST
@@ -763,7 +786,7 @@ RUN \
     --enable-static \
     --disable-sndfile \
     --with-pic && \
-  make -j$(nproc) install
+  make -j$(nproc) noinst_PROGRAMS= install
 
 # bump: uavs3d /UAVS3D_COMMIT=([[:xdigit:]]+)/ gitrefs:https://github.com/uavs3/uavs3d.git|re:#^refs/heads/master$#|@commit
 # bump: uavs3d after ./hashupdate Dockerfile UAVS3D $LATEST
@@ -780,8 +803,10 @@ RUN \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=OFF \
+    -DCMAKE_SKIP_INSTALL_ALL_DEPENDENCY=ON \
     ../.. && \
-  make -j$(nproc) install
+  make -j$(nproc) uavs3d && \
+  make install
 
 # bump: vid.stab /VIDSTAB_VERSION=([\d.]+)/ https://github.com/georgmartius/vid.stab.git|*
 # bump: vid.stab after ./hashupdate Dockerfile VIDSTAB $LATEST
@@ -823,7 +848,7 @@ RUN \
     --disable-shared \
     --enable-static \
     --disable-oggtest && \
-  make -j$(nproc) install
+  make -j$(nproc) noinst_PROGRAMS= install
 
 # bump: libvpx /VPX_VERSION=([\d.]+)/ https://github.com/webmproject/libvpx.git|*
 # bump: libvpx after ./hashupdate Dockerfile VPX $LATEST
@@ -841,6 +866,7 @@ RUN \
     --enable-vp9-highbitdepth \
     --disable-shared \
     --disable-unit-tests \
+    --disable-tools \
     --disable-examples && \
   make -j$(nproc) install
 
@@ -869,7 +895,8 @@ RUN \
     --disable-jpeg \
     --disable-tiff \
     --disable-gif && \
-  make -j$(nproc) install
+  make -j$(nproc) -C sharpyuv install && \
+  make -j$(nproc) -C src install
 
 # x264 only have a stable branch no tags and we checkout commit so no hash is needed
 # bump: x264 /X264_VERSION=([[:xdigit:]]+)/ gitrefs:https://code.videolan.org/videolan/x264.git|re:#^refs/heads/stable$#|@commit
@@ -901,7 +928,7 @@ RUN \
   sed -i '/^cmake / s/$/ -G "Unix Makefiles" ${CMAKEFLAGS}/' ./multilib.sh && \
   sed -i 's/ -DENABLE_SHARED=OFF//g' ./multilib.sh && \
   MAKEFLAGS="-j$(nproc)" \
-  CMAKEFLAGS="-DENABLE_SHARED=OFF -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Release" \
+  CMAKEFLAGS="-DENABLE_SHARED=OFF -DENABLE_CLI=OFF -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Release" \
   ./multilib.sh && \
   make -C 8bit -j$(nproc) install
 
@@ -938,7 +965,10 @@ RUN \
   tar $TAR_OPTS libxvid.tar.gz && cd xvidcore/build/generic && \
   # gnu18 to fix issue type own bool typedef
   CFLAGS="$CFLAGS -std=gnu18 -fstrength-reduce -ffast-math" ./configure && \
-  make -j$(nproc) && make install
+  # the install target needs the shared library, which nothing links
+  make -j$(nproc) libxvidcore.a && \
+  install -D -m644 ../../src/xvid.h /usr/local/include/xvid.h && \
+  install -D -m644 =build/libxvidcore.a /usr/local/lib/libxvidcore.a
 
 # bump: xeve /XEVE_VERSION=([\d.]+)/ https://github.com/mpeg5/xeve.git|*
 # bump: xeve after ./hashupdate Dockerfile XEVE $LATEST
@@ -960,7 +990,11 @@ RUN \
     -DARM="$(if [ $(uname -m) == aarch64 ]; then echo TRUE; else echo FALSE; fi)" \
     -DCMAKE_BUILD_TYPE=Release \
     .. && \
-  make -j$(nproc) install
+  # the install target needs the shared library and the app, which nothing links
+  make -j$(nproc) xeve && \
+  install -D -m644 src_main/libxeve.a /usr/local/lib/xeve/libxeve.a && \
+  install -D -m644 -t /usr/local/include/xeve ../inc/xeve.h xeve_exports.h && \
+  install -D -m644 xeve.pc /usr/local/lib/pkgconfig/xeve.pc
 
 # bump: xevd /XEVD_VERSION=([\d.]+)/ https://github.com/mpeg5/xevd.git|*
 # bump: xevd after ./hashupdate Dockerfile XEVD $LATEST
@@ -980,7 +1014,11 @@ RUN \
     -DARM="$(if [ $(uname -m) == aarch64 ]; then echo TRUE; else echo FALSE; fi)" \
     -DCMAKE_BUILD_TYPE=Release \
     .. && \
-  make -j$(nproc) install
+  # the install target needs the shared library and the app, which nothing links
+  make -j$(nproc) xevd && \
+  install -D -m644 src_main/libxevd.a /usr/local/lib/xevd/libxevd.a && \
+  install -D -m644 -t /usr/local/include/xevd ../inc/xevd.h xevd_exports.h && \
+  install -D -m644 xevd.pc /usr/local/lib/pkgconfig/xevd.pc
 
 # bump: zimg /ZIMG_VERSION=([\d.]+)/ https://github.com/sekrit-twc/zimg.git|*
 # bump: zimg after ./hashupdate Dockerfile ZIMG $LATEST
@@ -1026,6 +1064,8 @@ RUN \
     -DJPEGXL_ENABLE_SJPEG=OFF \
     -DJPEGXL_ENABLE_SKCMS=OFF \
     -DJPEGXL_ENABLE_VIEWERS=OFF \
+    -DJPEGXL_ENABLE_TOOLS=OFF \
+    -DJPEGXL_ENABLE_TRANSCODE_JPEG=OFF \
     -DJPEGXL_FORCE_SYSTEM_GTEST=ON \
     -DJPEGXL_FORCE_SYSTEM_BROTLI=ON \
     -DJPEGXL_FORCE_SYSTEM_HWY=OFF && \
@@ -1051,6 +1091,9 @@ RUN \
   grep -r -l sha1_init external/sha1* | xargs sed -i 's/sha1_init/zeromq_sha1_init/g' && \
   ./configure \
     --disable-shared \
+    --disable-perf \
+    --disable-curve-keygen \
+    --without-docs \
     --enable-static && \
   make -j$(nproc) install
 
@@ -1069,6 +1112,8 @@ RUN \
     -S . \
     -B build/release-static \
     -DVVENC_ENABLE_WERROR=OFF \
+    -DVVENC_LIBRARY_ONLY=ON \
+    -DVVENC_ENABLE_LINK_TIME_OPT=OFF \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr/local && \
   cmake --build build/release-static -j$(nproc) && \
