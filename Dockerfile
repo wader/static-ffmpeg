@@ -30,17 +30,11 @@ RUN apk add --no-cache $APK_OPTS \
   expat-dev expat-static \
   fontconfig-dev fontconfig-static \
   freetype freetype-dev freetype-static \
-  graphite2-static \
-  tiff tiff-dev \
-  libjpeg-turbo libjpeg-turbo-dev \
   libpng-dev libpng-static \
-  giflib giflib-dev \
   fribidi-dev fribidi-static \
   brotli-dev brotli-static \
   soxr-dev soxr-static \
-  tcl \
   numactl-dev \
-  cunit cunit-dev \
   fftw-dev fftw-static \
   libsamplerate-dev libsamplerate-static \
   vo-amrwbenc-dev vo-amrwbenc-static \
@@ -87,6 +81,7 @@ RUN \
     -Dbuilt_in_models=true \
     -Denable_tests=false \
     -Denable_docs=false \
+    -Denable_tools=false \
     -Denable_avx512=true \
     -Denable_float=true && \
   ninja -j$(nproc) -vC build install
@@ -107,9 +102,13 @@ RUN \
   meson setup build \
     -Dbuildtype=release \
     -Ddefault_library=static \
+    -Dtests=false \
+    -Dsysprof=disabled \
     -Dglib_debug=disabled \
     -Dlibmount=disabled && \
-  ninja -j$(nproc) -vC build install
+  # only the targets with the install tags devel and bin-devel: libraries, headers, .pc files and build tools
+  ninja -j$(nproc) -vC build $(jq -r --arg b "$PWD/build/" '.targets | to_entries[] | select(.value.tag == "devel" or .value.tag == "bin-devel") | .key | ltrimstr($b)' build/meson-info/intro-install_plan.json) && \
+  meson install -C build --no-rebuild --tags devel,bin-devel
 # exported symbols keep rust thread locals as unresolved relocations that a static pie never applies
 RUN sed -i 's/-Wl,--export-dynamic//' /usr/local/lib/pkgconfig/gmodule-2.0.pc /usr/local/lib/pkgconfig/gmodule-export-2.0.pc
 
@@ -125,7 +124,14 @@ RUN \
   tar $TAR_OPTS harfbuzz.tar.xz && cd harfbuzz-* && \
   meson setup build \
     -Dbuildtype=release \
-    -Ddefault_library=static && \
+    -Ddefault_library=static \
+    -Dgobject=disabled \
+    -Dsubset=disabled \
+    -Draster=disabled \
+    -Dvector=disabled \
+    -Dgpu=disabled \
+    -Dtests=disabled \
+    -Dutilities=disabled && \
   ninja -j$(nproc) -vC build install
 
 # bump: cairo /CAIRO_VERSION=([\d.]+)/ https://gitlab.freedesktop.org/cairo/cairo.git|^1
@@ -142,6 +148,7 @@ RUN \
     -Dbuildtype=release \
     -Ddefault_library=static \
     -Dtests=disabled \
+    -Dtee=disabled \
     -Dquartz=disabled \
     -Dxcb=disabled \
     -Dxlib=disabled \
@@ -155,16 +162,16 @@ RUN \
 ARG PANGO_VERSION=1.58.2
 ARG PANGO_URL="https://download.gnome.org/sources/pango/${PANGO_VERSION%.*}/pango-$PANGO_VERSION.tar.xz"
 ARG PANGO_SHA256=342385b6ca3b7c73455d7c80a13b7dbe4489e00bc3bd4c5bd6ed4dce421e374a
-# TODO: add -Dbuild-testsuite=false when in stable release
-# TODO: -Ddefault_library=both currently to not fail building tests
 RUN \
   wget $WGET_OPTS -O pango.tar.xz "$PANGO_URL" && \
   echo "$PANGO_SHA256  pango.tar.xz" | sha256sum -c - && \
   tar $TAR_OPTS pango.tar.xz && cd pango-* && \
   meson setup build \
     -Dbuildtype=release \
-    -Ddefault_library=both \
+    -Ddefault_library=static \
     -Dintrospection=disabled \
+    -Dbuild-testsuite=false \
+    -Dbuild-examples=false \
     -Dgtk_doc=false && \
   ninja -j$(nproc) -vC build install
 
@@ -280,7 +287,9 @@ RUN \
   tar $TAR_OPTS libbluray.tar.xz && cd libbluray-* && \
   meson setup build \
     -Dbuildtype=release \
-    -Ddefault_library=static && \
+    -Ddefault_library=static \
+    -Denable_tools=false \
+    -Dfreetype=disabled && \
   ninja -j$(nproc) -vC build install
 
 # bump: dav1d /DAV1D_VERSION=([\d.]+)/ fetch:https://download.videolan.org/pub/videolan/dav1d/last/|/dav1d-([\d.]+)\.tar\.xz/
@@ -295,7 +304,9 @@ RUN \
   tar $TAR_OPTS dav1d.tar.xz && cd dav1d-* && \
   meson setup build \
     -Dbuildtype=release \
-    -Ddefault_library=static && \
+    -Ddefault_library=static \
+    -Denable_tools=false \
+    -Denable_tests=false && \
   ninja -j$(nproc) -vC build install
 
 # bump: davs2 /DAVS2_VERSION=([\d.]+)/ https://github.com/pkuvcl/davs2.git|^1
@@ -437,6 +448,8 @@ RUN \
   ./autogen.sh && \
   ./configure \
     --enable-static \
+    --without-jpeg \
+    --without-tiff \
     --disable-shared && \
   make -j$(nproc) install
 
@@ -537,6 +550,7 @@ RUN \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_TESTING=OFF \
+    -DENABLE_SSL_SUPPORT=OFF \
     -DBUILD_TOOLS=OFF \
     -DBUILD_TOOLS_DOCS=OFF \
     -DRUN_SYSTEM_TESTS=OFF \
@@ -678,7 +692,7 @@ RUN \
     -DWITH_SFTP=ON \
     -DWITH_SERVER=OFF \
     -DWITH_ZLIB=ON \
-    -DWITH_PCAP=ON \
+    -DWITH_PCAP=OFF \
     -DWITH_DEBUG_CRYPTO=OFF \
     -DWITH_DEBUG_PACKET=OFF \
     -DWITH_DEBUG_CALLTRACE=OFF \
@@ -705,6 +719,8 @@ RUN \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DCMAKE_INSTALL_LIBDIR=lib \
     -DBUILD_SHARED_LIBS=OFF \
+    -DBUILD_APPS=OFF \
+    -DSVT_AV1_LTO=OFF \
     -DENABLE_AVX512=ON \
     -DCMAKE_BUILD_TYPE=Release \
     .. && \
@@ -841,6 +857,7 @@ RUN \
     --enable-vp9-highbitdepth \
     --disable-shared \
     --disable-unit-tests \
+    --disable-tools \
     --disable-examples && \
   make -j$(nproc) install
 
@@ -901,7 +918,7 @@ RUN \
   sed -i '/^cmake / s/$/ -G "Unix Makefiles" ${CMAKEFLAGS}/' ./multilib.sh && \
   sed -i 's/ -DENABLE_SHARED=OFF//g' ./multilib.sh && \
   MAKEFLAGS="-j$(nproc)" \
-  CMAKEFLAGS="-DENABLE_SHARED=OFF -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Release" \
+  CMAKEFLAGS="-DENABLE_SHARED=OFF -DENABLE_CLI=OFF -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Release" \
   ./multilib.sh && \
   make -C 8bit -j$(nproc) install
 
@@ -1026,6 +1043,8 @@ RUN \
     -DJPEGXL_ENABLE_SJPEG=OFF \
     -DJPEGXL_ENABLE_SKCMS=OFF \
     -DJPEGXL_ENABLE_VIEWERS=OFF \
+    -DJPEGXL_ENABLE_TOOLS=OFF \
+    -DJPEGXL_ENABLE_TRANSCODE_JPEG=OFF \
     -DJPEGXL_FORCE_SYSTEM_GTEST=ON \
     -DJPEGXL_FORCE_SYSTEM_BROTLI=ON \
     -DJPEGXL_FORCE_SYSTEM_HWY=OFF && \
@@ -1051,6 +1070,9 @@ RUN \
   grep -r -l sha1_init external/sha1* | xargs sed -i 's/sha1_init/zeromq_sha1_init/g' && \
   ./configure \
     --disable-shared \
+    --disable-perf \
+    --disable-curve-keygen \
+    --without-docs \
     --enable-static && \
   make -j$(nproc) install
 
@@ -1069,6 +1091,8 @@ RUN \
     -S . \
     -B build/release-static \
     -DVVENC_ENABLE_WERROR=OFF \
+    -DVVENC_LIBRARY_ONLY=ON \
+    -DVVENC_ENABLE_LINK_TIME_OPT=OFF \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr/local && \
   cmake --build build/release-static -j$(nproc) && \
