@@ -41,15 +41,14 @@ RUN apk add --no-cache $APK_OPTS \
   snappy snappy-dev snappy-static \
   xxd \
   xz-dev xz-static \
+  # needed by glib
   python3 py3-packaging \
+  # needed by rtmpdump
   linux-headers \
+  # replace the pcre2, libffi and proxy-libintl downloads of glib
   pcre2-dev pcre2-static libffi-dev musl-libintl \
+  # replace the pixman download of cairo
   pixman-dev pixman-static
-
-# linux-headers need by rtmpdump
-# python3 py3-packaging needed by glib
-# pcre2-dev pcre2-static libffi-dev musl-libintl replace the pcre2, libffi and proxy-libintl downloads of glib
-# pixman-dev pixman-static replace the pixman download of cairo
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
@@ -1018,13 +1017,10 @@ RUN \
     --enable-static && \
   make -j$(nproc) install
 
-# highway is the only third_party source of libjxl this build uses
-# bump: highway /HIGHWAY_VERSION=([\d.]+)/ https://github.com/google/highway.git|^1
-# bump: highway after ./hashupdate Dockerfile HIGHWAY $LATEST
-# bump: highway link "Release" https://github.com/google/highway/releases/tag/$LATEST
-ARG HIGHWAY_VERSION=1.4.0
+# highway is the only third_party source of libjxl this build uses, pinned by libjxl deps.sh and bumped with libjxl
+ARG HIGHWAY_VERSION=1.2.0
 ARG HIGHWAY_URL="https://github.com/google/highway/releases/download/$HIGHWAY_VERSION/highway-$HIGHWAY_VERSION.tar.gz"
-ARG HIGHWAY_SHA256=36f672ab48ddb3c8555e9e89e16fe400cd7d16c6eb455a1a3d0c146a63ababdc
+ARG HIGHWAY_SHA256=58e9d5d41d6573ad15245ad76aec53a69499ca7480c092d899c4424812ed906f
 RUN \
   wget $WGET_OPTS -O highway.tar.gz "$HIGHWAY_URL" && \
   echo "$HIGHWAY_SHA256  highway.tar.gz" | sha256sum -c - && \
@@ -1036,12 +1032,11 @@ RUN \
     -DHWY_ENABLE_EXAMPLES=OFF \
     -DHWY_ENABLE_TESTS=OFF && \
   cmake --build build -j$(nproc) && \
-  cmake --install build && \
-  # gcc >= 15.2 builds AVX10_2, a target libjxl neither lists nor tests, so it cannot switch it off (https://github.com/libjxl/libjxl/issues/5047)
-  sed -i 's|^#ifndef HWY_BROKEN_AVX10_2  // allow override|#define HWY_BROKEN_AVX10_2 HWY_AVX10_2\n&|' /usr/local/include/hwy/detect_targets.h
+  cmake --install build
 
 # bump: libjxl /LIBJXL_VERSION=([\d.]+)/ https://github.com/libjxl/libjxl.git|^0
 # bump: libjxl after ./hashupdate Dockerfile LIBJXL $LATEST
+# bump: libjxl after HWY=$(curl -sL https://raw.githubusercontent.com/libjxl/libjxl/v$LATEST/deps.sh | sed -n 's/^THIRD_PARTY_HIGHWAY="\([0-9a-f]*\)".*/\1/p') && V=$(git ls-remote --tags https://github.com/google/highway | awk -v c=$HWY '$1==c {sub("refs/tags/","",$2); sub("\\^\\{\\}","",$2); print $2}') && sed -i -E "s/^ARG HIGHWAY_VERSION=.*/ARG HIGHWAY_VERSION=$V/" Dockerfile && ./hashupdate Dockerfile HIGHWAY $V
 # bump: libjxl link "Changelog" https://github.com/libjxl/libjxl/blob/main/CHANGELOG.md
 # highway is built above as its static build is not available in alpine
 ARG LIBJXL_VERSION=0.12.0
