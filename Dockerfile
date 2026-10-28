@@ -1017,6 +1017,10 @@ RUN \
     --enable-static && \
   make -j$(nproc) install
 
+# bump: libjxl /LIBJXL_VERSION=([\d.]+)/ https://github.com/libjxl/libjxl.git|^0
+# bump: libjxl after ./hashupdate Dockerfile LIBJXL $LATEST
+# bump: libjxl after HWY=$(curl -sL https://raw.githubusercontent.com/libjxl/libjxl/v$LATEST/deps.sh | sed -n 's/^THIRD_PARTY_HIGHWAY="\([0-9a-f]*\)".*/\1/p') && V=$(git ls-remote --tags https://github.com/google/highway | awk -v c=$HWY '$1==c {sub("refs/tags/","",$2); sub("\\^\\{\\}","",$2); print $2}') && sed -i -E "s/^ARG HIGHWAY_VERSION=.*/ARG HIGHWAY_VERSION=$V/" Dockerfile && ./hashupdate Dockerfile HIGHWAY $V
+# bump: libjxl link "Changelog" https://github.com/libjxl/libjxl/blob/main/CHANGELOG.md
 # highway is the only third_party source of libjxl this build uses, pinned by libjxl deps.sh and bumped with libjxl
 ARG HIGHWAY_VERSION=1.2.0
 ARG HIGHWAY_URL="https://github.com/google/highway/releases/download/$HIGHWAY_VERSION/highway-$HIGHWAY_VERSION.tar.gz"
@@ -1034,10 +1038,6 @@ RUN \
   cmake --build build -j$(nproc) && \
   cmake --install build
 
-# bump: libjxl /LIBJXL_VERSION=([\d.]+)/ https://github.com/libjxl/libjxl.git|^0
-# bump: libjxl after ./hashupdate Dockerfile LIBJXL $LATEST
-# bump: libjxl after HWY=$(curl -sL https://raw.githubusercontent.com/libjxl/libjxl/v$LATEST/deps.sh | sed -n 's/^THIRD_PARTY_HIGHWAY="\([0-9a-f]*\)".*/\1/p') && V=$(git ls-remote --tags https://github.com/google/highway | awk -v c=$HWY '$1==c {sub("refs/tags/","",$2); sub("\\^\\{\\}","",$2); print $2}') && sed -i -E "s/^ARG HIGHWAY_VERSION=.*/ARG HIGHWAY_VERSION=$V/" Dockerfile && ./hashupdate Dockerfile HIGHWAY $V
-# bump: libjxl link "Changelog" https://github.com/libjxl/libjxl/blob/main/CHANGELOG.md
 # highway is built above as its static build is not available in alpine
 ARG LIBJXL_VERSION=0.12.0
 ARG LIBJXL_URL="https://github.com/libjxl/libjxl/archive/refs/tags/v${LIBJXL_VERSION}.tar.gz"
