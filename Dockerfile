@@ -245,6 +245,28 @@ RUN \
     --disable-shared && \
   make -j$(nproc) && make install
 
+# bump: chromaprint /CHROMAPRINT_VERSION=([\d.]+)/ https://github.com/acoustid/chromaprint.git|*
+# bump: chromaprint after ./hashupdate Dockerfile CHROMAPRINT $LATEST
+# bump: chromaprint link "NEWS" https://github.com/acoustid/chromaprint/blob/master/NEWS.txt
+ARG CHROMAPRINT_VERSION=1.6.1
+ARG CHROMAPRINT_URL="https://github.com/acoustid/chromaprint/releases/download/v$CHROMAPRINT_VERSION/chromaprint-$CHROMAPRINT_VERSION.tar.gz"
+ARG CHROMAPRINT_SHA256=3368805af0ee47b9df74df10b5001a44569e01df2844dab520031720dde9ad23
+RUN \
+  wget $WGET_OPTS -O chromaprint.tar.gz "$CHROMAPRINT_URL" && \
+  echo "$CHROMAPRINT_SHA256  chromaprint.tar.gz" | sha256sum -c - && \
+  tar $TAR_OPTS chromaprint.tar.gz && cd chromaprint-* && \
+  cmake -B build \
+    -G"Unix Makefiles" \
+    -DCMAKE_VERBOSE_MAKEFILE=ON \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DCMAKE_INSTALL_LIBDIR=lib \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DBUILD_TESTS=OFF \
+    -DFFT_LIB=fftw3 && \
+  cmake --build build -j$(nproc) && \
+  cmake --install build
+RUN echo "Libs.private: -lfftw3 -lstdc++" >> /usr/local/lib/pkgconfig/libchromaprint.pc
+
 # bump: libass /LIBASS_VERSION=([\d.]+)/ https://github.com/libass/libass.git|*
 # bump: libass after ./hashupdate Dockerfile LIBASS $LATEST
 # bump: libass link "Release notes" https://github.com/libass/libass/releases/tag/$LATEST
@@ -1128,6 +1150,7 @@ RUN \
   --enable-gpl \
   --enable-version3 \
   $FDKAAC_FLAGS \
+  --enable-chromaprint \
   --enable-fontconfig \
   --enable-gray \
   --enable-iconv \
@@ -1201,6 +1224,7 @@ RUN \
   SOXR_VERSION=$(pkg-config --modversion soxr) \
   jq -n \
   '{ \
+  chromaprint: env.CHROMAPRINT_VERSION, \
   expat: env.EXPAT_VERSION, \
   "libfdk-aac": env.FDK_AAC_VERSION, \
   ffmpeg: env.FFMPEG_VERSION, \
