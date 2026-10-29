@@ -474,6 +474,23 @@ RUN \
     .. && \
   make -j$(nproc) install
 
+# ffmpeg only supports the openapv 0.x API, 1.x changed oapvm_create()
+# bump: openapv /OPENAPV_VERSION=([\d.]+)/ https://github.com/AcademySoftwareFoundation/openapv.git|^0
+# bump: openapv after ./hashupdate Dockerfile OPENAPV $LATEST
+# bump: openapv link "Release notes" https://github.com/AcademySoftwareFoundation/openapv/releases/tag/v$LATEST
+ARG OPENAPV_VERSION=0.3.0.0
+ARG OPENAPV_URL="https://github.com/AcademySoftwareFoundation/openapv/archive/refs/tags/v$OPENAPV_VERSION.tar.gz"
+ARG OPENAPV_SHA256=dc5cd1618a07e8b340e12562cae37d612b3a1467ee80d986c477165ae602a37e
+RUN \
+  wget $WGET_OPTS -O openapv.tar.gz "$OPENAPV_URL" && \
+  echo "$OPENAPV_SHA256  openapv.tar.gz" | sha256sum -c - && \
+  tar $TAR_OPTS openapv.tar.gz && cd openapv-* && \
+  cmake -B build \
+    -DOAPV_BUILD_APPS=OFF \
+    -DOAPV_BUILD_SHARED_LIB=OFF && \
+  cmake --build build -j$(nproc) && \
+  cmake --install build
+
 # bump: opencoreamr /OPENCOREAMR_VERSION=([\d.]+)/ fetch:https://sourceforge.net/projects/opencore-amr/files/opencore-amr/|/opencore-amr-([\d.]+).tar.gz/
 # bump: opencoreamr after ./hashupdate Dockerfile OPENCOREAMR $LATEST
 # bump: opencoreamr link "ChangeLog" https://sourceforge.net/p/opencore-amr/code/ci/master/tree/ChangeLog
@@ -1148,6 +1165,7 @@ RUN \
   --enable-libmodplug \
   --enable-libmp3lame \
   --enable-libmysofa \
+  --enable-liboapv \
   --enable-libopencore-amrnb \
   --enable-libopencore-amrwb \
   --enable-libopenjpeg \
@@ -1223,6 +1241,7 @@ RUN \
   libmodplug: env.LIBMODPLUG_VERSION, \
   libmp3lame: env.MP3LAME_VERSION, \
   libmysofa: env.LIBMYSOFA_VERSION, \
+  liboapv: env.OPENAPV_VERSION, \
   libogg: env.OGG_VERSION, \
   libopencoreamr: env.OPENCOREAMR_VERSION, \
   libopenjpeg: env.OPENJPEG_VERSION, \
