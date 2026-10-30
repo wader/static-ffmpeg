@@ -499,9 +499,9 @@ RUN \
 # bump: openapv /OPENAPV_VERSION=([\d.]+)/ https://github.com/AcademySoftwareFoundation/openapv.git|*
 # bump: openapv after ./hashupdate Dockerfile OPENAPV $LATEST
 # bump: openapv link "Release notes" https://github.com/AcademySoftwareFoundation/openapv/releases/tag/v$LATEST
-ARG OPENAPV_VERSION=1.1.3.0
+ARG OPENAPV_VERSION=0.1.13
 ARG OPENAPV_URL="https://github.com/AcademySoftwareFoundation/openapv/archive/refs/tags/v$OPENAPV_VERSION.tar.gz"
-ARG OPENAPV_SHA256=38f841ce44e80c40b682a5323b4f3ebc6e339b6071965bc1c705a17d46ab2fc8
+ARG OPENAPV_SHA256=f6fb6020217b7c7712e650cf2040ccac000852c5497cdb927561de94c799f641
 RUN \
   wget $WGET_OPTS -O openapv.tar.gz "$OPENAPV_URL" && \
   echo "$OPENAPV_SHA256  openapv.tar.gz" | sha256sum -c - && \
