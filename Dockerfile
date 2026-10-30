@@ -41,12 +41,14 @@ RUN apk add --no-cache $APK_OPTS \
   snappy snappy-dev snappy-static \
   xxd \
   xz-dev xz-static \
+  # needed by glib
   python3 py3-packaging \
+  # needed by rtmpdump
   linux-headers \
-  curl
-
-# linux-headers need by rtmpdump
-# python3 py3-packaging needed by glib
+  # replace the pcre2, libffi and proxy-libintl downloads of glib
+  pcre2-dev pcre2-static libffi-dev musl-libintl \
+  # replace the pixman download of cairo
+  pixman-dev pixman-static
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
@@ -1056,8 +1058,26 @@ RUN \
 
 # bump: libjxl /LIBJXL_VERSION=([\d.]+)/ https://github.com/libjxl/libjxl.git|^0
 # bump: libjxl after ./hashupdate Dockerfile LIBJXL $LATEST
+# bump: libjxl after HWY=$(curl -sL https://raw.githubusercontent.com/libjxl/libjxl/v$LATEST/deps.sh | sed -n 's/^THIRD_PARTY_HIGHWAY="\([0-9a-f]*\)".*/\1/p') && V=$(git ls-remote --tags https://github.com/google/highway | awk -v c=$HWY '$1==c {sub("refs/tags/","",$2); sub("\\^\\{\\}","",$2); print $2}') && sed -i -E "s/^ARG HIGHWAY_VERSION=.*/ARG HIGHWAY_VERSION=$V/" Dockerfile && ./hashupdate Dockerfile HIGHWAY $V
 # bump: libjxl link "Changelog" https://github.com/libjxl/libjxl/blob/main/CHANGELOG.md
-# use bundled highway library as its static build is not available in alpine
+# highway is the only third_party source of libjxl this build uses, pinned by libjxl deps.sh and bumped with libjxl
+ARG HIGHWAY_VERSION=1.2.0
+ARG HIGHWAY_URL="https://github.com/google/highway/releases/download/$HIGHWAY_VERSION/highway-$HIGHWAY_VERSION.tar.gz"
+ARG HIGHWAY_SHA256=58e9d5d41d6573ad15245ad76aec53a69499ca7480c092d899c4424812ed906f
+RUN \
+  wget $WGET_OPTS -O highway.tar.gz "$HIGHWAY_URL" && \
+  echo "$HIGHWAY_SHA256  highway.tar.gz" | sha256sum -c - && \
+  tar $TAR_OPTS highway.tar.gz && cd highway-* && \
+  cmake -B build \
+    -G"Unix Makefiles" \
+    -DCMAKE_BUILD_TYPE=Release \
+    -DHWY_ENABLE_CONTRIB=OFF \
+    -DHWY_ENABLE_EXAMPLES=OFF \
+    -DHWY_ENABLE_TESTS=OFF && \
+  cmake --build build -j$(nproc) && \
+  cmake --install build
+
+# highway is built above as its static build is not available in alpine
 ARG LIBJXL_VERSION=0.12.0
 ARG LIBJXL_URL="https://github.com/libjxl/libjxl/archive/refs/tags/v${LIBJXL_VERSION}.tar.gz"
 ARG LIBJXL_SHA256=03e9be69a30be4011f559da75328b6d7cea8ad921fabfbd551ce10bf45cdc992
@@ -1065,7 +1085,6 @@ RUN \
   wget $WGET_OPTS -O libjxl.tar.gz "$LIBJXL_URL" && \
   echo "$LIBJXL_SHA256  libjxl.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS libjxl.tar.gz && cd libjxl-* && \
-  ./deps.sh && \
   cmake -B build \
     -G"Unix Makefiles" \
     -DCMAKE_BUILD_TYPE=Release \
@@ -1086,7 +1105,7 @@ RUN \
     -DJPEGXL_ENABLE_TRANSCODE_JPEG=OFF \
     -DJPEGXL_FORCE_SYSTEM_GTEST=ON \
     -DJPEGXL_FORCE_SYSTEM_BROTLI=ON \
-    -DJPEGXL_FORCE_SYSTEM_HWY=OFF && \
+    -DJPEGXL_FORCE_SYSTEM_HWY=ON && \
   cmake --build build -j$(nproc) && \
   cmake --install build
 # workaround for ffmpeg configure script
@@ -1240,10 +1259,13 @@ RUN \
   FONTCONFIG_VERSION=$(pkg-config --modversion fontconfig) \
   FREETYPE_VERSION=$(pkg-config --modversion freetype2) \
   FRIBIDI_VERSION=$(pkg-config --modversion fribidi) \
+  LIBFFI_VERSION=$(pkg-config --modversion libffi) \
   LIBSAMPLERATE_VERSION=$(pkg-config --modversion samplerate) \
   LIBVO_AMRWBENC_VERSION=$(pkg-config --modversion vo-amrwbenc) \
   LIBXML2_VERSION=$(pkg-config --modversion libxml-2.0) \
   OPENSSL_VERSION=$(pkg-config --modversion openssl) \
+  PCRE2_VERSION=$(pkg-config --modversion libpcre2-8) \
+  PIXMAN_VERSION=$(pkg-config --modversion pixman-1) \
   SNAPPY_VERSION=$(apk info -a snappy $APK_OPTS | head -n1 | awk '{print $1}' | sed -e 's/snappy-//') \
   SOXR_VERSION=$(pkg-config --modversion soxr) \
   jq -n \
@@ -1261,6 +1283,7 @@ RUN \
   libbluray: env.LIBBLURAY_VERSION, \
   libdav1d: env.DAV1D_VERSION, \
   libdavs2: env.DAVS2_VERSION, \
+  libffi: env.LIBFFI_VERSION, \
   libfreetype: env.FREETYPE_VERSION, \
   libfribidi: env.FRIBIDI_VERSION, \
   libgme: env.LIBGME_COMMIT, \
@@ -1309,6 +1332,8 @@ RUN \
   libzimg: env.ZIMG_VERSION, \
   libzmq: env.LIBZMQ_VERSION, \
   openssl: env.OPENSSL_VERSION, \
+  pcre2: env.PCRE2_VERSION, \
+  pixman: env.PIXMAN_VERSION, \
   } \
   | if env.ENABLE_FDKAAC == "" then del(."libfdk-aac") end' > /versions.json
 
