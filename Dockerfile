@@ -496,7 +496,8 @@ RUN \
     .. && \
   make -j$(nproc) install
 
-# bump: openapv /OPENAPV_VERSION=([\d.]+)/ https://github.com/AcademySoftwareFoundation/openapv.git|*
+# openapv tags have four parts, which the semver filter drops, so compare the fourth as prerelease
+# bump: openapv /OPENAPV_VERSION=([\d.]+)/ https://github.com/AcademySoftwareFoundation/openapv.git|re:/^(\d+\.\d+\.\d+)\.(\d+)$/${1}-${2}/|>=0.0.0-0|re:/-/./
 # bump: openapv after ./hashupdate Dockerfile OPENAPV $LATEST
 # bump: openapv link "Release notes" https://github.com/AcademySoftwareFoundation/openapv/releases/tag/v$LATEST
 ARG OPENAPV_VERSION=1.1.3.0
