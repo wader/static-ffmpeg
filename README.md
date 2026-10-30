@@ -34,6 +34,7 @@ alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --ent
 
 ### Libraries
 
+- [chromaprint](https://github.com/acoustid/chromaprint)
 - [fontconfig](https://www.freedesktop.org/wiki/Software/fontconfig/)
 - gray (full grayscale support)
 - iconv (from musl)
@@ -296,6 +297,5 @@ usage and potential distribution of such.
 ### TODOs and possible things to add
 
 - Add libopenapv
-- Add chromaprint, etc. ...
 - Add *.a *.so libraries, headers and pkg-config somehow
 
