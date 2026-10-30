@@ -250,9 +250,9 @@ RUN \
 # bump: chromaprint /CHROMAPRINT_VERSION=([\d.]+)/ https://github.com/acoustid/chromaprint.git|*
 # bump: chromaprint after ./hashupdate Dockerfile CHROMAPRINT $LATEST
 # bump: chromaprint link "NEWS" https://github.com/acoustid/chromaprint/blob/master/NEWS.txt
-ARG CHROMAPRINT_VERSION=1.6.1
+ARG CHROMAPRINT_VERSION=1.6.2
 ARG CHROMAPRINT_URL="https://github.com/acoustid/chromaprint/releases/download/v$CHROMAPRINT_VERSION/chromaprint-$CHROMAPRINT_VERSION.tar.gz"
-ARG CHROMAPRINT_SHA256=3368805af0ee47b9df74df10b5001a44569e01df2844dab520031720dde9ad23
+ARG CHROMAPRINT_SHA256=d54ada62c16b2db396d3251ec54fc7a58909c163131a1cfcf7fa6407dbc14360
 RUN \
   wget $WGET_OPTS -O chromaprint.tar.gz "$CHROMAPRINT_URL" && \
   echo "$CHROMAPRINT_SHA256  chromaprint.tar.gz" | sha256sum -c - && \
@@ -498,7 +498,8 @@ RUN \
     .. && \
   make -j$(nproc) install
 
-# bump: openapv /OPENAPV_VERSION=([\d.]+)/ https://github.com/AcademySoftwareFoundation/openapv.git|*
+# openapv tags have four parts, which the semver filter drops, so compare the fourth as prerelease
+# bump: openapv /OPENAPV_VERSION=([\d.]+)/ https://github.com/AcademySoftwareFoundation/openapv.git|re:/^(\d+\.\d+\.\d+)\.(\d+)$/${1}-${2}/|>=0.0.0-0|re:/-/./
 # bump: openapv after ./hashupdate Dockerfile OPENAPV $LATEST
 # bump: openapv link "Release notes" https://github.com/AcademySoftwareFoundation/openapv/releases/tag/v$LATEST
 ARG OPENAPV_VERSION=1.1.3.0
