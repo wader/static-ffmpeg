@@ -496,6 +496,22 @@ RUN \
     .. && \
   make -j$(nproc) install
 
+# bump: openapv /OPENAPV_VERSION=([\d.]+)/ https://github.com/AcademySoftwareFoundation/openapv.git|*
+# bump: openapv after ./hashupdate Dockerfile OPENAPV $LATEST
+# bump: openapv link "Release notes" https://github.com/AcademySoftwareFoundation/openapv/releases/tag/v$LATEST
+ARG OPENAPV_VERSION=1.1.3.0
+ARG OPENAPV_URL="https://github.com/AcademySoftwareFoundation/openapv/archive/refs/tags/v$OPENAPV_VERSION.tar.gz"
+ARG OPENAPV_SHA256=38f841ce44e80c40b682a5323b4f3ebc6e339b6071965bc1c705a17d46ab2fc8
+RUN \
+  wget $WGET_OPTS -O openapv.tar.gz "$OPENAPV_URL" && \
+  echo "$OPENAPV_SHA256  openapv.tar.gz" | sha256sum -c - && \
+  tar $TAR_OPTS openapv.tar.gz && cd openapv-* && \
+  cmake -B build \
+    -DOAPV_BUILD_APPS=OFF \
+    -DOAPV_BUILD_SHARED_LIB=OFF && \
+  cmake --build build -j$(nproc) && \
+  cmake --install build
+
 # bump: opencoreamr /OPENCOREAMR_VERSION=([\d.]+)/ fetch:https://sourceforge.net/projects/opencore-amr/files/opencore-amr/|/opencore-amr-([\d.]+).tar.gz/
 # bump: opencoreamr after ./hashupdate Dockerfile OPENCOREAMR $LATEST
 # bump: opencoreamr link "ChangeLog" https://sourceforge.net/p/opencore-amr/code/ci/master/tree/ChangeLog
@@ -1127,6 +1143,9 @@ RUN \
 ARG FFMPEG_VERSION=9.0.2
 ARG FFMPEG_URL="https://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.bz2"
 ARG FFMPEG_SHA256=ee80a25a5621df84498cef46917be87eab3b4f01951e85c2c7cbe5c94914ee70
+# openapv >= 1.1 API, in release/9.0 after 9.0.2
+ARG FFMPEG_OAPV_URL="https://github.com/FFmpeg/FFmpeg/commit/c54710db21c1827dbc3e47658a562525af0fe528.patch"
+ARG FFMPEG_OAPV_SHA256=f773a85ec68f3b26e0b2ab3cddb7a304df5be8eb5c1887c9b627e23e782c7ec2
 # sed changes --toolchain=hardened -pie to -static-pie
 #
 # ldflags stack-size=2097152 is to increase default stack size from 128KB (musl default) to something
@@ -1135,7 +1154,10 @@ ARG FFMPEG_SHA256=ee80a25a5621df84498cef46917be87eab3b4f01951e85c2c7cbe5c94914ee
 RUN \
   wget $WGET_OPTS -O ffmpeg.tar.bz2 "$FFMPEG_URL" && \
   echo "$FFMPEG_SHA256  ffmpeg.tar.bz2" | sha256sum -c - && \
+  wget $WGET_OPTS -O ffmpeg-oapv.patch "$FFMPEG_OAPV_URL" && \
+  echo "$FFMPEG_OAPV_SHA256  ffmpeg-oapv.patch" | sha256sum -c - && \
   tar $TAR_OPTS ffmpeg.tar.bz2 && cd ffmpeg-* && \
+  git apply ../ffmpeg-oapv.patch && \
   FDKAAC_FLAGS=$(if [[ -n "$ENABLE_FDKAAC" ]] ;then echo " --enable-libfdk-aac --enable-nonfree " ;else echo ""; fi) && \
   sed -i 's/add_ldexeflags -fPIE -pie/add_ldexeflags -fPIE -static-pie/' configure && \
   ./configure \
@@ -1171,6 +1193,7 @@ RUN \
   --enable-libmodplug \
   --enable-libmp3lame \
   --enable-libmysofa \
+  --enable-liboapv \
   --enable-libopencore-amrnb \
   --enable-libopencore-amrwb \
   --enable-libopenjpeg \
@@ -1247,6 +1270,7 @@ RUN \
   libmodplug: env.LIBMODPLUG_VERSION, \
   libmp3lame: env.MP3LAME_VERSION, \
   libmysofa: env.LIBMYSOFA_VERSION, \
+  liboapv: env.OPENAPV_VERSION, \
   libogg: env.OGG_VERSION, \
   libopencoreamr: env.OPENCOREAMR_VERSION, \
   libopenjpeg: env.OPENJPEG_VERSION, \

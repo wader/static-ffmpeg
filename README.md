@@ -56,6 +56,7 @@ alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --ent
 - [libmodplug](https://github.com/Konstanty/libmodplug)
 - [libmp3lame](https://lame.sourceforge.io/)
 - [libmysofa](https://github.com/hoene/libmysofa)
+- [liboapv](https://github.com/AcademySoftwareFoundation/openapv)
 - [libopencore](https://sourceforge.net/projects/opencore-amr/)
 - [libopenjpeg](https://www.openjpeg.org)
 - [libopus](https://opus-codec.org)
@@ -296,6 +297,5 @@ usage and potential distribution of such.
 
 ### TODOs and possible things to add
 
-- Add libopenapv
 - Add *.a *.so libraries, headers and pkg-config somehow
 
