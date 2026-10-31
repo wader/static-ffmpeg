@@ -175,6 +175,24 @@ RUN \
     -Dgtk_doc=false && \
   ninja -j$(nproc) -vC build install
 
+# before librsvg, which uses it for avif
+# bump: dav1d /DAV1D_VERSION=([\d.]+)/ fetch:https://download.videolan.org/pub/videolan/dav1d/last/|/dav1d-([\d.]+)\.tar\.xz/
+# bump: dav1d after ./hashupdate Dockerfile DAV1D $LATEST
+# bump: dav1d link "Release notes" https://code.videolan.org/videolan/dav1d/-/tags/$LATEST
+ARG DAV1D_VERSION=1.5.4
+ARG DAV1D_URL="https://download.videolan.org/pub/videolan/dav1d/$DAV1D_VERSION/dav1d-$DAV1D_VERSION.tar.xz"
+ARG DAV1D_SHA256=686616b7c69eb88d44459391ab25cac13b6647a3b288835c5784e71c1514a5c5
+RUN \
+  wget $WGET_OPTS -O dav1d.tar.xz "$DAV1D_URL" && \
+  echo "$DAV1D_SHA256  dav1d.tar.xz" | sha256sum -c - && \
+  tar $TAR_OPTS dav1d.tar.xz && cd dav1d-* && \
+  meson setup build \
+    -Dbuildtype=release \
+    -Ddefault_library=static \
+    -Denable_tools=false \
+    -Denable_tests=false && \
+  ninja -j$(nproc) -vC build install
+
 # bump: librsvg /LIBRSVG_VERSION=([\d.]+)/ https://gitlab.gnome.org/GNOME/librsvg.git|^2
 # bump: librsvg after ./hashupdate Dockerfile LIBRSVG $LATEST
 # bump: librsvg link "NEWS" https://gitlab.gnome.org/GNOME/librsvg/-/blob/master/NEWS
@@ -191,6 +209,7 @@ RUN \
     -Dbuildtype=release \
     -Ddefault_library=static \
     -Ddocs=disabled \
+    -Davif=enabled \
     -Dintrospection=disabled \
     -Dpixbuf=disabled \
     -Dpixbuf-loader=disabled \
@@ -312,23 +331,6 @@ RUN \
     -Ddefault_library=static \
     -Denable_tools=false \
     -Dfreetype=disabled && \
-  ninja -j$(nproc) -vC build install
-
-# bump: dav1d /DAV1D_VERSION=([\d.]+)/ fetch:https://download.videolan.org/pub/videolan/dav1d/last/|/dav1d-([\d.]+)\.tar\.xz/
-# bump: dav1d after ./hashupdate Dockerfile DAV1D $LATEST
-# bump: dav1d link "Release notes" https://code.videolan.org/videolan/dav1d/-/tags/$LATEST
-ARG DAV1D_VERSION=1.5.4
-ARG DAV1D_URL="https://download.videolan.org/pub/videolan/dav1d/$DAV1D_VERSION/dav1d-$DAV1D_VERSION.tar.xz"
-ARG DAV1D_SHA256=686616b7c69eb88d44459391ab25cac13b6647a3b288835c5784e71c1514a5c5
-RUN \
-  wget $WGET_OPTS -O dav1d.tar.xz "$DAV1D_URL" && \
-  echo "$DAV1D_SHA256  dav1d.tar.xz" | sha256sum -c - && \
-  tar $TAR_OPTS dav1d.tar.xz && cd dav1d-* && \
-  meson setup build \
-    -Dbuildtype=release \
-    -Ddefault_library=static \
-    -Denable_tools=false \
-    -Denable_tests=false && \
   ninja -j$(nproc) -vC build install
 
 # bump: davs2 /DAVS2_VERSION=([\d.]+)/ https://github.com/pkuvcl/davs2.git|^1
