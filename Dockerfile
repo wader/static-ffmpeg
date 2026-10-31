@@ -203,9 +203,9 @@ RUN \
 # bump: aom /AOM_VERSION=([\d.]+)/ fetch:https://storage.googleapis.com/aom-releases/|/libaom-([\d.]+)\.tar\.gz/|*
 # bump: aom after ./hashupdate Dockerfile AOM $LATEST
 # bump: aom link "CHANGELOG" https://aomedia.googlesource.com/aom/+/refs/tags/v$LATEST/CHANGELOG
-ARG AOM_VERSION=3.15.2
+ARG AOM_VERSION=3.15.3
 ARG AOM_URL="https://storage.googleapis.com/aom-releases/libaom-$AOM_VERSION.tar.gz"
-ARG AOM_SHA256=67bb54b245f33ed98600e08269e6139986e48114e14042474ddd8885801dfddc
+ARG AOM_SHA256=12c01dc731ed7b5a999e28120b45bf58a002ba3435a4ba2cfbc1e084a27c9c04
 RUN \
   wget $WGET_OPTS -O aom.tar.gz "$AOM_URL" && \
   echo "$AOM_SHA256  aom.tar.gz" | sha256sum -c - && \
