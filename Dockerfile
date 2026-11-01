@@ -514,9 +514,9 @@ RUN \
 # bump: lcms2 /LCMS2_VERSION=([\d.]+)/ https://github.com/mm2/Little-CMS.git|^2
 # bump: lcms2 after ./hashupdate Dockerfile LCMS2 $LATEST
 # bump: lcms2 link "Release" https://github.com/mm2/Little-CMS/releases/tag/lcms$LATEST
-ARG LCMS2_VERSION=2.19.1
+ARG LCMS2_VERSION=2.20
 ARG LCMS2_URL="https://github.com/mm2/Little-CMS/releases/download/lcms$LCMS2_VERSION/lcms2-$LCMS2_VERSION.tar.gz"
-ARG LCMS2_SHA256=bfc54f7bab59fbc921012014a8032e4cba4abd46db47d46b76416a8c0b2815c8
+ARG LCMS2_SHA256=18ff5504fa9cc8a2b1f3591180d90ead16c8a2ea78e530523b46eab70e1ca6b9
 RUN \
   wget $WGET_OPTS -O lcms2.tar.gz "$LCMS2_URL" && \
   echo "$LCMS2_SHA256  lcms2.tar.gz" | sha256sum -c - && \
