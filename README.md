@@ -45,6 +45,9 @@ alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --ent
 - [libbluray](https://www.videolan.org/developers/libbluray.html)
 - [libdav1d](https://code.videolan.org/videolan/dav1d)
 - [libdavs2](https://github.com/pkuvcl/davs2)
+- [libdvdcss](https://code.videolan.org/videolan/libdvdcss) (only if explicitly enabled during build, [see below](#libdvdcss))
+- [libdvdnav](https://code.videolan.org/videolan/libdvdnav)
+- [libdvdread](https://code.videolan.org/videolan/libdvdread)
 - [libfdk-aac](https://github.com/mstorsjo/fdk-aac) (only if explicitly enabled during build, [see below](#libfdk-aac))
 - [libfreetype](https://freetype.org/)
 - [libfribidi](https://github.com/fribidi/fribidi)
@@ -119,6 +122,12 @@ alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --ent
 Binaries are built with various hardening features but it's *still a good idea to run them
 as non-root even when used inside a container*, especially so if running on input files that
 you don't control.
+
+### libdvdcss
+Due to legal questions the docker image does not include libdvdcss by default, so ffmpeg reads unencrypted DVDs only. A docker image that also reads CSS-encrypted DVDs can be built by passing a non empty value to the build-arg `ENABLE_LIBDVDCSS`, example below.
+```
+docker build --build-arg ENABLE_LIBDVDCSS=1 . -t my-ffmpeg-static:latest
+```
 
 ### libfdk-aac
 Due to license issues the docker image does not include libfdk-aac by default. A docker image including libfdk-aac can be built by passing a non empty value to the build-arg `ENABLE_FDKAAC`, example below.
