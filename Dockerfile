@@ -879,7 +879,7 @@ RUN \
 # bump: uavs3d link "Source diff $CURRENT..$LATEST" https://github.com/uavs3/uavs3d/compare/$CURRENT..$LATEST
 ARG UAVS3D_URL="https://github.com/uavs3/uavs3d.git"
 ARG UAVS3D_COMMIT=0e20d2c291853f196c68922a264bcd8471d75b68
-# Removes BIT_DEPTH 10 to be able to build on other platforms. 10 was overkill anyways.
+# the 8 bit build rejects 10 bit streams
 RUN \
   git clone "$UAVS3D_URL" && cd uavs3d && \
   git checkout --recurse-submodules $UAVS3D_COMMIT && \
@@ -889,6 +889,7 @@ RUN \
     -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_SHARED_LIBS=OFF \
+    -DCOMPILE_10BIT=1 \
     ../.. && \
   make -j$(nproc) install
 
