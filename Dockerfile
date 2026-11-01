@@ -333,6 +333,58 @@ RUN \
     -Dfreetype=disabled && \
   ninja -j$(nproc) -vC build install
 
+# bump: libdvdcss /LIBDVDCSS_VERSION=([\d.]+)/ fetch:https://download.videolan.org/pub/videolan/libdvdcss/last/|/libdvdcss-([\d.]+)\.tar\.xz/
+# bump: libdvdcss after ./hashupdate Dockerfile LIBDVDCSS $LATEST
+# bump: libdvdcss link "NEWS" https://code.videolan.org/videolan/libdvdcss/-/blob/master/NEWS
+ARG LIBDVDCSS_VERSION=1.6.0
+ARG LIBDVDCSS_URL="https://download.videolan.org/pub/videolan/libdvdcss/$LIBDVDCSS_VERSION/libdvdcss-$LIBDVDCSS_VERSION.tar.xz"
+ARG LIBDVDCSS_SHA256=7ea556c846b7bfc32d47b41cae56d1863a6b6d5f706bb162778d6f298490977c
+ARG ENABLE_LIBDVDCSS=
+RUN \
+  if [[ -n "$ENABLE_LIBDVDCSS" ]]; then \
+  wget $WGET_OPTS -O libdvdcss.tar.xz "$LIBDVDCSS_URL" && \
+  echo "$LIBDVDCSS_SHA256  libdvdcss.tar.xz" | sha256sum -c - && \
+  tar $TAR_OPTS libdvdcss.tar.xz && cd libdvdcss-* && \
+  meson setup build \
+    -Dbuildtype=release \
+    -Ddefault_library=static && \
+  ninja -j$(nproc) -vC build install; \
+  fi
+
+# bump: libdvdread /LIBDVDREAD_VERSION=([\d.]+)/ fetch:https://download.videolan.org/pub/videolan/libdvdread/last/|/libdvdread-([\d.]+)\.tar\.xz/
+# bump: libdvdread after ./hashupdate Dockerfile LIBDVDREAD $LATEST
+# bump: libdvdread link "NEWS" https://code.videolan.org/videolan/libdvdread/-/blob/master/NEWS
+ARG LIBDVDREAD_VERSION=7.1.1
+ARG LIBDVDREAD_URL="https://download.videolan.org/pub/videolan/libdvdread/$LIBDVDREAD_VERSION/libdvdread-$LIBDVDREAD_VERSION.tar.xz"
+ARG LIBDVDREAD_SHA256=a0d47876548bec806774bbf8dbf20bb19ba139464383156b32eb8e59915b90a9
+# without libdvdcss linked in, libdvdread tries to dlopen it, which a static binary cannot
+RUN \
+  wget $WGET_OPTS -O libdvdread.tar.xz "$LIBDVDREAD_URL" && \
+  echo "$LIBDVDREAD_SHA256  libdvdread.tar.xz" | sha256sum -c - && \
+  tar $TAR_OPTS libdvdread.tar.xz && cd libdvdread-* && \
+  meson setup build \
+    -Dbuildtype=release \
+    -Ddefault_library=static \
+    -Dlibdvdcss=$(if [[ -n "$ENABLE_LIBDVDCSS" ]]; then echo enabled; else echo disabled; fi) && \
+  ninja -j$(nproc) -vC build install
+# musl has off64_t of the public headers only if this is defined before the first sys/types.h
+RUN sed -i 's/^Cflags: .*/& -D_LARGEFILE64_SOURCE/' /usr/local/lib/pkgconfig/dvdread.pc
+
+# bump: libdvdnav /LIBDVDNAV_VERSION=([\d.]+)/ fetch:https://download.videolan.org/pub/videolan/libdvdnav/last/|/libdvdnav-([\d.]+)\.tar\.xz/
+# bump: libdvdnav after ./hashupdate Dockerfile LIBDVDNAV $LATEST
+# bump: libdvdnav link "ChangeLog" https://code.videolan.org/videolan/libdvdnav/-/blob/master/ChangeLog
+ARG LIBDVDNAV_VERSION=7.0.0
+ARG LIBDVDNAV_URL="https://download.videolan.org/pub/videolan/libdvdnav/$LIBDVDNAV_VERSION/libdvdnav-$LIBDVDNAV_VERSION.tar.xz"
+ARG LIBDVDNAV_SHA256=a2a18f5ad36d133c74bf9106b6445806fa253b09141a46392550394b647b221e
+RUN \
+  wget $WGET_OPTS -O libdvdnav.tar.xz "$LIBDVDNAV_URL" && \
+  echo "$LIBDVDNAV_SHA256  libdvdnav.tar.xz" | sha256sum -c - && \
+  tar $TAR_OPTS libdvdnav.tar.xz && cd libdvdnav-* && \
+  meson setup build \
+    -Dbuildtype=release \
+    -Ddefault_library=static && \
+  ninja -j$(nproc) -vC build install
+
 # bump: davs2 /DAVS2_VERSION=([\d.]+)/ https://github.com/pkuvcl/davs2.git|^1
 # bump: davs2 after ./hashupdate Dockerfile DAVS2 $LATEST
 # bump: davs2 link "Release" https://github.com/pkuvcl/davs2/releases/tag/$LATEST
@@ -1186,6 +1238,8 @@ RUN \
   --enable-libbluray \
   --enable-libdav1d \
   --enable-libdavs2 \
+  --enable-libdvdnav \
+  --enable-libdvdread \
   --enable-libfreetype \
   --enable-libfribidi \
   --enable-libgme \
@@ -1263,6 +1317,9 @@ RUN \
   libbluray: env.LIBBLURAY_VERSION, \
   libdav1d: env.DAV1D_VERSION, \
   libdavs2: env.DAVS2_VERSION, \
+  libdvdcss: env.LIBDVDCSS_VERSION, \
+  libdvdnav: env.LIBDVDNAV_VERSION, \
+  libdvdread: env.LIBDVDREAD_VERSION, \
   libfreetype: env.FREETYPE_VERSION, \
   libfribidi: env.FRIBIDI_VERSION, \
   libgme: env.LIBGME_COMMIT, \
@@ -1312,7 +1369,8 @@ RUN \
   libzmq: env.LIBZMQ_VERSION, \
   openssl: env.OPENSSL_VERSION, \
   } \
-  | if env.ENABLE_FDKAAC == "" then del(."libfdk-aac") end' > /versions.json
+  | if env.ENABLE_FDKAAC == "" then del(."libfdk-aac") end \
+  | if env.ENABLE_LIBDVDCSS == "" then del(.libdvdcss) end' > /versions.json
 
 # make sure binaries has no dependencies, is relro, pie and stack nx
 RUN \
