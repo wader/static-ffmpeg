@@ -28,3 +28,4 @@ jobs:
           cache-to: type=gha,mode=max
           build-args: |
             ENABLE_FDKAAC=1
+            ENABLE_LIBDVDCSS=1
