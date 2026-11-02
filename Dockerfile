@@ -102,7 +102,9 @@ RUN \
   wget $WGET_OPTS -O glib.tar.xz "$GLIB_URL" && \
   echo "$GLIB_SHA256  glib.tar.xz" | sha256sum -c - && \
   tar $TAR_OPTS glib.tar.xz && cd glib-* && \
+  # fail instead of downloading a dependency that no apk package provides
   meson setup build \
+    --wrap-mode=nodownload \
     -Dbuildtype=release \
     -Ddefault_library=static \
     -Dtests=false \
