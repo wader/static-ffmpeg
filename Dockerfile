@@ -39,6 +39,8 @@ RUN apk add --no-cache $APK_OPTS \
   libsamplerate-dev libsamplerate-static \
   vo-amrwbenc-dev vo-amrwbenc-static \
   snappy snappy-dev snappy-static \
+  # replace the pixman download of cairo
+  pixman-dev pixman-static \
   xxd \
   xz-dev xz-static \
   # needed by glib
@@ -148,7 +150,9 @@ RUN \
   curl $CURL_OPTS -o cairo.tar.gz "$CAIRO_URL" && \
   echo "$CAIRO_SHA256  cairo.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS cairo.tar.gz && cd cairo-* && \
+  # fail instead of downloading a dependency that no apk package provides
   meson setup build \
+    --wrap-mode=nodownload \
     -Dbuildtype=release \
     -Ddefault_library=static \
     -Dtests=disabled \
@@ -1307,6 +1311,7 @@ RUN \
   LIBXML2_VERSION=$(pkg-config --modversion libxml-2.0) \
   OPENSSL_VERSION=$(pkg-config --modversion openssl) \
   PCRE2_VERSION=$(pkg-config --modversion libpcre2-8) \
+  PIXMAN_VERSION=$(pkg-config --modversion pixman-1) \
   SNAPPY_VERSION=$(apk info -a snappy $APK_OPTS | head -n1 | awk '{print $1}' | sed -e 's/snappy-//') \
   SOXR_VERSION=$(pkg-config --modversion soxr) \
   jq -n \
@@ -1377,6 +1382,7 @@ RUN \
   libzmq: env.LIBZMQ_VERSION, \
   openssl: env.OPENSSL_VERSION, \
   pcre2: env.PCRE2_VERSION, \
+  pixman: env.PIXMAN_VERSION, \
   } \
   | if env.ENABLE_FDKAAC == "" then del(."libfdk-aac") end \
   | if env.ENABLE_LIBDVDCSS == "" then del(.libdvdcss) end' > /versions.json
