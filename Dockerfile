@@ -10,6 +10,7 @@ ARG APK_OPTS=""
 RUN apk add --no-cache $APK_OPTS \
   coreutils \
   pkgconfig \
+  curl \
   rust cargo cargo-c \
   openssl-dev openssl-libs-static \
   ca-certificates \
@@ -39,14 +40,18 @@ RUN apk add --no-cache $APK_OPTS \
   libsamplerate-dev libsamplerate-static \
   vo-amrwbenc-dev vo-amrwbenc-static \
   snappy snappy-dev snappy-static \
+  # replace the pixman download of cairo
+  pixman-dev pixman-static \
   xxd \
   xz-dev xz-static \
+  # needed by glib
   python3 py3-packaging \
+  # needed by rtmpdump
   linux-headers \
-  curl
-
-# linux-headers need by rtmpdump
-# python3 py3-packaging needed by glib
+  # replace the pcre2 and libffi downloads of glib
+  pcre2-dev pcre2-static libffi-dev \
+  # replaces the proxy-libintl download of glib
+  musl-libintl
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
@@ -91,7 +96,9 @@ ARG GLIB_SHA256=93c941aa17d5eb1d53fe838365f29a8b4e539c222a256d974ec8f30fc413e396
 ADD --checksum=sha256:$GLIB_SHA256 --unpack=true $GLIB_URL /
 RUN \
   cd glib-* && \
+  # fail instead of downloading a dependency that no apk package provides
   meson setup build \
+    --wrap-mode=nodownload \
     -Dbuildtype=release \
     -Ddefault_library=static \
     -Dtests=false \
@@ -134,7 +141,9 @@ ARG CAIRO_SHA256=a95ae4f522ef24312af7339563f65e0a03b1ad3d58a46df73d2ef690fe15ae7
 ADD --checksum=sha256:$CAIRO_SHA256 --unpack=true $CAIRO_URL /
 RUN \
   cd cairo-* && \
+  # fail instead of downloading a dependency that no apk package provides
   meson setup build \
+    --wrap-mode=nodownload \
     -Dbuildtype=release \
     -Ddefault_library=static \
     -Dtests=disabled \
@@ -1238,10 +1247,13 @@ RUN \
   FONTCONFIG_VERSION=$(pkg-config --modversion fontconfig) \
   FREETYPE_VERSION=$(pkg-config --modversion freetype2) \
   FRIBIDI_VERSION=$(pkg-config --modversion fribidi) \
+  LIBFFI_VERSION=$(pkg-config --modversion libffi) \
   LIBSAMPLERATE_VERSION=$(pkg-config --modversion samplerate) \
   LIBVO_AMRWBENC_VERSION=$(pkg-config --modversion vo-amrwbenc) \
   LIBXML2_VERSION=$(pkg-config --modversion libxml-2.0) \
   OPENSSL_VERSION=$(pkg-config --modversion openssl) \
+  PCRE2_VERSION=$(pkg-config --modversion libpcre2-8) \
+  PIXMAN_VERSION=$(pkg-config --modversion pixman-1) \
   SNAPPY_VERSION=$(apk info -a snappy $APK_OPTS | head -n1 | awk '{print $1}' | sed -e 's/snappy-//') \
   SOXR_VERSION=$(pkg-config --modversion soxr) \
   jq -n \
@@ -1262,6 +1274,7 @@ RUN \
   libdvdcss: env.LIBDVDCSS_VERSION, \
   libdvdnav: env.LIBDVDNAV_VERSION, \
   libdvdread: env.LIBDVDREAD_VERSION, \
+  libffi: env.LIBFFI_VERSION, \
   libfreetype: env.FREETYPE_VERSION, \
   libfribidi: env.FRIBIDI_VERSION, \
   libgme: env.LIBGME_COMMIT, \
@@ -1310,6 +1323,8 @@ RUN \
   libzimg: env.ZIMG_VERSION, \
   libzmq: env.LIBZMQ_VERSION, \
   openssl: env.OPENSSL_VERSION, \
+  pcre2: env.PCRE2_VERSION, \
+  pixman: env.PIXMAN_VERSION, \
   } \
   | if env.ENABLE_FDKAAC == "" then del(."libfdk-aac") end \
   | if env.ENABLE_LIBDVDCSS == "" then del(.libdvdcss) end' > /versions.json
