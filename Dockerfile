@@ -121,9 +121,9 @@ RUN sed -i 's/-Wl,--export-dynamic//' /usr/local/lib/pkgconfig/gmodule-2.0.pc /u
 # bump: harfbuzz /LIBHARFBUZZ_VERSION=([\d.]+)/ https://github.com/harfbuzz/harfbuzz.git|*
 # bump: harfbuzz after ./hashupdate Dockerfile LIBHARFBUZZ $LATEST
 # bump: harfbuzz link "NEWS" https://github.com/harfbuzz/harfbuzz/blob/main/NEWS
-ARG LIBHARFBUZZ_VERSION=15.0.0
+ARG LIBHARFBUZZ_VERSION=15.1.0
 ARG LIBHARFBUZZ_URL="https://github.com/harfbuzz/harfbuzz/releases/download/$LIBHARFBUZZ_VERSION/harfbuzz-$LIBHARFBUZZ_VERSION.tar.xz"
-ARG LIBHARFBUZZ_SHA256=968536e9abd782f07f7954044c0c4020199fcdd39b41d221ec42d2a3be4a44df
+ARG LIBHARFBUZZ_SHA256=0fc7c565443a5f4be7da65ac5ee5bd737d9b158dc908708b7689a0a5796b0c8d
 RUN \
   curl $CURL_OPTS -o harfbuzz.tar.xz "$LIBHARFBUZZ_URL" && \
   echo "$LIBHARFBUZZ_SHA256  harfbuzz.tar.xz" | sha256sum -c - && \
