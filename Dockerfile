@@ -450,14 +450,16 @@ RUN \
     .. && \
   make -j$(nproc) install
 
-# bump: libgsm /LIBGSM_COMMIT=([[:xdigit:]]+)/ gitrefs:https://github.com/timothytylee/libgsm.git|re:#^refs/heads/master$#|@commit
+# bump: libgsm /LIBGSM_VERSION=([\d.]+)/ fetch:https://www.quut.com/gsm/|/gsm-([\d.]+)\.tar\.gz/
 # bump: libgsm after ./hashupdate Dockerfile LIBGSM $LATEST
-# bump: libgsm link "Changelog" https://github.com/timothytylee/libgsm/blob/master/ChangeLog
-ARG LIBGSM_URL="https://github.com/timothytylee/libgsm.git"
-ARG LIBGSM_COMMIT=98f1708fb5e06a0dfebd58a3b40d610823db9715
+# bump: libgsm link "Homepage" https://www.quut.com/gsm/
+ARG LIBGSM_VERSION=1.0.24
+ARG LIBGSM_URL="https://www.quut.com/gsm/gsm-$LIBGSM_VERSION.tar.gz"
+ARG LIBGSM_SHA256=a3c40c6471928383f4abfcb2e8f24012a1f562be2f17b8d672145d5986681a92
 RUN \
-  git clone "$LIBGSM_URL" && \
-  cd libgsm && git checkout --recurse-submodules $LIBGSM_COMMIT && \
+  curl $CURL_OPTS -o libgsm.tar.gz "$LIBGSM_URL" && \
+  echo "$LIBGSM_SHA256  libgsm.tar.gz" | sha256sum -c - && \
+  tar $TAR_OPTS libgsm.tar.gz && cd gsm-* && \
   # Makefile is hard to use, hence use specific compile arguments and flags
   # no need to build toast cli tool \
   rm src/toast* && \
@@ -1353,7 +1355,7 @@ RUN \
   libfreetype: env.FREETYPE_VERSION, \
   libfribidi: env.FRIBIDI_VERSION, \
   libgme: env.LIBGME_COMMIT, \
-  libgsm: env.LIBGSM_COMMIT, \
+  libgsm: env.LIBGSM_VERSION, \
   libharfbuzz: env.LIBHARFBUZZ_VERSION, \
   libjxl: env.LIBJXL_VERSION, \
   libkvazaar: env.KVAZAAR_VERSION, \
