@@ -1,16 +1,17 @@
 # bump: alpine /ALPINE_VERSION=alpine:([\d.]+)/ docker:alpine|^3
 # bump: alpine link "Release notes" https://alpinelinux.org/posts/Alpine-$LATEST-released.html
 ARG ALPINE_VERSION=alpine:3.24.4
-FROM $ALPINE_VERSION AS builder
-
 # Alpine Package Keeper options
 ARG APK_OPTS=""
+ARG ENABLE_FDKAAC=
+ARG ENABLE_LIBDVDCSS=
 
+FROM $ALPINE_VERSION AS base
+ARG APK_OPTS
 RUN apk add --no-cache $APK_OPTS \
   coreutils \
   pkgconfig \
   curl \
-  rust cargo cargo-c \
   openssl-dev openssl-libs-static \
   ca-certificates \
   bash \
@@ -50,7 +51,8 @@ RUN apk add --no-cache $APK_OPTS \
   # replace the pcre2 and libffi downloads of glib
   pcre2-dev pcre2-static libffi-dev \
   # replaces the proxy-libintl download of glib
-  musl-libintl
+  musl-libintl && \
+  mkdir -p /usr/local/share/versions
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
@@ -67,6 +69,13 @@ ARG CURL_OPTS="--fail --location --retry 9 --retry-all-errors --connect-timeout 
 # --no-same-owner as we don't care about uid/gid even if we run as root. fixes invalid gid/uid issue.
 ARG TAR_OPTS="--no-same-owner --extract --file"
 
+# only librsvg and rav1e need rust, so the other stages do not wait for it
+FROM base AS rust
+ARG APK_OPTS
+RUN apk add --no-cache $APK_OPTS rust cargo cargo-c
+
+# hard: -DCONFIG_TUNE_VMAF=1 and the libvmaf.pc sed need vmaf
+FROM base AS aom
 # before aom as libvmaf uses it
 # bump: vmaf /VMAF_VERSION=([\d.]+)/ https://github.com/Netflix/vmaf.git|*
 # bump: vmaf after ./hashupdate Dockerfile VMAF $LATEST
@@ -88,143 +97,10 @@ RUN \
     -Denable_tools=false \
     -Denable_avx512=true \
     -Denable_float=true && \
-  ninja -j$(nproc) -vC build install
+  ninja -j$(nproc) -vC build install && \
 # extra libs stdc++ is for vmaf https://github.com/Netflix/vmaf/issues/788
-RUN sed -i 's/-lvmaf /-lvmaf -lstdc++ /' /usr/local/lib/pkgconfig/libvmaf.pc
-
-# own build as alpine glib links with libmount etc
-# bump: glib /GLIB_VERSION=([\d.]+)/ https://gitlab.gnome.org/GNOME/glib.git|^2
-# bump: glib after ./hashupdate Dockerfile GLIB $LATEST
-# bump: glib link "NEWS" https://gitlab.gnome.org/GNOME/glib/-/blob/main/NEWS?ref_type=heads
-ARG GLIB_VERSION=2.90.1
-ARG GLIB_URL="https://download.gnome.org/sources/glib/${GLIB_VERSION%.*}/glib-$GLIB_VERSION.tar.xz"
-ARG GLIB_SHA256=93c941aa17d5eb1d53fe838365f29a8b4e539c222a256d974ec8f30fc413e396
-RUN \
-  curl $CURL_OPTS -o glib.tar.xz "$GLIB_URL" && \
-  echo "$GLIB_SHA256  glib.tar.xz" | sha256sum -c - && \
-  tar $TAR_OPTS glib.tar.xz && cd glib-* && \
-  # fail instead of downloading a dependency that no apk package provides
-  meson setup build \
-    --wrap-mode=nodownload \
-    -Dbuildtype=release \
-    -Ddefault_library=static \
-    -Dtests=false \
-    -Dsysprof=disabled \
-    -Dglib_debug=disabled \
-    -Dlibmount=disabled && \
-  # only the targets with the install tags devel and bin-devel: libraries, headers, .pc files and build tools
-  ninja -j$(nproc) -vC build $(jq -r --arg b "$PWD/build/" '.targets | to_entries[] | select(.value.tag == "devel" or .value.tag == "bin-devel") | .key | ltrimstr($b)' build/meson-info/intro-install_plan.json) && \
-  meson install -C build --no-rebuild --tags devel,bin-devel
-# exported symbols keep rust thread locals as unresolved relocations that a static pie never applies
-RUN sed -i 's/-Wl,--export-dynamic//' /usr/local/lib/pkgconfig/gmodule-2.0.pc /usr/local/lib/pkgconfig/gmodule-export-2.0.pc
-
-# bump: harfbuzz /LIBHARFBUZZ_VERSION=([\d.]+)/ https://github.com/harfbuzz/harfbuzz.git|*
-# bump: harfbuzz after ./hashupdate Dockerfile LIBHARFBUZZ $LATEST
-# bump: harfbuzz link "NEWS" https://github.com/harfbuzz/harfbuzz/blob/main/NEWS
-ARG LIBHARFBUZZ_VERSION=15.1.0
-ARG LIBHARFBUZZ_URL="https://github.com/harfbuzz/harfbuzz/releases/download/$LIBHARFBUZZ_VERSION/harfbuzz-$LIBHARFBUZZ_VERSION.tar.xz"
-ARG LIBHARFBUZZ_SHA256=0fc7c565443a5f4be7da65ac5ee5bd737d9b158dc908708b7689a0a5796b0c8d
-RUN \
-  curl $CURL_OPTS -o harfbuzz.tar.xz "$LIBHARFBUZZ_URL" && \
-  echo "$LIBHARFBUZZ_SHA256  harfbuzz.tar.xz" | sha256sum -c - && \
-  tar $TAR_OPTS harfbuzz.tar.xz && cd harfbuzz-* && \
-  meson setup build \
-    -Dbuildtype=release \
-    -Ddefault_library=static \
-    -Dgobject=disabled \
-    -Dsubset=disabled \
-    -Draster=disabled \
-    -Dvector=disabled \
-    -Dgpu=disabled \
-    -Dtests=disabled \
-    -Dutilities=disabled && \
-  ninja -j$(nproc) -vC build install
-
-# bump: cairo /CAIRO_VERSION=([\d.]+)/ https://gitlab.freedesktop.org/cairo/cairo.git|^1
-# bump: cairo after ./hashupdate Dockerfile CAIRO $LATEST
-# bump: cairo link "NEWS" https://gitlab.freedesktop.org/cairo/cairo/-/blob/master/NEWS?ref_type=heads
-ARG CAIRO_VERSION=1.18.6
-ARG CAIRO_URL="https://gitlab.freedesktop.org/cairo/cairo/-/archive/$CAIRO_VERSION/cairo-$CAIRO_VERSION.tar.gz"
-ARG CAIRO_SHA256=a95ae4f522ef24312af7339563f65e0a03b1ad3d58a46df73d2ef690fe15ae7f
-RUN \
-  curl $CURL_OPTS -o cairo.tar.gz "$CAIRO_URL" && \
-  echo "$CAIRO_SHA256  cairo.tar.gz" | sha256sum -c - && \
-  tar $TAR_OPTS cairo.tar.gz && cd cairo-* && \
-  # fail instead of downloading a dependency that no apk package provides
-  meson setup build \
-    --wrap-mode=nodownload \
-    -Dbuildtype=release \
-    -Ddefault_library=static \
-    -Dtests=disabled \
-    -Dtee=disabled \
-    -Dquartz=disabled \
-    -Dxcb=disabled \
-    -Dxlib=disabled \
-    -Dxlib-xcb=disabled && \
-  ninja -j$(nproc) -vC build install
-
-# TODO: there is weird "1.90" tag, skip it
-# bump: pango /PANGO_VERSION=([\d.]+)/ https://github.com/GNOME/pango.git|/\d+\.\d+\.\d+/|*
-# bump: pango after ./hashupdate Dockerfile PANGO $LATEST
-# bump: pango link "NEWS" https://gitlab.gnome.org/GNOME/pango/-/blob/main/NEWS?ref_type=heads
-ARG PANGO_VERSION=1.58.2
-ARG PANGO_URL="https://download.gnome.org/sources/pango/${PANGO_VERSION%.*}/pango-$PANGO_VERSION.tar.xz"
-ARG PANGO_SHA256=342385b6ca3b7c73455d7c80a13b7dbe4489e00bc3bd4c5bd6ed4dce421e374a
-RUN \
-  curl $CURL_OPTS -o pango.tar.xz "$PANGO_URL" && \
-  echo "$PANGO_SHA256  pango.tar.xz" | sha256sum -c - && \
-  tar $TAR_OPTS pango.tar.xz && cd pango-* && \
-  meson setup build \
-    -Dbuildtype=release \
-    -Ddefault_library=static \
-    -Dintrospection=disabled \
-    -Dbuild-testsuite=false \
-    -Dbuild-examples=false \
-    -Dgtk_doc=false && \
-  ninja -j$(nproc) -vC build install
-
-# before librsvg, which uses it for avif
-# bump: dav1d /DAV1D_VERSION=([\d.]+)/ fetch:https://download.videolan.org/pub/videolan/dav1d/last/|/dav1d-([\d.]+)\.tar\.xz/
-# bump: dav1d after ./hashupdate Dockerfile DAV1D $LATEST
-# bump: dav1d link "Release notes" https://code.videolan.org/videolan/dav1d/-/tags/$LATEST
-ARG DAV1D_VERSION=1.5.4
-ARG DAV1D_URL="https://download.videolan.org/pub/videolan/dav1d/$DAV1D_VERSION/dav1d-$DAV1D_VERSION.tar.xz"
-ARG DAV1D_SHA256=686616b7c69eb88d44459391ab25cac13b6647a3b288835c5784e71c1514a5c5
-RUN \
-  curl $CURL_OPTS -o dav1d.tar.xz "$DAV1D_URL" && \
-  echo "$DAV1D_SHA256  dav1d.tar.xz" | sha256sum -c - && \
-  tar $TAR_OPTS dav1d.tar.xz && cd dav1d-* && \
-  meson setup build \
-    -Dbuildtype=release \
-    -Ddefault_library=static \
-    -Denable_tools=false \
-    -Denable_tests=false && \
-  ninja -j$(nproc) -vC build install
-
-# bump: librsvg /LIBRSVG_VERSION=([\d.]+)/ https://gitlab.gnome.org/GNOME/librsvg.git|^2
-# bump: librsvg after ./hashupdate Dockerfile LIBRSVG $LATEST
-# bump: librsvg link "NEWS" https://gitlab.gnome.org/GNOME/librsvg/-/blob/master/NEWS
-ARG LIBRSVG_VERSION=2.63.4
-ARG LIBRSVG_URL="https://download.gnome.org/sources/librsvg/${LIBRSVG_VERSION%.*}/librsvg-$LIBRSVG_VERSION.tar.xz"
-ARG LIBRSVG_SHA256=31f07d9350dad3f8964fd613c31309ac160fdef13dfac59df6fd082de78d6e8f
-RUN \
-  curl $CURL_OPTS -o librsvg.tar.xz "$LIBRSVG_URL" && \
-  echo "$LIBRSVG_SHA256  librsvg.tar.xz" | sha256sum -c - && \
-  tar $TAR_OPTS librsvg.tar.xz && cd librsvg-* && \
-  # workaround for https://gitlab.gnome.org/GNOME/librsvg/-/issues/1158
-  sed -i "/^if host_system in \['windows'/s/, 'linux'//" meson.build && \
-  meson setup build \
-    -Dbuildtype=release \
-    -Ddefault_library=static \
-    -Ddocs=disabled \
-    -Davif=enabled \
-    -Dintrospection=disabled \
-    -Dpixbuf=disabled \
-    -Dpixbuf-loader=disabled \
-    -Dvala=disabled \
-    -Drsvg-convert=disabled \
-    -Dtests=false && \
-  ninja -j$(nproc) -vC build install
+  sed -i 's/-lvmaf /-lvmaf -lstdc++ /' /usr/local/lib/pkgconfig/libvmaf.pc && \
+  echo "$VMAF_VERSION" > /usr/local/share/versions/libvmaf
 
 # build after libvmaf
 # bump: aom /AOM_VERSION=([\d.]+)/ fetch:https://storage.googleapis.com/aom-releases/|/libaom-([\d.]+)\.tar\.gz/|*
@@ -253,8 +129,160 @@ RUN \
     -DENABLE_NASM=ON \
     -DCMAKE_INSTALL_LIBDIR=lib \
     .. && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$AOM_VERSION" > /usr/local/share/versions/libaom
 
+FROM base AS glib
+# own build as alpine glib links with libmount etc
+# bump: glib /GLIB_VERSION=([\d.]+)/ https://gitlab.gnome.org/GNOME/glib.git|^2
+# bump: glib after ./hashupdate Dockerfile GLIB $LATEST
+# bump: glib link "NEWS" https://gitlab.gnome.org/GNOME/glib/-/blob/main/NEWS?ref_type=heads
+ARG GLIB_VERSION=2.90.1
+ARG GLIB_URL="https://download.gnome.org/sources/glib/${GLIB_VERSION%.*}/glib-$GLIB_VERSION.tar.xz"
+ARG GLIB_SHA256=93c941aa17d5eb1d53fe838365f29a8b4e539c222a256d974ec8f30fc413e396
+RUN \
+  curl $CURL_OPTS -o glib.tar.xz "$GLIB_URL" && \
+  echo "$GLIB_SHA256  glib.tar.xz" | sha256sum -c - && \
+  tar $TAR_OPTS glib.tar.xz && cd glib-* && \
+  # fail instead of downloading a dependency that no apk package provides
+  meson setup build \
+    --wrap-mode=nodownload \
+    -Dbuildtype=release \
+    -Ddefault_library=static \
+    -Dtests=false \
+    -Dsysprof=disabled \
+    -Dglib_debug=disabled \
+    -Dlibmount=disabled && \
+  # only the targets with the install tags devel and bin-devel: libraries, headers, .pc files and build tools
+  ninja -j$(nproc) -vC build $(jq -r --arg b "$PWD/build/" '.targets | to_entries[] | select(.value.tag == "devel" or .value.tag == "bin-devel") | .key | ltrimstr($b)' build/meson-info/intro-install_plan.json) && \
+  meson install -C build --no-rebuild --tags devel,bin-devel && \
+# exported symbols keep rust thread locals as unresolved relocations that a static pie never applies
+  sed -i 's/-Wl,--export-dynamic//' /usr/local/lib/pkgconfig/gmodule-2.0.pc /usr/local/lib/pkgconfig/gmodule-export-2.0.pc
+
+# glib is optional (auto) for harfbuzz, kept before it for identical output
+FROM glib AS harfbuzz
+# bump: harfbuzz /LIBHARFBUZZ_VERSION=([\d.]+)/ https://github.com/harfbuzz/harfbuzz.git|*
+# bump: harfbuzz after ./hashupdate Dockerfile LIBHARFBUZZ $LATEST
+# bump: harfbuzz link "NEWS" https://github.com/harfbuzz/harfbuzz/blob/main/NEWS
+ARG LIBHARFBUZZ_VERSION=15.1.0
+ARG LIBHARFBUZZ_URL="https://github.com/harfbuzz/harfbuzz/releases/download/$LIBHARFBUZZ_VERSION/harfbuzz-$LIBHARFBUZZ_VERSION.tar.xz"
+ARG LIBHARFBUZZ_SHA256=0fc7c565443a5f4be7da65ac5ee5bd737d9b158dc908708b7689a0a5796b0c8d
+RUN \
+  curl $CURL_OPTS -o harfbuzz.tar.xz "$LIBHARFBUZZ_URL" && \
+  echo "$LIBHARFBUZZ_SHA256  harfbuzz.tar.xz" | sha256sum -c - && \
+  tar $TAR_OPTS harfbuzz.tar.xz && cd harfbuzz-* && \
+  meson setup build \
+    -Dbuildtype=release \
+    -Ddefault_library=static \
+    -Dgobject=disabled \
+    -Dsubset=disabled \
+    -Draster=disabled \
+    -Dvector=disabled \
+    -Dgpu=disabled \
+    -Dtests=disabled \
+    -Dutilities=disabled && \
+  ninja -j$(nproc) -vC build install && \
+  echo "$LIBHARFBUZZ_VERSION" > /usr/local/share/versions/libharfbuzz
+
+# hard: librsvg needs cairo-gobject, which cairo builds only with glib
+FROM glib AS cairo
+# bump: cairo /CAIRO_VERSION=([\d.]+)/ https://gitlab.freedesktop.org/cairo/cairo.git|^1
+# bump: cairo after ./hashupdate Dockerfile CAIRO $LATEST
+# bump: cairo link "NEWS" https://gitlab.freedesktop.org/cairo/cairo/-/blob/master/NEWS?ref_type=heads
+ARG CAIRO_VERSION=1.18.6
+ARG CAIRO_URL="https://gitlab.freedesktop.org/cairo/cairo/-/archive/$CAIRO_VERSION/cairo-$CAIRO_VERSION.tar.gz"
+ARG CAIRO_SHA256=a95ae4f522ef24312af7339563f65e0a03b1ad3d58a46df73d2ef690fe15ae7f
+RUN \
+  curl $CURL_OPTS -o cairo.tar.gz "$CAIRO_URL" && \
+  echo "$CAIRO_SHA256  cairo.tar.gz" | sha256sum -c - && \
+  tar $TAR_OPTS cairo.tar.gz && cd cairo-* && \
+  # fail instead of downloading a dependency that no apk package provides
+  meson setup build \
+    --wrap-mode=nodownload \
+    -Dbuildtype=release \
+    -Ddefault_library=static \
+    -Dtests=disabled \
+    -Dtee=disabled \
+    -Dquartz=disabled \
+    -Dxcb=disabled \
+    -Dxlib=disabled \
+    -Dxlib-xcb=disabled && \
+  ninja -j$(nproc) -vC build install
+
+# hard: pango needs glib, harfbuzz and cairo
+FROM harfbuzz AS pango
+COPY --from=cairo /usr/local/ /usr/local/
+# TODO: there is weird "1.90" tag, skip it
+# bump: pango /PANGO_VERSION=([\d.]+)/ https://github.com/GNOME/pango.git|/\d+\.\d+\.\d+/|*
+# bump: pango after ./hashupdate Dockerfile PANGO $LATEST
+# bump: pango link "NEWS" https://gitlab.gnome.org/GNOME/pango/-/blob/main/NEWS?ref_type=heads
+ARG PANGO_VERSION=1.58.2
+ARG PANGO_URL="https://download.gnome.org/sources/pango/${PANGO_VERSION%.*}/pango-$PANGO_VERSION.tar.xz"
+ARG PANGO_SHA256=342385b6ca3b7c73455d7c80a13b7dbe4489e00bc3bd4c5bd6ed4dce421e374a
+RUN \
+  curl $CURL_OPTS -o pango.tar.xz "$PANGO_URL" && \
+  echo "$PANGO_SHA256  pango.tar.xz" | sha256sum -c - && \
+  tar $TAR_OPTS pango.tar.xz && cd pango-* && \
+  meson setup build \
+    -Dbuildtype=release \
+    -Ddefault_library=static \
+    -Dintrospection=disabled \
+    -Dbuild-testsuite=false \
+    -Dbuild-examples=false \
+    -Dgtk_doc=false && \
+  ninja -j$(nproc) -vC build install
+
+FROM base AS dav1d
+# before librsvg, which uses it for avif
+# bump: dav1d /DAV1D_VERSION=([\d.]+)/ fetch:https://download.videolan.org/pub/videolan/dav1d/last/|/dav1d-([\d.]+)\.tar\.xz/
+# bump: dav1d after ./hashupdate Dockerfile DAV1D $LATEST
+# bump: dav1d link "Release notes" https://code.videolan.org/videolan/dav1d/-/tags/$LATEST
+ARG DAV1D_VERSION=1.5.4
+ARG DAV1D_URL="https://download.videolan.org/pub/videolan/dav1d/$DAV1D_VERSION/dav1d-$DAV1D_VERSION.tar.xz"
+ARG DAV1D_SHA256=686616b7c69eb88d44459391ab25cac13b6647a3b288835c5784e71c1514a5c5
+RUN \
+  curl $CURL_OPTS -o dav1d.tar.xz "$DAV1D_URL" && \
+  echo "$DAV1D_SHA256  dav1d.tar.xz" | sha256sum -c - && \
+  tar $TAR_OPTS dav1d.tar.xz && cd dav1d-* && \
+  meson setup build \
+    -Dbuildtype=release \
+    -Ddefault_library=static \
+    -Denable_tools=false \
+    -Denable_tests=false && \
+  ninja -j$(nproc) -vC build install && \
+  echo "$DAV1D_VERSION" > /usr/local/share/versions/libdav1d
+
+# hard: librsvg needs rust, pango and, for -Davif=enabled, dav1d
+FROM rust AS librsvg
+COPY --from=pango /usr/local/ /usr/local/
+COPY --from=dav1d /usr/local/ /usr/local/
+# bump: librsvg /LIBRSVG_VERSION=([\d.]+)/ https://gitlab.gnome.org/GNOME/librsvg.git|^2
+# bump: librsvg after ./hashupdate Dockerfile LIBRSVG $LATEST
+# bump: librsvg link "NEWS" https://gitlab.gnome.org/GNOME/librsvg/-/blob/master/NEWS
+ARG LIBRSVG_VERSION=2.63.4
+ARG LIBRSVG_URL="https://download.gnome.org/sources/librsvg/${LIBRSVG_VERSION%.*}/librsvg-$LIBRSVG_VERSION.tar.xz"
+ARG LIBRSVG_SHA256=31f07d9350dad3f8964fd613c31309ac160fdef13dfac59df6fd082de78d6e8f
+RUN \
+  curl $CURL_OPTS -o librsvg.tar.xz "$LIBRSVG_URL" && \
+  echo "$LIBRSVG_SHA256  librsvg.tar.xz" | sha256sum -c - && \
+  tar $TAR_OPTS librsvg.tar.xz && cd librsvg-* && \
+  # workaround for https://gitlab.gnome.org/GNOME/librsvg/-/issues/1158
+  sed -i "/^if host_system in \['windows'/s/, 'linux'//" meson.build && \
+  meson setup build \
+    -Dbuildtype=release \
+    -Ddefault_library=static \
+    -Ddocs=disabled \
+    -Davif=enabled \
+    -Dintrospection=disabled \
+    -Dpixbuf=disabled \
+    -Dpixbuf-loader=disabled \
+    -Dvala=disabled \
+    -Drsvg-convert=disabled \
+    -Dtests=false && \
+  ninja -j$(nproc) -vC build install && \
+  echo "$LIBRSVG_VERSION" > /usr/local/share/versions/librsvg
+
+FROM base AS libaribb24
 # bump: libaribb24 /LIBARIBB24_VERSION=([\d.]+)/ https://github.com/nkoriyama/aribb24.git|*
 # bump: libaribb24 after ./hashupdate Dockerfile LIBARIBB24 $LATEST
 # bump: libaribb24 link "Release notes" https://github.com/nkoriyama/aribb24/releases/tag/$LATEST
@@ -270,8 +298,10 @@ RUN \
   ./configure \
     --enable-static \
     --disable-shared && \
-  make -j$(nproc) && make install
+  make -j$(nproc) && make install && \
+  echo "$LIBARIBB24_VERSION" > /usr/local/share/versions/libaribb24
 
+FROM base AS chromaprint
 # bump: chromaprint /CHROMAPRINT_VERSION=([\d.]+)/ https://github.com/acoustid/chromaprint.git|*
 # bump: chromaprint after ./hashupdate Dockerfile CHROMAPRINT $LATEST
 # bump: chromaprint link "NEWS" https://github.com/acoustid/chromaprint/blob/master/NEWS.txt
@@ -291,9 +321,12 @@ RUN \
     -DBUILD_TESTS=OFF \
     -DFFT_LIB=fftw3 && \
   cmake --build build -j$(nproc) && \
-  cmake --install build
-RUN echo "Libs.private: -lfftw3 -lstdc++" >> /usr/local/lib/pkgconfig/libchromaprint.pc
+  cmake --install build && \
+  echo "Libs.private: -lfftw3 -lstdc++" >> /usr/local/lib/pkgconfig/libchromaprint.pc && \
+  echo "$CHROMAPRINT_VERSION" > /usr/local/share/versions/chromaprint
 
+# hard: libass needs harfbuzz, which is not an apk package
+FROM harfbuzz AS libass
 # bump: libass /LIBASS_VERSION=([\d.]+)/ https://github.com/libass/libass.git|*
 # bump: libass after ./hashupdate Dockerfile LIBASS $LATEST
 # bump: libass link "Release notes" https://github.com/libass/libass/releases/tag/$LATEST
@@ -307,8 +340,11 @@ RUN \
   ./configure \
     --disable-shared \
     --enable-static && \
-  make -j$(nproc) && make install
+  make -j$(nproc) && make install && \
+  echo "$LIBASS_VERSION" > /usr/local/share/versions/libass
 
+# hard: libbluray requires libudfread
+FROM base AS libbluray
 # bump: libudfread /LIBUDFREAD_VERSION=([\d.]+)/ fetch:https://download.videolan.org/pub/videolan/libudfread/|/libudfread-([\d.]+)\.tar\.xz/|*
 # bump: libudfread after ./hashupdate Dockerfile LIBUDFREAD $LATEST
 # bump: libudfread link "Source diff $CURRENT..$LATEST" https://code.videolan.org/videolan/libudfread/-/compare/$CURRENT...$LATEST
@@ -339,15 +375,18 @@ RUN \
     -Ddefault_library=static \
     -Denable_tools=false \
     -Dfreetype=disabled && \
-  ninja -j$(nproc) -vC build install
+  ninja -j$(nproc) -vC build install && \
+  echo "$LIBBLURAY_VERSION" > /usr/local/share/versions/libbluray
 
+# hard: libdvdread links libdvdcss when enabled, libdvdnav requires libdvdread
+FROM base AS libdvdnav
 # bump: libdvdcss /LIBDVDCSS_VERSION=([\d.]+)/ fetch:https://download.videolan.org/pub/videolan/libdvdcss/last/|/libdvdcss-([\d.]+)\.tar\.xz/
 # bump: libdvdcss after ./hashupdate Dockerfile LIBDVDCSS $LATEST
 # bump: libdvdcss link "NEWS" https://code.videolan.org/videolan/libdvdcss/-/blob/master/NEWS
 ARG LIBDVDCSS_VERSION=1.6.0
 ARG LIBDVDCSS_URL="https://download.videolan.org/pub/videolan/libdvdcss/$LIBDVDCSS_VERSION/libdvdcss-$LIBDVDCSS_VERSION.tar.xz"
 ARG LIBDVDCSS_SHA256=7ea556c846b7bfc32d47b41cae56d1863a6b6d5f706bb162778d6f298490977c
-ARG ENABLE_LIBDVDCSS=
+ARG ENABLE_LIBDVDCSS
 RUN \
   if [[ -n "$ENABLE_LIBDVDCSS" ]]; then \
   curl $CURL_OPTS -o libdvdcss.tar.xz "$LIBDVDCSS_URL" && \
@@ -357,7 +396,8 @@ RUN \
     -Dbuildtype=release \
     -Ddefault_library=static && \
   ninja -j$(nproc) -vC build install; \
-  fi
+  fi && \
+  if [[ -n "$ENABLE_LIBDVDCSS" ]]; then echo "$LIBDVDCSS_VERSION" > /usr/local/share/versions/libdvdcss; fi
 
 # bump: libdvdread /LIBDVDREAD_VERSION=([\d.]+)/ fetch:https://download.videolan.org/pub/videolan/libdvdread/last/|/libdvdread-([\d.]+)\.tar\.xz/
 # bump: libdvdread after ./hashupdate Dockerfile LIBDVDREAD $LATEST
@@ -374,9 +414,10 @@ RUN \
     -Dbuildtype=release \
     -Ddefault_library=static \
     -Dlibdvdcss=$(if [[ -n "$ENABLE_LIBDVDCSS" ]]; then echo enabled; else echo disabled; fi) && \
-  ninja -j$(nproc) -vC build install
+  ninja -j$(nproc) -vC build install && \
 # musl has off64_t of the public headers only if this is defined before the first sys/types.h
-RUN sed -i 's/^Cflags: .*/& -D_LARGEFILE64_SOURCE/' /usr/local/lib/pkgconfig/dvdread.pc
+  sed -i 's/^Cflags: .*/& -D_LARGEFILE64_SOURCE/' /usr/local/lib/pkgconfig/dvdread.pc && \
+  echo "$LIBDVDREAD_VERSION" > /usr/local/share/versions/libdvdread
 
 # bump: libdvdnav /LIBDVDNAV_VERSION=([\d.]+)/ fetch:https://download.videolan.org/pub/videolan/libdvdnav/last/|/libdvdnav-([\d.]+)\.tar\.xz/
 # bump: libdvdnav after ./hashupdate Dockerfile LIBDVDNAV $LATEST
@@ -391,8 +432,10 @@ RUN \
   meson setup build \
     -Dbuildtype=release \
     -Ddefault_library=static && \
-  ninja -j$(nproc) -vC build install
+  ninja -j$(nproc) -vC build install && \
+  echo "$LIBDVDNAV_VERSION" > /usr/local/share/versions/libdvdnav
 
+FROM base AS davs2
 # bump: davs2 /DAVS2_VERSION=([\d.]+)/ https://github.com/pkuvcl/davs2.git|^1
 # bump: davs2 after ./hashupdate Dockerfile DAVS2 $LATEST
 # bump: davs2 link "Release" https://github.com/pkuvcl/davs2/releases/tag/$LATEST
@@ -410,8 +453,10 @@ RUN \
     --enable-pic \
     --enable-strip \
     --disable-cli && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$DAVS2_VERSION" > /usr/local/share/versions/libdavs2
 
+FROM base AS fdk-aac
 # bump: fdk-aac /FDK_AAC_VERSION=([\d.]+)/ https://github.com/mstorsjo/fdk-aac.git|*
 # bump: fdk-aac after ./hashupdate Dockerfile FDK_AAC $LATEST
 # bump: fdk-aac link "ChangeLog" https://github.com/mstorsjo/fdk-aac/blob/master/ChangeLog
@@ -419,7 +464,7 @@ RUN \
 ARG FDK_AAC_VERSION=3.0.0
 ARG FDK_AAC_URL="https://github.com/mstorsjo/fdk-aac/archive/v$FDK_AAC_VERSION.tar.gz"
 ARG FDK_AAC_SHA256=8538ea8f0f9915e460c106a13e1866a9e13c7ee48c1b67d0b2cf7b4e8159bd1a
-ARG ENABLE_FDKAAC=
+ARG ENABLE_FDKAAC
 RUN \
   if [[ -n "$ENABLE_FDKAAC" ]]; then \
   curl $CURL_OPTS -o fdk-aac.tar.gz "$FDK_AAC_URL" && \
@@ -430,8 +475,10 @@ RUN \
     --disable-shared \
     --enable-static && \
   make -j$(nproc) install; \
-  fi
+  fi && \
+  if [[ -n "$ENABLE_FDKAAC" ]]; then echo "$FDK_AAC_VERSION" > /usr/local/share/versions/libfdk-aac; fi
 
+FROM base AS libgme
 # bump: libgme /LIBGME_COMMIT=([[:xdigit:]]+)/ gitrefs:https://github.com/libgme/game-music-emu.git|re:#^refs/heads/master$#|@commit
 # bump: libgme after ./hashupdate Dockerfile LIBGME $LATEST
 # bump: libgme link "Source diff $CURRENT..$LATEST" https://github.com/libgme/game-music-emu/compare/$CURRENT..v$LATEST
@@ -448,8 +495,10 @@ RUN \
     -DBUILD_SHARED_LIBS=OFF \
     -DENABLE_UBSAN=OFF \
     .. && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$LIBGME_COMMIT" > /usr/local/share/versions/libgme
 
+FROM base AS libgsm
 # bump: libgsm /LIBGSM_VERSION=([\d.]+)/ fetch:https://www.quut.com/gsm/|/gsm-([\d.]+)\.tar\.gz/
 # bump: libgsm after ./hashupdate Dockerfile LIBGSM $LATEST
 # bump: libgsm link "Homepage" https://www.quut.com/gsm/
@@ -468,8 +517,10 @@ RUN \
   ar cr libgsm.a *.o && ranlib libgsm.a && \
   mkdir -p /usr/local/include/gsm && \
   cp inc/*.h /usr/local/include/gsm && \
-  cp libgsm.a /usr/local/lib
+  cp libgsm.a /usr/local/lib && \
+  echo "$LIBGSM_VERSION" > /usr/local/share/versions/libgsm
 
+FROM base AS kvazaar
 # bump: kvazaar /KVAZAAR_VERSION=([\d.]+)/ https://github.com/ultravideo/kvazaar.git|^2
 # bump: kvazaar after ./hashupdate Dockerfile KVAZAAR $LATEST
 # bump: kvazaar link "Release notes" https://github.com/ultravideo/kvazaar/releases/tag/v$LATEST
@@ -484,8 +535,10 @@ RUN \
   ./configure \
     --disable-shared \
     --enable-static && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$KVAZAAR_VERSION" > /usr/local/share/versions/libkvazaar
 
+FROM base AS libmodplug
 # bump: libmodplug /LIBMODPLUG_VERSION=([\d.]+)/ fetch:https://sourceforge.net/projects/modplug-xmms/files/|/libmodplug-([\d.]+).tar.gz/
 # bump: libmodplug after ./hashupdate Dockerfile LIBMODPLUG $LATEST
 # bump: libmodplug link "NEWS" https://sourceforge.net/p/modplug-xmms/git/ci/master/tree/libmodplug/NEWS
@@ -499,8 +552,10 @@ RUN \
   ./configure \
     --disable-shared \
     --enable-static && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$LIBMODPLUG_VERSION" > /usr/local/share/versions/libmodplug
 
+FROM base AS mp3lame
 # bump: mp3lame /MP3LAME_VERSION=([\d.]+)/ svn:http://svn.code.sf.net/p/lame/svn|/^RELEASE__(.*)$/|/_/./|*
 # bump: mp3lame after ./hashupdate Dockerfile MP3LAME $LATEST
 # bump: mp3lame link "ChangeLog" http://svn.code.sf.net/p/lame/svn/trunk/lame/ChangeLog
@@ -519,8 +574,10 @@ RUN \
     --disable-cpml \
     --disable-decoder \
     --disable-frontend && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$MP3LAME_VERSION" > /usr/local/share/versions/libmp3lame
 
+FROM base AS lcms2
 # bump: lcms2 /LCMS2_VERSION=([\d.]+)/ https://github.com/mm2/Little-CMS.git|^2
 # bump: lcms2 after ./hashupdate Dockerfile LCMS2 $LATEST
 # bump: lcms2 link "Release" https://github.com/mm2/Little-CMS/releases/tag/lcms$LATEST
@@ -537,8 +594,10 @@ RUN \
     --without-jpeg \
     --without-tiff \
     --disable-shared && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$LCMS2_VERSION" > /usr/local/share/versions/lcms2
 
+FROM base AS libmysofa
 # bump: libmysofa /LIBMYSOFA_VERSION=([\d.]+)/ https://github.com/hoene/libmysofa.git|^1
 # bump: libmysofa after ./hashupdate Dockerfile LIBMYSOFA $LATEST
 # bump: libmysofa link "Release" https://github.com/hoene/libmysofa/releases/tag/v$LATEST
@@ -558,8 +617,10 @@ RUN \
     -DCMAKE_BUILD_TYPE=Release \
     -DBUILD_TESTS=OFF \
     .. && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$LIBMYSOFA_VERSION" > /usr/local/share/versions/libmysofa
 
+FROM base AS openapv
 # openapv tags have four parts, which the semver filter drops, so compare the fourth as prerelease
 # bump: openapv /OPENAPV_VERSION=([\d.]+)/ https://github.com/AcademySoftwareFoundation/openapv.git|re:/^(\d+\.\d+\.\d+)\.(\d+)$/${1}-${2}/|>=0.0.0-0|re:/-/./
 # bump: openapv after ./hashupdate Dockerfile OPENAPV $LATEST
@@ -575,8 +636,10 @@ RUN \
     -DOAPV_BUILD_APPS=OFF \
     -DOAPV_BUILD_SHARED_LIB=OFF && \
   cmake --build build -j$(nproc) && \
-  cmake --install build
+  cmake --install build && \
+  echo "$OPENAPV_VERSION" > /usr/local/share/versions/liboapv
 
+FROM base AS opencoreamr
 # bump: opencoreamr /OPENCOREAMR_VERSION=([\d.]+)/ fetch:https://sourceforge.net/projects/opencore-amr/files/opencore-amr/|/opencore-amr-([\d.]+).tar.gz/
 # bump: opencoreamr after ./hashupdate Dockerfile OPENCOREAMR $LATEST
 # bump: opencoreamr link "ChangeLog" https://sourceforge.net/p/opencore-amr/code/ci/master/tree/ChangeLog
@@ -590,8 +653,10 @@ RUN \
   ./configure \
     --enable-static \
     --disable-shared && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$OPENCOREAMR_VERSION" > /usr/local/share/versions/libopencoreamr
 
+FROM base AS openjpeg
 # bump: openjpeg /OPENJPEG_VERSION=([\d.]+)/ https://github.com/uclouvain/openjpeg.git|*
 # bump: openjpeg after ./hashupdate Dockerfile OPENJPEG $LATEST
 # bump: openjpeg link "CHANGELOG" https://github.com/uclouvain/openjpeg/blob/master/CHANGELOG.md
@@ -612,8 +677,10 @@ RUN \
     -DWITH_ASTYLE=OFF \
     -DBUILD_TESTING=OFF \
     .. && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$OPENJPEG_VERSION" > /usr/local/share/versions/libopenjpeg
 
+FROM base AS opus
 # bump: opus /OPUS_VERSION=([\d.]+)/ https://github.com/xiph/opus.git|^1
 # bump: opus after ./hashupdate Dockerfile OPUS $LATEST
 # bump: opus link "Release notes" https://github.com/xiph/opus/releases/tag/v$LATEST
@@ -630,8 +697,10 @@ RUN \
     --enable-static \
     --disable-extra-programs \
     --disable-doc && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$OPUS_VERSION" > /usr/local/share/versions/libopus
 
+FROM base AS librabbitmq
 # bump: librabbitmq /LIBRABBITMQ_VERSION=([\d.]+)/ https://github.com/alanxz/rabbitmq-c.git|*
 # bump: librabbitmq after ./hashupdate Dockerfile LIBRABBITMQ $LATEST
 # bump: librabbitmq link "ChangeLog" https://github.com/alanxz/rabbitmq-c/blob/master/ChangeLog.md
@@ -658,8 +727,10 @@ RUN \
     -DBUILD_TOOLS_DOCS=OFF \
     -DRUN_SYSTEM_TESTS=OFF \
     .. && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$LIBRABBITMQ_VERSION" > /usr/local/share/versions/librabbitmq
 
+FROM rust AS rav1e
 # bump: rav1e /RAV1E_VERSION=([\d.]+)/ https://github.com/xiph/rav1e.git|/\d+\./|*
 # bump: rav1e after ./hashupdate Dockerfile RAV1E $LATEST
 # bump: rav1e link "Release notes" https://github.com/xiph/rav1e/releases/tag/v$LATEST
@@ -676,8 +747,10 @@ RUN \
   cargo cinstall --release --locked \
     --library-type staticlib \
     --no-default-features \
-    --features asm,threading,git_version,capi
+    --features asm,threading,git_version,capi && \
+  echo "$RAV1E_VERSION" > /usr/local/share/versions/librav1e
 
+FROM base AS librtmp
 # bump: librtmp /LIBRTMP_COMMIT=([[:xdigit:]]+)/ gitrefs:https://git.ffmpeg.org/rtmpdump.git|re:#^refs/heads/master$#|@commit
 # bump: librtmp after ./hashupdate Dockerfile LIBRTMP $LATEST
 # bump: librtmp link "Commit diff $CURRENT..$LATEST" https://git.ffmpeg.org/gitweb/rtmpdump.git/commitdiff/$LATEST?ds=sidebyside
@@ -686,8 +759,10 @@ ARG LIBRTMP_COMMIT=138fdb258d9fc26f1843fd1b891180416c9dc575
 RUN \
   git clone "$LIBRTMP_URL" && cd rtmpdump && \
   git checkout --recurse-submodules $LIBRTMP_COMMIT && \
-  make SYS=posix SHARED=off XCFLAGS="$CFLAGS" OPT= -j$(nproc) install
+  make SYS=posix SHARED=off XCFLAGS="$CFLAGS" OPT= -j$(nproc) install && \
+  echo "$LIBRTMP_COMMIT" > /usr/local/share/versions/librtmp
 
+FROM base AS rubberband
 # bump: rubberband /RUBBERBAND_VERSION=([\d.]+)/ https://github.com/breakfastquay/rubberband.git|*
 # bump: rubberband after ./hashupdate Dockerfile RUBBERBAND $LATEST
 # bump: rubberband link "CHANGELOG" https://github.com/breakfastquay/rubberband/blob/default/CHANGELOG
@@ -703,8 +778,10 @@ RUN \
     -Ddefault_library=static \
     -Dfft=fftw \
     -Dresampler=libsamplerate && \
-  ninja -j$(nproc) -vC build install
+  ninja -j$(nproc) -vC build install && \
+  echo "$RUBBERBAND_VERSION" > /usr/local/share/versions/librubberband
 
+FROM base AS libshine
 # bump: libshine /LIBSHINE_VERSION=([\d.]+)/ https://github.com/toots/shine.git|*
 # bump: libshine after ./hashupdate Dockerfile LIBSHINE $LATEST
 # bump: libshine link "CHANGELOG" https://github.com/toots/shine/blob/master/ChangeLog
@@ -724,8 +801,10 @@ RUN \
     --enable-static \
     --disable-shared \
     --disable-fast-install && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$LIBSHINE_VERSION" > /usr/local/share/versions/libshine
 
+FROM base AS speex
 # bump: speex /SPEEX_VERSION=([\d.]+)/ https://github.com/xiph/speex.git|*
 # bump: speex after ./hashupdate Dockerfile SPEEX $LATEST
 # bump: speex link "ChangeLog" https://github.com/xiph/speex//blob/master/ChangeLog
@@ -741,8 +820,10 @@ RUN \
   ./configure \
     --disable-shared \
     --enable-static && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$SPEEX_VERSION" > /usr/local/share/versions/libspeex
 
+FROM base AS srt
 # bump: srt /SRT_VERSION=([\d.]+)/ https://github.com/Haivision/srt.git|^1
 # bump: srt after ./hashupdate Dockerfile SRT $LATEST
 # bump: srt link "Release notes" https://github.com/Haivision/srt/releases/tag/v$LATEST
@@ -768,8 +849,10 @@ RUN \
     -DCMAKE_INSTALL_INCLUDEDIR=include \
     -DCMAKE_INSTALL_BINDIR=bin \
     .. && \
-  make -j$(nproc) && make install
+  make -j$(nproc) && make install && \
+  echo "$SRT_VERSION" > /usr/local/share/versions/libsrt
 
+FROM base AS libssh
 # bump: libssh /LIBSSH_VERSION=([\d.]+)/ https://gitlab.com/libssh/libssh-mirror.git|*
 # bump: libssh after ./hashupdate Dockerfile LIBSSH $LATEST
 # bump: libssh link "Source diff $CURRENT..$LATEST" https://gitlab.com/libssh/libssh-mirror/-/compare/libssh-$CURRENT...libssh-$LATEST
@@ -805,8 +888,10 @@ RUN \
     -DWITH_EXAMPLES=OFF \
     -DWITH_INTERNAL_DOC=OFF \
     .. && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$LIBSSH_VERSION" > /usr/local/share/versions/libssh
 
+FROM base AS svtav1
 # bump: svtav1 /SVTAV1_VERSION=([\d.]+)/ https://gitlab.com/AOMediaCodec/SVT-AV1.git|*
 # bump: svtav1 after ./hashupdate Dockerfile SVTAV1 $LATEST
 # bump: svtav1 link "Release notes" https://gitlab.com/AOMediaCodec/SVT-AV1/-/releases/v$LATEST
@@ -827,8 +912,10 @@ RUN \
     -DENABLE_AVX512=ON \
     -DCMAKE_BUILD_TYPE=Release \
     .. && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$SVTAV1_VERSION" > /usr/local/share/versions/libsvtav1
 
+FROM base AS ogg
 # has to be before theora
 # bump: ogg /OGG_VERSION=([\d.]+)/ https://github.com/xiph/ogg.git|*
 # bump: ogg after ./hashupdate Dockerfile OGG $LATEST
@@ -844,8 +931,11 @@ RUN \
   ./configure \
     --disable-shared \
     --enable-static && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$OGG_VERSION" > /usr/local/share/versions/libogg
 
+# hard: theora needs ogg
+FROM ogg AS theora
 # bump: theora /THEORA_VERSION=([\d.]+)/ https://github.com/xiph/theora.git|*
 # bump: theora after ./hashupdate Dockerfile THEORA $LATEST
 # bump: theora link "Release notes" https://github.com/xiph/theora/releases/tag/v$LATEST
@@ -865,8 +955,10 @@ RUN \
    --disable-oggtest \
    --disable-shared \
    --enable-static && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$THEORA_VERSION" > /usr/local/share/versions/libtheora
 
+FROM base AS twolame
 # bump: twolame /TWOLAME_VERSION=([\d.]+)/ https://github.com/njh/twolame.git|*
 # bump: twolame after ./hashupdate Dockerfile TWOLAME $LATEST
 # bump: twolame link "Source diff $CURRENT..$LATEST" https://github.com/njh/twolame/compare/v$CURRENT..v$LATEST
@@ -882,8 +974,10 @@ RUN \
     --enable-static \
     --disable-sndfile \
     --with-pic && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$TWOLAME_VERSION" > /usr/local/share/versions/libtwolame
 
+FROM base AS uavs3d
 # bump: uavs3d /UAVS3D_COMMIT=([[:xdigit:]]+)/ gitrefs:https://github.com/uavs3/uavs3d.git|re:#^refs/heads/master$#|@commit
 # bump: uavs3d after ./hashupdate Dockerfile UAVS3D $LATEST
 # bump: uavs3d link "Source diff $CURRENT..$LATEST" https://github.com/uavs3/uavs3d/compare/$CURRENT..$LATEST
@@ -901,8 +995,10 @@ RUN \
     -DBUILD_SHARED_LIBS=OFF \
     -DCOMPILE_10BIT=1 \
     ../.. && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$UAVS3D_COMMIT" > /usr/local/share/versions/libuavs3d
 
+FROM base AS vid.stab
 # bump: vid.stab /VIDSTAB_VERSION=([\d.]+)/ https://github.com/georgmartius/vid.stab.git|*
 # bump: vid.stab after ./hashupdate Dockerfile VIDSTAB $LATEST
 # bump: vid.stab link "Changelog" https://github.com/georgmartius/vid.stab/blob/master/Changelog
@@ -925,9 +1021,12 @@ RUN \
     -DBUILD_SHARED_LIBS=OFF \
     -DUSE_OMP=ON \
     .. && \
-  make -j$(nproc) install
-RUN echo "Libs.private: -ldl" >> /usr/local/lib/pkgconfig/vidstab.pc
+  make -j$(nproc) install && \
+  echo "Libs.private: -ldl" >> /usr/local/lib/pkgconfig/vidstab.pc && \
+  echo "$VIDSTAB_VERSION" > /usr/local/share/versions/libvidstab
 
+# hard: vorbis needs ogg
+FROM ogg AS vorbis
 # bump: vorbis /VORBIS_VERSION=([\d.]+)/ https://github.com/xiph/vorbis.git|*
 # bump: vorbis after ./hashupdate Dockerfile VORBIS $LATEST
 # bump: vorbis link "CHANGES" https://github.com/xiph/vorbis/blob/master/CHANGES
@@ -943,8 +1042,10 @@ RUN \
     --disable-shared \
     --enable-static \
     --disable-oggtest && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$VORBIS_VERSION" > /usr/local/share/versions/libvorbis
 
+FROM base AS libvpx
 # bump: libvpx /VPX_VERSION=([\d.]+)/ https://github.com/webmproject/libvpx.git|*
 # bump: libvpx after ./hashupdate Dockerfile VPX $LATEST
 # bump: libvpx link "CHANGELOG" https://github.com/webmproject/libvpx/blob/master/CHANGELOG
@@ -963,8 +1064,10 @@ RUN \
     --disable-unit-tests \
     --disable-tools \
     --disable-examples && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$VPX_VERSION" > /usr/local/share/versions/libvpx
 
+FROM base AS libwebp
 # bump: libwebp /LIBWEBP_VERSION=([\d.]+)/ https://github.com/webmproject/libwebp.git|^1
 # bump: libwebp after ./hashupdate Dockerfile LIBWEBP $LATEST
 # bump: libwebp link "Release notes" https://github.com/webmproject/libwebp/releases/tag/v$LATEST
@@ -990,8 +1093,10 @@ RUN \
     --disable-jpeg \
     --disable-tiff \
     --disable-gif && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$LIBWEBP_VERSION" > /usr/local/share/versions/libwebp
 
+FROM base AS x264
 # x264 only have a stable branch no tags and we checkout commit so no hash is needed
 # bump: x264 /X264_VERSION=([[:xdigit:]]+)/ gitrefs:https://code.videolan.org/videolan/x264.git|re:#^refs/heads/stable$#|@commit
 # bump: x264 after ./hashupdate Dockerfile X264 $LATEST
@@ -1005,8 +1110,10 @@ RUN \
     --enable-pic \
     --enable-static \
     --disable-cli && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$X264_VERSION" > /usr/local/share/versions/libx264
 
+FROM base AS x265
 # bump: x265 /X265_VERSION=([\d.]+)/ https://github.com/Multicorewareinc/x265.git|*
 # bump: x265 after ./hashupdate Dockerfile X265 $LATEST
 # bump: x265 link "Source diff $CURRENT..$LATEST" https://github.com/Multicorewareinc/x265/compare/$CURRENT..$LATEST
@@ -1024,8 +1131,10 @@ RUN \
   MAKEFLAGS="-j$(nproc)" \
   CMAKEFLAGS="-DENABLE_SHARED=OFF -DENABLE_CLI=OFF -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Release" \
   ./multilib.sh && \
-  make -C 8bit -j$(nproc) install
+  make -C 8bit -j$(nproc) install && \
+  echo "$X265_VERSION" > /usr/local/share/versions/libx265
 
+FROM base AS xavs2
 # bump: xavs2 /XAVS2_VERSION=([\d.]+)/ https://github.com/pkuvcl/xavs2.git|^1
 # bump: xavs2 after ./hashupdate Dockerfile XAVS2 $LATEST
 # bump: xavs2 link "Release" https://github.com/pkuvcl/xavs2/releases/tag/$LATEST
@@ -1044,8 +1153,10 @@ RUN \
     --disable-asm \
     --enable-pic \
     --disable-cli && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$XAVS2_VERSION" > /usr/local/share/versions/libxavs2
 
+FROM base AS xvid
 # http://websvn.xvid.org/cvs/viewvc.cgi/trunk/xvidcore/build/generic/configure.in?revision=2146&view=markup
 # bump: xvid /XVID_VERSION=([\d.]+)/ svn:https://anonymous:@svn.xvid.org|/^release-(.*)$/|/_/./|^1
 # bump: xvid after ./hashupdate Dockerfile XVID $LATEST
@@ -1059,8 +1170,10 @@ RUN \
   tar $TAR_OPTS libxvid.tar.gz && cd xvidcore/build/generic && \
   # gnu18 to fix issue type own bool typedef
   CFLAGS="$CFLAGS -std=gnu18 -fstrength-reduce -ffast-math" ./configure && \
-  make -j$(nproc) && make install
+  make -j$(nproc) && make install && \
+  echo "$XVID_VERSION" > /usr/local/share/versions/libxvid
 
+FROM base AS xeve
 # bump: xeve /XEVE_VERSION=([\d.]+)/ https://github.com/mpeg5/xeve.git|*
 # bump: xeve after ./hashupdate Dockerfile XEVE $LATEST
 # bump: xeve link "CHANGELOG" https://github.com/mpeg5/xeve/releases/tag/v$LATEST
@@ -1081,8 +1194,10 @@ RUN \
     -DARM="$(if [ $(uname -m) == aarch64 ]; then echo TRUE; else echo FALSE; fi)" \
     -DCMAKE_BUILD_TYPE=Release \
     .. && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$XEVE_VERSION" > /usr/local/share/versions/libxeve
 
+FROM base AS xevd
 # bump: xevd /XEVD_VERSION=([\d.]+)/ https://github.com/mpeg5/xevd.git|*
 # bump: xevd after ./hashupdate Dockerfile XEVD $LATEST
 # bump: xevd link "CHANGELOG" https://github.com/mpeg5/xevd/releases/tag/v$LATEST
@@ -1101,8 +1216,10 @@ RUN \
     -DARM="$(if [ $(uname -m) == aarch64 ]; then echo TRUE; else echo FALSE; fi)" \
     -DCMAKE_BUILD_TYPE=Release \
     .. && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$XEVD_VERSION" > /usr/local/share/versions/libxevd
 
+FROM base AS zimg
 # bump: zimg /ZIMG_VERSION=([\d.]+)/ https://github.com/sekrit-twc/zimg.git|*
 # bump: zimg after ./hashupdate Dockerfile ZIMG $LATEST
 # bump: zimg link "ChangeLog" https://github.com/sekrit-twc/zimg/blob/master/ChangeLog
@@ -1117,12 +1234,10 @@ RUN \
   ./configure \
     --disable-shared \
     --enable-static && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$ZIMG_VERSION" > /usr/local/share/versions/libzimg
 
-# bump: libjxl /LIBJXL_VERSION=([\d.]+)/ https://github.com/libjxl/libjxl.git|^0
-# bump: libjxl after ./hashupdate Dockerfile LIBJXL $LATEST
-# bump: libjxl after HWY=$(curl -sL https://raw.githubusercontent.com/libjxl/libjxl/v$LATEST/deps.sh | sed -n 's/^THIRD_PARTY_HIGHWAY="\([0-9a-f]*\)".*/\1/p') && V=$(git ls-remote --tags https://github.com/google/highway | awk -v c=$HWY '$1==c {sub("refs/tags/","",$2); sub("\\^\\{\\}","",$2); print $2}') && sed -i -E "s/^ARG HIGHWAY_VERSION=.*/ARG HIGHWAY_VERSION=$V/" Dockerfile && ./hashupdate Dockerfile HIGHWAY $V
-# bump: libjxl link "Changelog" https://github.com/libjxl/libjxl/blob/main/CHANGELOG.md
+FROM base AS highway
 # highway is the only third_party source of libjxl this build uses, pinned by libjxl deps.sh and bumped with libjxl
 ARG HIGHWAY_VERSION=1.2.0
 ARG HIGHWAY_URL="https://github.com/google/highway/releases/download/$HIGHWAY_VERSION/highway-$HIGHWAY_VERSION.tar.gz"
@@ -1140,6 +1255,13 @@ RUN \
   cmake --build build -j$(nproc) && \
   cmake --install build
 
+# hard: -DJPEGXL_FORCE_SYSTEM_HWY=ON needs highway, -DJPEGXL_ENABLE_SKCMS=OFF needs lcms2
+FROM highway AS libjxl
+COPY --from=lcms2 /usr/local/ /usr/local/
+# bump: libjxl /LIBJXL_VERSION=([\d.]+)/ https://github.com/libjxl/libjxl.git|^0
+# bump: libjxl after ./hashupdate Dockerfile LIBJXL $LATEST
+# bump: libjxl after HWY=$(curl -sL https://raw.githubusercontent.com/libjxl/libjxl/v$LATEST/deps.sh | sed -n 's/^THIRD_PARTY_HIGHWAY="\([0-9a-f]*\)".*/\1/p') && V=$(git ls-remote --tags https://github.com/google/highway | awk -v c=$HWY '$1==c {sub("refs/tags/","",$2); sub("\\^\\{\\}","",$2); print $2}') && sed -i -E "s/^ARG HIGHWAY_VERSION=.*/ARG HIGHWAY_VERSION=$V/" Dockerfile && ./hashupdate Dockerfile HIGHWAY $V
+# bump: libjxl link "Changelog" https://github.com/libjxl/libjxl/blob/main/CHANGELOG.md
 # highway is built above as its static build is not available in alpine
 ARG LIBJXL_VERSION=0.13.0
 ARG LIBJXL_URL="https://github.com/libjxl/libjxl/archive/refs/tags/v${LIBJXL_VERSION}.tar.gz"
@@ -1170,13 +1292,14 @@ RUN \
     -DJPEGXL_FORCE_SYSTEM_BROTLI=ON \
     -DJPEGXL_FORCE_SYSTEM_HWY=ON && \
   cmake --build build -j$(nproc) && \
-  cmake --install build
+  cmake --install build && \
 # workaround for ffmpeg configure script
-RUN \
   sed -i 's/-ljxl/-ljxl -lstdc++ /' /usr/local/lib/pkgconfig/libjxl.pc && \
   sed -i 's/-ljxl_cms/-ljxl_cms -lstdc++ /' /usr/local/lib/pkgconfig/libjxl_cms.pc && \
-  sed -i 's/-ljxl_threads/-ljxl_threads -lstdc++ /' /usr/local/lib/pkgconfig/libjxl_threads.pc
+  sed -i 's/-ljxl_threads/-ljxl_threads -lstdc++ /' /usr/local/lib/pkgconfig/libjxl_threads.pc && \
+  echo "$LIBJXL_VERSION" > /usr/local/share/versions/libjxl
 
+FROM base AS libzmq
 # bump: libzmq /LIBZMQ_VERSION=([\d.]+)/ https://github.com/zeromq/libzmq.git|*
 # bump: libzmq after ./hashupdate Dockerfile LIBZMQ $LATEST
 # bump: libzmq link "NEWS" https://github.com/zeromq/libzmq/blob/master/NEWS
@@ -1195,8 +1318,10 @@ RUN \
     --disable-curve-keygen \
     --without-docs \
     --enable-static && \
-  make -j$(nproc) install
+  make -j$(nproc) install && \
+  echo "$LIBZMQ_VERSION" > /usr/local/share/versions/libzmq
 
+FROM base AS vvenc
 # bump: vvenc /VVENC_VERSION=([\d.]+)/ https://github.com/fraunhoferhhi/vvenc.git|*
 # bump: vvenc after ./hashupdate Dockerfile VVENC $LATEST
 # bump: vvenc link "CHANGELOG" https://github.com/fraunhoferhhi/vvenc/releases/tag/v$LATEST
@@ -1217,7 +1342,57 @@ RUN \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_INSTALL_PREFIX=/usr/local && \
   cmake --build build/release-static -j$(nproc) && \
-  cmake --build build/release-static --target install
+  cmake --build build/release-static --target install && \
+  echo "$VVENC_VERSION" > /usr/local/share/versions/libvvenc
+
+FROM base AS builder
+ARG APK_OPTS
+ARG ENABLE_FDKAAC
+COPY --from=aom /usr/local/ /usr/local/
+COPY --from=librsvg /usr/local/ /usr/local/
+COPY --from=libaribb24 /usr/local/ /usr/local/
+COPY --from=chromaprint /usr/local/ /usr/local/
+COPY --from=libass /usr/local/ /usr/local/
+COPY --from=libbluray /usr/local/ /usr/local/
+COPY --from=libdvdnav /usr/local/ /usr/local/
+COPY --from=davs2 /usr/local/ /usr/local/
+COPY --from=fdk-aac /usr/local/ /usr/local/
+COPY --from=libgme /usr/local/ /usr/local/
+COPY --from=libgsm /usr/local/ /usr/local/
+COPY --from=kvazaar /usr/local/ /usr/local/
+COPY --from=libmodplug /usr/local/ /usr/local/
+COPY --from=mp3lame /usr/local/ /usr/local/
+COPY --from=libmysofa /usr/local/ /usr/local/
+COPY --from=openapv /usr/local/ /usr/local/
+COPY --from=opencoreamr /usr/local/ /usr/local/
+COPY --from=openjpeg /usr/local/ /usr/local/
+COPY --from=opus /usr/local/ /usr/local/
+COPY --from=librabbitmq /usr/local/ /usr/local/
+COPY --from=rav1e /usr/local/ /usr/local/
+COPY --from=librtmp /usr/local/ /usr/local/
+COPY --from=rubberband /usr/local/ /usr/local/
+COPY --from=libshine /usr/local/ /usr/local/
+COPY --from=speex /usr/local/ /usr/local/
+COPY --from=srt /usr/local/ /usr/local/
+COPY --from=libssh /usr/local/ /usr/local/
+COPY --from=svtav1 /usr/local/ /usr/local/
+COPY --from=theora /usr/local/ /usr/local/
+COPY --from=twolame /usr/local/ /usr/local/
+COPY --from=uavs3d /usr/local/ /usr/local/
+COPY --from=vid.stab /usr/local/ /usr/local/
+COPY --from=vorbis /usr/local/ /usr/local/
+COPY --from=libvpx /usr/local/ /usr/local/
+COPY --from=libwebp /usr/local/ /usr/local/
+COPY --from=x264 /usr/local/ /usr/local/
+COPY --from=x265 /usr/local/ /usr/local/
+COPY --from=xavs2 /usr/local/ /usr/local/
+COPY --from=xvid /usr/local/ /usr/local/
+COPY --from=xeve /usr/local/ /usr/local/
+COPY --from=xevd /usr/local/ /usr/local/
+COPY --from=zimg /usr/local/ /usr/local/
+COPY --from=libjxl /usr/local/ /usr/local/
+COPY --from=libzmq /usr/local/ /usr/local/
+COPY --from=vvenc /usr/local/ /usr/local/
 
 # bump: ffmpeg /FFMPEG_VERSION=([\d.]+)/ https://github.com/FFmpeg/FFmpeg.git|*
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
@@ -1333,81 +1508,25 @@ RUN \
   PIXMAN_VERSION=$(pkg-config --modversion pixman-1) \
   SNAPPY_VERSION=$(apk info -a snappy $APK_OPTS | head -n1 | awk '{print $1}' | sed -e 's/snappy-//') \
   SOXR_VERSION=$(pkg-config --modversion soxr) \
-  jq -n \
+  jq -S -Rn \
   '{ \
-  chromaprint: env.CHROMAPRINT_VERSION, \
   expat: env.EXPAT_VERSION, \
-  "libfdk-aac": env.FDK_AAC_VERSION, \
   ffmpeg: env.FFMPEG_VERSION, \
   fftw: env.FFTW_VERSION, \
   fontconfig: env.FONTCONFIG_VERSION, \
-  lcms2: env.LCMS2_VERSION, \
-  libaom: env.AOM_VERSION, \
-  libaribb24: env.LIBARIBB24_VERSION, \
-  libass: env.LIBASS_VERSION, \
-  libbluray: env.LIBBLURAY_VERSION, \
-  libdav1d: env.DAV1D_VERSION, \
-  libdavs2: env.DAVS2_VERSION, \
-  libdvdcss: env.LIBDVDCSS_VERSION, \
-  libdvdnav: env.LIBDVDNAV_VERSION, \
-  libdvdread: env.LIBDVDREAD_VERSION, \
   libffi: env.LIBFFI_VERSION, \
   libfreetype: env.FREETYPE_VERSION, \
   libfribidi: env.FRIBIDI_VERSION, \
-  libgme: env.LIBGME_COMMIT, \
-  libgsm: env.LIBGSM_VERSION, \
-  libharfbuzz: env.LIBHARFBUZZ_VERSION, \
-  libjxl: env.LIBJXL_VERSION, \
-  libkvazaar: env.KVAZAAR_VERSION, \
-  libmodplug: env.LIBMODPLUG_VERSION, \
-  libmp3lame: env.MP3LAME_VERSION, \
-  libmysofa: env.LIBMYSOFA_VERSION, \
-  liboapv: env.OPENAPV_VERSION, \
-  libogg: env.OGG_VERSION, \
-  libopencoreamr: env.OPENCOREAMR_VERSION, \
-  libopenjpeg: env.OPENJPEG_VERSION, \
-  libopus: env.OPUS_VERSION, \
-  librabbitmq: env.LIBRABBITMQ_VERSION, \
-  librav1e: env.RAV1E_VERSION, \
-  librsvg: env.LIBRSVG_VERSION, \
-  librtmp: env.LIBRTMP_COMMIT, \
-  librubberband: env.RUBBERBAND_VERSION, \
   libsamplerate: env.LIBSAMPLERATE_VERSION, \
-  libshine: env.LIBSHINE_VERSION, \
   libsnappy: env.SNAPPY_VERSION, \
   libsoxr: env.SOXR_VERSION, \
-  libspeex: env.SPEEX_VERSION, \
-  libsrt: env.SRT_VERSION, \
-  libssh: env.LIBSSH_VERSION, \
-  libsvtav1: env.SVTAV1_VERSION, \
-  libtheora: env.THEORA_VERSION, \
-  libtwolame: env.TWOLAME_VERSION, \
-  libuavs3d: env.UAVS3D_COMMIT, \
-  libvidstab: env.VIDSTAB_VERSION, \
-  libvmaf: env.VMAF_VERSION, \
   libvo_amrwbenc: env.LIBVO_AMRWBENC_VERSION, \
-  libvorbis: env.VORBIS_VERSION, \
-  libvpx: env.VPX_VERSION, \
-  libvvenc: env.VVENC_VERSION, \
-  libwebp: env.LIBWEBP_VERSION, \
-  libx264: env.X264_VERSION, \
-  libx265: env.X265_VERSION, \
-  libxavs2: env.XAVS2_VERSION, \
-  libxevd: env.XEVD_VERSION, \
-  libxeve: env.XEVE_VERSION, \
   libxml2: env.LIBXML2_VERSION, \
-  libxvid: env.XVID_VERSION, \
-  libzimg: env.ZIMG_VERSION, \
-  libzmq: env.LIBZMQ_VERSION, \
   openssl: env.OPENSSL_VERSION, \
   pcre2: env.PCRE2_VERSION, \
   pixman: env.PIXMAN_VERSION, \
-  } \
-  | if env.ENABLE_FDKAAC == "" then del(."libfdk-aac") end \
-  | if env.ENABLE_LIBDVDCSS == "" then del(.libdvdcss) end' > /versions.json
-
+  } + reduce inputs as $v ({}; . + {(input_filename | split("/")[-1]): $v})' /usr/local/share/versions/* > /versions.json && \
 # make sure binaries has no dependencies, is relro, pie and stack nx
-RUN \
   for f in /usr/local/bin/ffmpeg /usr/local/bin/ffprobe; do \
     NOEXTLIBS=$(test "$(ldd "$f" | wc -l)" -eq 1 && echo yes || echo no) && \
     RELRO=$(readelf -l "$f" | grep -q GNU_RELRO && echo yes || echo no) && \
@@ -1425,10 +1544,9 @@ RUN \
     [ "$BIND_NOW" = "yes" ] && \
     [ "$PIE" = "yes" ] && \
     [ "$STACKNX" = "yes" ] || exit 1; \
-  done
-
+  done && \
 # some basic fonts that don't take up much space
-RUN apk add $APK_OPTS font-terminus font-inconsolata font-dejavu font-awesome
+  apk add $APK_OPTS font-terminus font-inconsolata font-dejavu font-awesome
 
 FROM scratch AS final1
 COPY --from=builder /usr/local/bin/ffmpeg /
