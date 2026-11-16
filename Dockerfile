@@ -1039,7 +1039,7 @@ RUN \
   sed -i '/^cmake / s/$/ -G "Unix Makefiles" ${CMAKEFLAGS}/' ./multilib.sh && \
   sed -i 's/ -DENABLE_SHARED=OFF//g' ./multilib.sh && \
   MAKEFLAGS="-j$(nproc)" \
-  CMAKEFLAGS="-DENABLE_SHARED=OFF -DENABLE_CLI=OFF -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Release" \
+  CMAKEFLAGS="-DENABLE_SHARED=OFF -DENABLE_CLI=OFF -DENABLE_ALPHA=ON -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Release" \
   ./multilib.sh && \
   make -C 8bit -j$(nproc) install
 
