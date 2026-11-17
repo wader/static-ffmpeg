@@ -1038,6 +1038,9 @@ RUN \
   tar $TAR_OPTS x265.tar.gz && cd x265_*/build/linux && \
   sed -i '/^cmake / s/$/ -G "Unix Makefiles" ${CMAKEFLAGS}/' ./multilib.sh && \
   sed -i 's/ -DENABLE_SHARED=OFF//g' ./multilib.sh && \
+  # hdr10+ for the 10 and 12 bit builds only, 8 bit has no use for it
+  sed -i 's/-DHIGH_BIT_DEPTH=ON/& -DENABLE_HDR10_PLUS=ON/' ./multilib.sh && \
+  sed -i '1i #include <cstdint>' ../../source/dynamicHDR10/json11/json11.cpp && \
   MAKEFLAGS="-j$(nproc)" \
   CMAKEFLAGS="-DENABLE_SHARED=OFF -DENABLE_CLI=OFF -DENABLE_ALPHA=ON -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Release" \
   ./multilib.sh && \
