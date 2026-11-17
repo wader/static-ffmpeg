@@ -507,7 +507,7 @@ RUN \
 # bump: libmodplug after ./hashupdate Dockerfile LIBMODPLUG $LATEST
 # bump: libmodplug link "NEWS" https://sourceforge.net/p/modplug-xmms/git/ci/master/tree/libmodplug/NEWS
 ARG LIBMODPLUG_VERSION=0.8.9.2
-ARG LIBMODPLUG_URL="https://downloads.sourceforge.net/modplug-xmms/libmodplug-$LIBMODPLUG_VERSION.tar.gz"
+ARG LIBMODPLUG_URL="https://downloads.sourceforge.net/project/modplug-xmms/libmodplug/$LIBMODPLUG_VERSION/libmodplug-$LIBMODPLUG_VERSION.tar.gz"
 ARG LIBMODPLUG_SHA256=e4d9cb46da78a639d6eadb4ff3ab955f68c3099579b5310af64b37091e28957e
 RUN \
   curl $CURL_OPTS -o libmodplug.tar.gz "$LIBMODPLUG_URL" && \
@@ -522,7 +522,7 @@ RUN \
 # bump: mp3lame after ./hashupdate Dockerfile MP3LAME $LATEST
 # bump: mp3lame link "ChangeLog" http://svn.code.sf.net/p/lame/svn/trunk/lame/ChangeLog
 ARG MP3LAME_VERSION=4.0
-ARG MP3LAME_URL="https://sourceforge.net/projects/lame/files/lame/$MP3LAME_VERSION/lame-$MP3LAME_VERSION.tar.gz/download"
+ARG MP3LAME_URL="https://downloads.sourceforge.net/project/lame/lame/$MP3LAME_VERSION/lame-$MP3LAME_VERSION.tar.gz"
 ARG MP3LAME_SHA256=3df5124d5ad3a98312ffd7ba6a9b36230e4f8a3e66d3ce0f425e336c32d216eb
 RUN \
   curl $CURL_OPTS -o lame.tar.gz "$MP3LAME_URL" && \
@@ -598,7 +598,7 @@ RUN \
 # bump: opencoreamr after ./hashupdate Dockerfile OPENCOREAMR $LATEST
 # bump: opencoreamr link "ChangeLog" https://sourceforge.net/p/opencore-amr/code/ci/master/tree/ChangeLog
 ARG OPENCOREAMR_VERSION=0.1.6
-ARG OPENCOREAMR_URL="https://sourceforge.net/projects/opencore-amr/files/opencore-amr/opencore-amr-$OPENCOREAMR_VERSION.tar.gz"
+ARG OPENCOREAMR_URL="https://downloads.sourceforge.net/project/opencore-amr/opencore-amr/opencore-amr-$OPENCOREAMR_VERSION.tar.gz"
 ARG OPENCOREAMR_SHA256=483eb4061088e2b34b358e47540b5d495a96cd468e361050fae615b1809dc4a1
 RUN \
   curl $CURL_OPTS -o opencoreamr.tar.gz "$OPENCOREAMR_URL" && \
