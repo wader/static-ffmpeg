@@ -417,13 +417,13 @@ RUN \
 ARG DAVS2_VERSION=1.7
 ARG DAVS2_URL="https://github.com/pkuvcl/davs2/archive/refs/tags/$DAVS2_VERSION.tar.gz"
 ARG DAVS2_SHA256=b697d0b376a1c7f7eda3a4cc6d29707c8154c4774358303653f0a9727f923cc8
-# TODO: seems to be issues with asm on musl
 RUN \
   curl $CURL_OPTS -o davs2.tar.gz "$DAVS2_URL" && \
   echo "$DAVS2_SHA256  davs2.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS davs2.tar.gz && cd davs2-*/build/linux && \
+  # the source has assembler for x86 only
   ./configure \
-    --disable-asm \
+    $([ "$(arch)" = x86_64 ] || echo --disable-asm) \
     --enable-pic \
     --enable-strip \
     --disable-cli && \
@@ -1053,15 +1053,15 @@ RUN \
 ARG XAVS2_VERSION=1.4
 ARG XAVS2_URL="https://github.com/pkuvcl/xavs2/archive/refs/tags/$XAVS2_VERSION.tar.gz"
 ARG XAVS2_SHA256=1e6d731cd64cb2a8940a0a3fd24f9c2ac3bb39357d802432a47bc20bad52c6ce
-# TODO: seems to be issues with asm on musl
 RUN \
   curl $CURL_OPTS -o xavs2.tar.gz "$XAVS2_URL" && \
   echo "$XAVS2_SHA256  xavs2.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS xavs2.tar.gz && cd xavs2-*/build/linux && \
   # new gcc not happy with some of the code
   CFLAGS="$CFLAGS -Wno-incompatible-pointer-types -Wno-unused-function" \
+  # the source has assembler for x86 only
   ./configure \
-    --disable-asm \
+    $([ "$(arch)" = x86_64 ] || echo --disable-asm) \
     --enable-pic \
     --disable-cli && \
   make -j$(nproc) install
