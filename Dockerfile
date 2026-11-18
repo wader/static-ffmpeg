@@ -467,15 +467,10 @@ RUN \
   curl $CURL_OPTS -o libgsm.tar.gz "$LIBGSM_URL" && \
   echo "$LIBGSM_SHA256  libgsm.tar.gz" | sha256sum -c - && \
   tar $TAR_OPTS libgsm.tar.gz && cd gsm-* && \
-  # Makefile is hard to use, hence use specific compile arguments and flags
-  # no need to build toast cli tool \
-  rm src/toast* && \
-  SRC=$(echo src/*.c) && \
-  gcc ${CFLAGS} -c -ansi -pedantic -s -DNeedFunctionPrototypes=1 -Wall -Wno-comment -DSASR -DWAV49 -DNDEBUG -I./inc ${SRC} && \
-  ar cr libgsm.a *.o && ranlib libgsm.a && \
+  make -j$(nproc) lib/libgsm.a CCFLAGS="-c ${CFLAGS} -DNDEBUG" && \
   mkdir -p /usr/local/include/gsm && \
-  cp inc/*.h /usr/local/include/gsm && \
-  cp libgsm.a /usr/local/lib
+  cp inc/gsm.h /usr/local/include/gsm && \
+  cp lib/libgsm.a /usr/local/lib
 
 # bump: kvazaar /KVAZAAR_VERSION=([\d.]+)/ https://github.com/ultravideo/kvazaar.git|^2
 # bump: kvazaar after ./hashupdate Dockerfile KVAZAAR $LATEST
