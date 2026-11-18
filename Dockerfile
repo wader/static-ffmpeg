@@ -61,6 +61,7 @@ RUN apk add --no-cache $APK_OPTS \
 ARG CFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIC"
 ARG CXXFLAGS="-O3 -static-libgcc -fno-strict-overflow -fstack-protector-all -fPIC"
 ARG LDFLAGS="-Wl,-z,relro,-z,now"
+ARG CMAKE_COMMON_FLAGS="-DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Release -DBUILD_SHARED_LIBS=OFF -DCMAKE_INSTALL_LIBDIR=lib"
 
 # before aom as libvmaf uses it
 # bump: vmaf /VMAF_VERSION=([\d.]+)/ https://github.com/Netflix/vmaf.git|*
@@ -177,9 +178,9 @@ RUN \
 # bump: dav1d /DAV1D_VERSION=([\d.]+)/ fetch:https://download.videolan.org/pub/videolan/dav1d/last/|/dav1d-([\d.]+)\.tar\.xz/
 # bump: dav1d after ./hashupdate Dockerfile DAV1D $LATEST
 # bump: dav1d link "Release notes" https://code.videolan.org/videolan/dav1d/-/tags/$LATEST
-ARG DAV1D_VERSION=1.5.4
+ARG DAV1D_VERSION=1.5.5
 ARG DAV1D_URL="https://download.videolan.org/pub/videolan/dav1d/$DAV1D_VERSION/dav1d-$DAV1D_VERSION.tar.xz"
-ARG DAV1D_SHA256=686616b7c69eb88d44459391ab25cac13b6647a3b288835c5784e71c1514a5c5
+ARG DAV1D_SHA256=ca96b1d0ba3f01f55de7231d775892b64994ba061aaeeaaa4f662a390b3abf9e
 ADD --checksum=sha256:$DAV1D_SHA256 --unpack=true $DAV1D_URL /
 RUN \
   cd dav1d-* && \
@@ -226,10 +227,7 @@ RUN \
   cd libaom-* && \
   mkdir build_tmp && cd build_tmp && \
   cmake \
-    -G"Unix Makefiles" \
-    -DCMAKE_VERBOSE_MAKEFILE=ON \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=OFF \
+    $CMAKE_COMMON_FLAGS \
     -DENABLE_APPS=NO \
     -DENABLE_EXAMPLES=NO \
     -DENABLE_DOCS=NO \
@@ -238,7 +236,6 @@ RUN \
     -DCONFIG_TUNE_VMAF=1 \
     -DCONFIG_LIBYUV=0 \
     -DENABLE_NASM=ON \
-    -DCMAKE_INSTALL_LIBDIR=lib \
     .. && \
   make -j$(nproc) install
 
@@ -267,16 +264,27 @@ ADD --checksum=sha256:$CHROMAPRINT_SHA256 --unpack=true $CHROMAPRINT_URL /
 RUN \
   cd chromaprint-* && \
   cmake -B build \
-    -G"Unix Makefiles" \
-    -DCMAKE_VERBOSE_MAKEFILE=ON \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_INSTALL_LIBDIR=lib \
-    -DBUILD_SHARED_LIBS=OFF \
+    $CMAKE_COMMON_FLAGS \
     -DBUILD_TESTS=OFF \
     -DFFT_LIB=fftw3 && \
   cmake --build build -j$(nproc) && \
   cmake --install build
 RUN echo "Libs.private: -lfftw3 -lstdc++" >> /usr/local/lib/pkgconfig/libchromaprint.pc
+
+# before libass, which uses it for unicode line breaking; alpine has no static build
+# bump: libunibreak /LIBUNIBREAK_VERSION=([\d.]+)/ gitrefs:https://github.com/adah1972/libunibreak.git|re:#^refs/tags/libunibreak_(\d+)_(\d+)$#${1}.${2}#|*
+# bump: libunibreak after sed -i -E "s#/libunibreak_[0-9_]+/#/libunibreak_$(echo $LATEST | tr . _)/#" Dockerfile && ./hashupdate Dockerfile LIBUNIBREAK $LATEST
+# bump: libunibreak link "NEWS" https://github.com/adah1972/libunibreak/blob/master/NEWS
+ARG LIBUNIBREAK_VERSION=8.0
+ARG LIBUNIBREAK_URL="https://github.com/adah1972/libunibreak/releases/download/libunibreak_8_0/libunibreak-$LIBUNIBREAK_VERSION.tar.gz"
+ARG LIBUNIBREAK_SHA256=9c4fad6e517338a098373acc9f35579ae2c325e6446666fb9ac2666ba15ceba4
+ADD --checksum=sha256:$LIBUNIBREAK_SHA256 --unpack=true $LIBUNIBREAK_URL /
+RUN \
+  cd libunibreak-* && \
+  ./configure \
+    --disable-shared \
+    --enable-static && \
+  make -j$(nproc) install
 
 # bump: libass /LIBASS_VERSION=([\d.]+)/ https://github.com/libass/libass.git|*
 # bump: libass after ./hashupdate Dockerfile LIBASS $LATEST
@@ -288,6 +296,7 @@ ADD --checksum=sha256:$LIBASS_SHA256 --unpack=true $LIBASS_URL /
 RUN \
   cd libass-* && \
   ./configure \
+    --enable-libunibreak \
     --disable-shared \
     --enable-static && \
   make -j$(nproc) && make install
@@ -378,12 +387,12 @@ RUN \
 ARG DAVS2_VERSION=1.7
 ARG DAVS2_URL="https://github.com/pkuvcl/davs2/archive/refs/tags/$DAVS2_VERSION.tar.gz"
 ARG DAVS2_SHA256=b697d0b376a1c7f7eda3a4cc6d29707c8154c4774358303653f0a9727f923cc8
-# TODO: seems to be issues with asm on musl
 ADD --checksum=sha256:$DAVS2_SHA256 --unpack=true $DAVS2_URL /
 RUN \
   cd davs2-*/build/linux && \
+  # the source has assembler for x86 only
   ./configure \
-    --disable-asm \
+    $([ "$(arch)" = x86_64 ] || echo --disable-asm) \
     --enable-pic \
     --enable-strip \
     --disable-cli && \
@@ -418,10 +427,7 @@ RUN \
   cd game-music-emu && \
   mkdir build && cd build && \
   cmake \
-    -G"Unix Makefiles" \
-    -DCMAKE_VERBOSE_MAKEFILE=ON \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=OFF \
+    $CMAKE_COMMON_FLAGS \
     -DENABLE_UBSAN=OFF \
     .. && \
   make -j$(nproc) install
@@ -435,15 +441,10 @@ ARG LIBGSM_SHA256=a3c40c6471928383f4abfcb2e8f24012a1f562be2f17b8d672145d5986681a
 ADD --checksum=sha256:$LIBGSM_SHA256 --unpack=true $LIBGSM_URL /
 RUN \
   cd gsm-* && \
-  # Makefile is hard to use, hence use specific compile arguments and flags
-  # no need to build toast cli tool \
-  rm src/toast* && \
-  SRC=$(echo src/*.c) && \
-  gcc ${CFLAGS} -c -ansi -pedantic -s -DNeedFunctionPrototypes=1 -Wall -Wno-comment -DSASR -DWAV49 -DNDEBUG -I./inc ${SRC} && \
-  ar cr libgsm.a *.o && ranlib libgsm.a && \
+  make -j$(nproc) lib/libgsm.a CCFLAGS="-c ${CFLAGS} -DNDEBUG" && \
   mkdir -p /usr/local/include/gsm && \
-  cp inc/*.h /usr/local/include/gsm && \
-  cp libgsm.a /usr/local/lib
+  cp inc/gsm.h /usr/local/include/gsm && \
+  cp lib/libgsm.a /usr/local/lib
 
 # bump: kvazaar /KVAZAAR_VERSION=([\d.]+)/ https://github.com/ultravideo/kvazaar.git|^2
 # bump: kvazaar after ./hashupdate Dockerfile KVAZAAR $LATEST
@@ -463,9 +464,9 @@ RUN \
 # bump: libmodplug /LIBMODPLUG_VERSION=([\d.]+)/ fetch:https://sourceforge.net/projects/modplug-xmms/files/|/libmodplug-([\d.]+).tar.gz/
 # bump: libmodplug after ./hashupdate Dockerfile LIBMODPLUG $LATEST
 # bump: libmodplug link "NEWS" https://sourceforge.net/p/modplug-xmms/git/ci/master/tree/libmodplug/NEWS
-ARG LIBMODPLUG_VERSION=0.8.9.0
-ARG LIBMODPLUG_URL="https://sourceforge.net/projects/modplug-xmms/files/libmodplug/$LIBMODPLUG_VERSION/libmodplug-$LIBMODPLUG_VERSION.tar.gz/download"
-ARG LIBMODPLUG_SHA256=457ca5a6c179656d66c01505c0d95fafaead4329b9dbaa0f997d00a3508ad9de
+ARG LIBMODPLUG_VERSION=0.8.9.2
+ARG LIBMODPLUG_URL="https://downloads.sourceforge.net/project/modplug-xmms/libmodplug/$LIBMODPLUG_VERSION/libmodplug-$LIBMODPLUG_VERSION.tar.gz"
+ARG LIBMODPLUG_SHA256=e4d9cb46da78a639d6eadb4ff3ab955f68c3099579b5310af64b37091e28957e
 ADD --checksum=sha256:$LIBMODPLUG_SHA256 --unpack=true $LIBMODPLUG_URL /
 RUN \
   cd libmodplug-* && \
@@ -478,7 +479,7 @@ RUN \
 # bump: mp3lame after ./hashupdate Dockerfile MP3LAME $LATEST
 # bump: mp3lame link "ChangeLog" http://svn.code.sf.net/p/lame/svn/trunk/lame/ChangeLog
 ARG MP3LAME_VERSION=4.0
-ARG MP3LAME_URL="https://sourceforge.net/projects/lame/files/lame/$MP3LAME_VERSION/lame-$MP3LAME_VERSION.tar.gz/download"
+ARG MP3LAME_URL="https://downloads.sourceforge.net/project/lame/lame/$MP3LAME_VERSION/lame-$MP3LAME_VERSION.tar.gz"
 ARG MP3LAME_SHA256=3df5124d5ad3a98312ffd7ba6a9b36230e4f8a3e66d3ce0f425e336c32d216eb
 ADD --checksum=sha256:$MP3LAME_SHA256 --unpack=true $MP3LAME_URL /
 RUN \
@@ -521,11 +522,7 @@ ADD --checksum=sha256:$LIBMYSOFA_SHA256 --unpack=true $LIBMYSOFA_URL /
 RUN \
   cd libmysofa-*/build && \
   cmake \
-    -G"Unix Makefiles" \
-    -DCMAKE_VERBOSE_MAKEFILE=ON \
-    -DCMAKE_INSTALL_LIBDIR=lib \
-    -DBUILD_SHARED_LIBS=OFF \
-    -DCMAKE_BUILD_TYPE=Release \
+    $CMAKE_COMMON_FLAGS \
     -DBUILD_TESTS=OFF \
     .. && \
   make -j$(nproc) install
@@ -541,6 +538,7 @@ ADD --checksum=sha256:$OPENAPV_SHA256 --unpack=true $OPENAPV_URL /
 RUN \
   cd openapv-* && \
   cmake -B build \
+    $CMAKE_COMMON_FLAGS \
     -DOAPV_BUILD_APPS=OFF \
     -DOAPV_BUILD_SHARED_LIB=OFF && \
   cmake --build build -j$(nproc) && \
@@ -550,7 +548,7 @@ RUN \
 # bump: opencoreamr after ./hashupdate Dockerfile OPENCOREAMR $LATEST
 # bump: opencoreamr link "ChangeLog" https://sourceforge.net/p/opencore-amr/code/ci/master/tree/ChangeLog
 ARG OPENCOREAMR_VERSION=0.1.6
-ARG OPENCOREAMR_URL="https://sourceforge.net/projects/opencore-amr/files/opencore-amr/opencore-amr-$OPENCOREAMR_VERSION.tar.gz/download"
+ARG OPENCOREAMR_URL="https://downloads.sourceforge.net/project/opencore-amr/opencore-amr/opencore-amr-$OPENCOREAMR_VERSION.tar.gz"
 ARG OPENCOREAMR_SHA256=483eb4061088e2b34b358e47540b5d495a96cd468e361050fae615b1809dc4a1
 ADD --checksum=sha256:$OPENCOREAMR_SHA256 --unpack=true $OPENCOREAMR_URL /
 RUN \
@@ -571,10 +569,7 @@ RUN \
   cd openjpeg-* && \
   mkdir build && cd build && \
   cmake \
-    -G"Unix Makefiles" \
-    -DCMAKE_VERBOSE_MAKEFILE=ON \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=OFF \
+    $CMAKE_COMMON_FLAGS \
     -DBUILD_CODEC=OFF \
     -DWITH_ASTYLE=OFF \
     -DBUILD_TESTING=OFF \
@@ -609,14 +604,10 @@ RUN \
   cd rabbitmq-c-* && \
   mkdir build && cd build && \
   cmake \
-    -G"Unix Makefiles" \
-    -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DBUILD_EXAMPLES=OFF \
-    -DBUILD_SHARED_LIBS=OFF \
     -DBUILD_STATIC_LIBS=ON \
     -DCMAKE_INSTALL_PREFIX=/usr/local \
-    -DCMAKE_INSTALL_LIBDIR=lib \
-    -DCMAKE_BUILD_TYPE=Release \
+    $CMAKE_COMMON_FLAGS \
     -DBUILD_TESTING=OFF \
     -DENABLE_SSL_SUPPORT=OFF \
     -DBUILD_TOOLS=OFF \
@@ -715,16 +706,13 @@ RUN \
   cd srt-* && \
   mkdir build && cd build && \
   cmake \
-    -G"Unix Makefiles" \
-    -DCMAKE_VERBOSE_MAKEFILE=ON \
-    -DCMAKE_BUILD_TYPE=Release \
+    $CMAKE_COMMON_FLAGS \
     -DENABLE_SHARED=OFF \
     -DENABLE_APPS=OFF \
     -DENABLE_CXX11=ON \
     -DUSE_STATIC_LIBSTDCXX=ON \
     -DSRT_USE_OPENSSL_STATIC_LIBS=ON \
     -DENABLE_LOGGING=OFF \
-    -DCMAKE_INSTALL_LIBDIR=lib \
     -DCMAKE_INSTALL_INCLUDEDIR=include \
     -DCMAKE_INSTALL_BINDIR=bin \
     .. && \
@@ -744,11 +732,7 @@ RUN \
   mkdir build && cd build && \
   echo -e 'Requires.private: libssl libcrypto zlib \nLibs.private: -DLIBSSH_STATIC=1 -lssh\nCflags.private: -DLIBSSH_STATIC=1 -I${CMAKE_INSTALL_FULL_INCLUDEDIR}' >> ../libssh.pc.cmake && \
   cmake \
-    -G"Unix Makefiles" \
-    -DCMAKE_VERBOSE_MAKEFILE=ON \
-    -DCMAKE_INSTALL_LIBDIR=lib \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=OFF \
+    $CMAKE_COMMON_FLAGS \
     -DWITH_GSSAPI=OFF \
     -DWITH_BLOWFISH_CIPHER=ON \
     -DWITH_SFTP=ON \
@@ -776,14 +760,10 @@ ADD --checksum=sha256:$SVTAV1_SHA256 --unpack=true $SVTAV1_URL /
 RUN \
   cd SVT-AV1-*/Build && \
   cmake \
-    -G"Unix Makefiles" \
-    -DCMAKE_VERBOSE_MAKEFILE=ON \
-    -DCMAKE_INSTALL_LIBDIR=lib \
-    -DBUILD_SHARED_LIBS=OFF \
     -DBUILD_APPS=OFF \
     -DSVT_AV1_LTO=OFF \
     -DENABLE_AVX512=ON \
-    -DCMAKE_BUILD_TYPE=Release \
+    $CMAKE_COMMON_FLAGS \
     .. && \
   make -j$(nproc) install
 
@@ -851,10 +831,7 @@ RUN \
   git fetch --unshallow --filter=tree:0 origin +refs/heads/master:refs/remotes/origin/master && \
   mkdir build/linux && cd build/linux && \
   cmake3.5 \
-    -G"Unix Makefiles" \
-    -DCMAKE_VERBOSE_MAKEFILE=ON \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=OFF \
+    $CMAKE_COMMON_FLAGS \
     -DCOMPILE_10BIT=1 \
     ../.. && \
   make -j$(nproc) install
@@ -873,11 +850,8 @@ RUN \
   # Since in emulated container the /proc is mounted from the host, the cmake not able to detect CPU features correctly.
   sed -i 's/include (FindSSE)/if(CMAKE_SYSTEM_ARCH MATCHES "amd64")\ninclude (FindSSE)\nendif()/' ../CMakeLists.txt && \
   cmake \
-    -G"Unix Makefiles" \
-    -DCMAKE_VERBOSE_MAKEFILE=ON \
     -DCMAKE_SYSTEM_ARCH=$(arch) \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DBUILD_SHARED_LIBS=OFF \
+    $CMAKE_COMMON_FLAGS \
     -DUSE_OMP=ON \
     .. && \
   make -j$(nproc) install
@@ -971,10 +945,13 @@ ARG X265_URL="https://github.com/Multicorewareinc/x265/releases/download/$X265_V
 ADD --checksum=sha256:$X265_SHA256 --unpack=true $X265_URL /
 RUN \
   cd x265_*/build/linux && \
-  sed -i '/^cmake / s/$/ -G "Unix Makefiles" ${CMAKEFLAGS}/' ./multilib.sh && \
+  sed -i '/^cmake / s/$/ ${CMAKEFLAGS}/' ./multilib.sh && \
   sed -i 's/ -DENABLE_SHARED=OFF//g' ./multilib.sh && \
+  # hdr10+ for the 10 and 12 bit builds only, 8 bit has no use for it
+  sed -i 's/-DHIGH_BIT_DEPTH=ON/& -DENABLE_HDR10_PLUS=ON/' ./multilib.sh && \
+  sed -i '1i #include <cstdint>' ../../source/dynamicHDR10/json11/json11.cpp && \
   MAKEFLAGS="-j$(nproc)" \
-  CMAKEFLAGS="-DENABLE_SHARED=OFF -DENABLE_CLI=OFF -DCMAKE_VERBOSE_MAKEFILE=ON -DCMAKE_BUILD_TYPE=Release" \
+  CMAKEFLAGS="-DENABLE_SHARED=OFF -DENABLE_CLI=OFF -DENABLE_ALPHA=ON $CMAKE_COMMON_FLAGS" \
   ./multilib.sh && \
   make -C 8bit -j$(nproc) install
 
@@ -985,14 +962,14 @@ RUN \
 ARG XAVS2_VERSION=1.4
 ARG XAVS2_URL="https://github.com/pkuvcl/xavs2/archive/refs/tags/$XAVS2_VERSION.tar.gz"
 ARG XAVS2_SHA256=1e6d731cd64cb2a8940a0a3fd24f9c2ac3bb39357d802432a47bc20bad52c6ce
-# TODO: seems to be issues with asm on musl
 ADD --checksum=sha256:$XAVS2_SHA256 --unpack=true $XAVS2_URL /
 RUN \
   cd xavs2-*/build/linux && \
   # new gcc not happy with some of the code
   CFLAGS="$CFLAGS -Wno-incompatible-pointer-types -Wno-unused-function" \
+  # the source has assembler for x86 only
   ./configure \
-    --disable-asm \
+    $([ "$(arch)" = x86_64 ] || echo --disable-asm) \
     --enable-pic \
     --disable-cli && \
   make -j$(nproc) install
@@ -1025,9 +1002,8 @@ RUN \
   sed -i 's/mc_filter_bilin/xevem_mc_filter_bilin/' src_main/sse/xevem_mc_sse.c && \
   mkdir build && cd build && \
   cmake \
-    -G"Unix Makefiles" \
     -DARM="$(if [ $(uname -m) == aarch64 ]; then echo TRUE; else echo FALSE; fi)" \
-    -DCMAKE_BUILD_TYPE=Release \
+    $CMAKE_COMMON_FLAGS \
     .. && \
   make -j$(nproc) install
 
@@ -1044,9 +1020,8 @@ RUN \
   echo v$XEVD_VERSION > version.txt && \
   mkdir build && cd build && \
   cmake \
-    -G"Unix Makefiles" \
     -DARM="$(if [ $(uname -m) == aarch64 ]; then echo TRUE; else echo FALSE; fi)" \
-    -DCMAKE_BUILD_TYPE=Release \
+    $CMAKE_COMMON_FLAGS \
     .. && \
   make -j$(nproc) install
 
@@ -1077,8 +1052,7 @@ ADD --checksum=sha256:$HIGHWAY_SHA256 --unpack=true $HIGHWAY_URL /
 RUN \
   cd highway-* && \
   cmake -B build \
-    -G"Unix Makefiles" \
-    -DCMAKE_BUILD_TYPE=Release \
+    $CMAKE_COMMON_FLAGS \
     -DHWY_ENABLE_CONTRIB=OFF \
     -DHWY_ENABLE_EXAMPLES=OFF \
     -DHWY_ENABLE_TESTS=OFF && \
@@ -1093,12 +1067,8 @@ ADD --checksum=sha256:$LIBJXL_SHA256 --unpack=true $LIBJXL_URL /
 RUN \
   cd libjxl-* && \
   cmake -B build \
-    -G"Unix Makefiles" \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DCMAKE_VERBOSE_MAKEFILE=ON \
-    -DCMAKE_INSTALL_LIBDIR=lib \
+    $CMAKE_COMMON_FLAGS \
     -DCMAKE_INSTALL_PREFIX=/usr/local \
-    -DBUILD_SHARED_LIBS=OFF \
     -DBUILD_TESTING=OFF \
     -DJPEGXL_ENABLE_PLUGINS=OFF \
     -DJPEGXL_ENABLE_BENCHMARK=OFF \
@@ -1156,7 +1126,7 @@ RUN \
     -DVVENC_ENABLE_WERROR=OFF \
     -DVVENC_LIBRARY_ONLY=ON \
     -DVVENC_ENABLE_LINK_TIME_OPT=OFF \
-    -DCMAKE_BUILD_TYPE=Release \
+    $CMAKE_COMMON_FLAGS \
     -DCMAKE_INSTALL_PREFIX=/usr/local && \
   cmake --build build/release-static -j$(nproc) && \
   cmake --build build/release-static --target install
@@ -1322,6 +1292,7 @@ RUN \
   libsvtav1: env.SVTAV1_VERSION, \
   libtheora: env.THEORA_VERSION, \
   libtwolame: env.TWOLAME_VERSION, \
+  libunibreak: env.LIBUNIBREAK_VERSION, \
   libuavs3d: env.UAVS3D_COMMIT, \
   libvidstab: env.VIDSTAB_VERSION, \
   libvmaf: env.VMAF_VERSION, \
