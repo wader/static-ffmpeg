@@ -1,6 +1,25 @@
 # bump: alpine /ALPINE_VERSION=alpine:([\d.]+)/ docker:alpine|^3
 # bump: alpine link "Release notes" https://alpinelinux.org/posts/Alpine-$LATEST-released.html
 ARG ALPINE_VERSION=alpine:3.24.4
+# autoreconf needs gettext-dev, whose libintl.h redirects gettext to libintl_ symbols; kept out of the builder so no other recipe compiles against it
+FROM $ALPINE_VERSION AS zvbi
+ARG APK_OPTS=""
+RUN apk add --no-cache $APK_OPTS curl autoconf automake libtool gettext-dev
+# bump: zvbi /ZVBI_VERSION=([\d.]+)/ https://github.com/zapping-vbi/zvbi.git|*
+# bump: zvbi after ./hashupdate Dockerfile ZVBI $LATEST
+# bump: zvbi link "NEWS" https://github.com/zapping-vbi/zvbi/blob/main/NEWS
+ARG ZVBI_VERSION=0.2.45
+ARG ZVBI_URL="https://github.com/zapping-vbi/zvbi/archive/refs/tags/v$ZVBI_VERSION.tar.gz"
+ARG ZVBI_SHA256=e6c954fde2a5a635187f19e1ab870a88c1a982012c5f1b33b8f2513e0ab7a50e
+ARG CURL_OPTS="--fail --location --retry 9 --retry-all-errors --connect-timeout 10"
+RUN \
+  curl $CURL_OPTS -o zvbi.tar.gz "$ZVBI_URL" && \
+  echo "$ZVBI_SHA256  zvbi.tar.gz" | sha256sum -c - && \
+  mkdir zvbi && \
+  tar --no-same-owner --extract --file zvbi.tar.gz -C zvbi --strip-components=1 && \
+  cd zvbi && \
+  autoreconf -fiv
+
 FROM $ALPINE_VERSION AS builder
 
 # Alpine Package Keeper options
@@ -1168,6 +1187,23 @@ RUN \
     --enable-static && \
   make -j$(nproc) install
 
+# ffmpeg only decodes, so no capture interfaces and no png page export
+COPY --from=zvbi /zvbi/ /zvbi/
+RUN \
+  cd zvbi && \
+  ac_cv_lib_png_png_destroy_write_struct=no \
+  ./configure \
+    --disable-dependency-tracking \
+    --disable-shared \
+    --enable-static \
+    --with-pic \
+    --disable-v4l \
+    --disable-dvb \
+    --disable-proxy \
+    --disable-nls && \
+  make -j$(nproc) -C src install && \
+  make install-pkgconfigDATA
+
 # bump: vvenc /VVENC_VERSION=([\d.]+)/ https://github.com/fraunhoferhhi/vvenc.git|*
 # bump: vvenc after ./hashupdate Dockerfile VVENC $LATEST
 # bump: vvenc link "CHANGELOG" https://github.com/fraunhoferhhi/vvenc/releases/tag/v$LATEST
@@ -1285,6 +1321,7 @@ RUN \
   --enable-libxvid \
   --enable-libzimg \
   --enable-libzmq \
+  --enable-libzvbi \
   --enable-openssl \
   || (cat ffbuild/config.log ; false) \
   && make -j$(nproc) install
@@ -1304,6 +1341,7 @@ RUN \
   PIXMAN_VERSION=$(pkg-config --modversion pixman-1) \
   SNAPPY_VERSION=$(apk info -a snappy $APK_OPTS | head -n1 | awk '{print $1}' | sed -e 's/snappy-//') \
   SOXR_VERSION=$(pkg-config --modversion soxr) \
+  ZVBI_VERSION=$(pkg-config --modversion zvbi-0.2) \
   jq -n \
   '{ \
   chromaprint: env.CHROMAPRINT_VERSION, \
@@ -1371,6 +1409,7 @@ RUN \
   libxvid: env.XVID_VERSION, \
   libzimg: env.ZIMG_VERSION, \
   libzmq: env.LIBZMQ_VERSION, \
+  libzvbi: env.ZVBI_VERSION, \
   openssl: env.OPENSSL_VERSION, \
   pcre2: env.PCRE2_VERSION, \
   pixman: env.PIXMAN_VERSION, \

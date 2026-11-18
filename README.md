@@ -94,6 +94,7 @@ alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --ent
 - [libxvid](https://labs.xvid.com)
 - [libzimg](https://github.com/sekrit-twc/zimg)
 - [libzmq](https://github.com/zeromq/libzmq)
+- [libzvbi](https://github.com/zapping-vbi/zvbi)
 - [openssl](https://openssl.org)
 - and all native ffmpeg codecs, formats, filters etc.
 
