@@ -1194,9 +1194,9 @@ RUN \
 # bump: ffmpeg after ./hashupdate Dockerfile FFMPEG $LATEST
 # bump: ffmpeg link "Changelog" https://github.com/FFmpeg/FFmpeg/blob/n$LATEST/Changelog
 # bump: ffmpeg link "Source diff $CURRENT..$LATEST" https://github.com/FFmpeg/FFmpeg/compare/n$CURRENT..n$LATEST
-ARG FFMPEG_VERSION=9.0.2
+ARG FFMPEG_VERSION=9.1
 ARG FFMPEG_URL="https://ffmpeg.org/releases/ffmpeg-$FFMPEG_VERSION.tar.bz2"
-ARG FFMPEG_SHA256=ee80a25a5621df84498cef46917be87eab3b4f01951e85c2c7cbe5c94914ee70
+ARG FFMPEG_SHA256=1ba978f21a9cdf3506a98afb6b410f62c42a7225b08952ff437204156dfe7bef
 # openapv >= 1.1 API, in release/9.0 after 9.0.2
 ARG FFMPEG_OAPV_URL="https://github.com/FFmpeg/FFmpeg/commit/c54710db21c1827dbc3e47658a562525af0fe528.patch"
 ARG FFMPEG_OAPV_SHA256=f773a85ec68f3b26e0b2ab3cddb7a304df5be8eb5c1887c9b627e23e782c7ec2
