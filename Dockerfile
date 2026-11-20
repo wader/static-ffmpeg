@@ -50,7 +50,13 @@ RUN apk add --no-cache $APK_OPTS \
   # replace the pcre2 and libffi downloads of glib
   pcre2-dev pcre2-static libffi-dev \
   # replaces the proxy-libintl download of glib
-  musl-libintl
+  musl-libintl \
+  # needed by curl
+  nghttp2-dev nghttp2-static \
+  nghttp3-dev nghttp3-static \
+  zstd-dev zstd-static \
+  libidn2-dev libidn2-static libunistring-static \
+  libpsl-dev libpsl-static
 
 # -O3 makes sure we compile with optimization. setting CFLAGS/CXXFLAGS seems to override
 # default automake cflags.
@@ -792,6 +798,67 @@ RUN \
     .. && \
   make -j$(nproc) install
 
+# alpine's ngtcp2 only has the gnutls crypto backend, curl's HTTP/3 needs the openssl one
+# bump: ngtcp2 /NGTCP2_VERSION=([\d.]+)/ https://github.com/ngtcp2/ngtcp2.git|*
+# bump: ngtcp2 after ./hashupdate Dockerfile NGTCP2 $LATEST
+# bump: ngtcp2 link "Release notes" https://github.com/ngtcp2/ngtcp2/releases/tag/v$LATEST
+ARG NGTCP2_VERSION=1.26.0
+ARG NGTCP2_URL="https://github.com/ngtcp2/ngtcp2/releases/download/v$NGTCP2_VERSION/ngtcp2-$NGTCP2_VERSION.tar.xz"
+ARG NGTCP2_SHA256=7804aa0fa1c39942ba322a90805824c37231f7675b08d0c3cc4332858a7b085e
+RUN \
+  curl $CURL_OPTS -o ngtcp2.tar.xz "$NGTCP2_URL" && \
+  echo "$NGTCP2_SHA256  ngtcp2.tar.xz" | sha256sum -c - && \
+  tar $TAR_OPTS ngtcp2.tar.xz && cd ngtcp2-* && \
+  ./configure \
+    --disable-shared \
+    --enable-static \
+    --enable-lib-only \
+    --with-openssl && \
+  make -j$(nproc) install
+
+# bump: libcurl /LIBCURL_VERSION=([\d.]+)/ gitrefs:https://github.com/curl/curl.git|re:#^refs/tags/curl-(\d+)_(\d+)_(\d+)$#${1}.${2}.${3}#|*
+# bump: libcurl after ./hashupdate Dockerfile LIBCURL $LATEST
+# bump: libcurl link "Changelog" https://curl.se/ch/$LATEST.html
+ARG LIBCURL_VERSION=8.23.0
+ARG LIBCURL_URL="https://curl.se/download/curl-$LIBCURL_VERSION.tar.xz"
+ARG LIBCURL_SHA256=8dadd7d2536a314f982ad05a651b713f426bf7d02cc2c76cffb9796f2218e6c5
+# ffmpeg's libcurl protocol only speaks http and https
+RUN \
+  curl $CURL_OPTS -o libcurl.tar.xz "$LIBCURL_URL" && \
+  echo "$LIBCURL_SHA256  libcurl.tar.xz" | sha256sum -c - && \
+  tar $TAR_OPTS libcurl.tar.xz && cd curl-* && \
+  ./configure \
+    --disable-shared \
+    --enable-static \
+    --with-openssl \
+    --with-ngtcp2 \
+    --with-nghttp3 \
+    --with-nghttp2 \
+    --with-zlib \
+    --with-brotli \
+    --with-zstd \
+    --with-libidn2 \
+    --with-libpsl \
+    --disable-dict \
+    --disable-file \
+    --disable-ftp \
+    --disable-gopher \
+    --disable-imap \
+    --disable-ipfs \
+    --disable-ldap \
+    --disable-mqtt \
+    --disable-pop3 \
+    --disable-rtsp \
+    --disable-smtp \
+    --disable-telnet \
+    --disable-tftp \
+    --disable-websockets \
+    --disable-docs \
+    --disable-manual && \
+  make -j$(nproc) -C lib install && \
+  make -C include install && \
+  make install-pkgconfigDATA
+
 # bump: svtav1 /SVTAV1_VERSION=([\d.]+)/ https://gitlab.com/AOMediaCodec/SVT-AV1.git|*
 # bump: svtav1 after ./hashupdate Dockerfile SVTAV1 $LATEST
 # bump: svtav1 link "Release notes" https://gitlab.com/AOMediaCodec/SVT-AV1/-/releases/v$LATEST
@@ -1229,6 +1296,7 @@ RUN \
   --enable-libaribb24 \
   --enable-libass \
   --enable-libbluray \
+  --enable-libcurl \
   --enable-libdav1d \
   --enable-libdavs2 \
   --enable-libdvdnav \
@@ -1293,6 +1361,8 @@ RUN \
   LIBSAMPLERATE_VERSION=$(pkg-config --modversion samplerate) \
   LIBVO_AMRWBENC_VERSION=$(pkg-config --modversion vo-amrwbenc) \
   LIBXML2_VERSION=$(pkg-config --modversion libxml-2.0) \
+  NGHTTP2_VERSION=$(pkg-config --modversion libnghttp2) \
+  NGHTTP3_VERSION=$(pkg-config --modversion libnghttp3) \
   OPENSSL_VERSION=$(pkg-config --modversion openssl) \
   PCRE2_VERSION=$(pkg-config --modversion libpcre2-8) \
   PIXMAN_VERSION=$(pkg-config --modversion pixman-1) \
@@ -1311,6 +1381,7 @@ RUN \
   libaribb24: env.LIBARIBB24_VERSION, \
   libass: env.LIBASS_VERSION, \
   libbluray: env.LIBBLURAY_VERSION, \
+  libcurl: env.LIBCURL_VERSION, \
   libdav1d: env.DAV1D_VERSION, \
   libdavs2: env.DAVS2_VERSION, \
   libdvdcss: env.LIBDVDCSS_VERSION, \
@@ -1365,6 +1436,9 @@ RUN \
   libxvid: env.XVID_VERSION, \
   libzimg: env.ZIMG_VERSION, \
   libzmq: env.LIBZMQ_VERSION, \
+  nghttp2: env.NGHTTP2_VERSION, \
+  nghttp3: env.NGHTTP3_VERSION, \
+  ngtcp2: env.NGTCP2_VERSION, \
   openssl: env.OPENSSL_VERSION, \
   pcre2: env.PCRE2_VERSION, \
   pixman: env.PIXMAN_VERSION, \

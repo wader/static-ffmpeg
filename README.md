@@ -43,6 +43,7 @@ alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --ent
 - [libaribb24](https://github.com/nkoriyama/aribb24)
 - [libass](https://github.com/libass/libass)
 - [libbluray](https://www.videolan.org/developers/libbluray.html)
+- [libcurl](https://curl.se/libcurl/)
 - [libdav1d](https://code.videolan.org/videolan/dav1d)
 - [libdavs2](https://github.com/pkuvcl/davs2)
 - [libdvdcss](https://code.videolan.org/videolan/libdvdcss) (only if explicitly enabled during build, [see below](#libdvdcss))
