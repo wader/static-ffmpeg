@@ -25,8 +25,8 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - name: Docker build and export
-	# force gzip compression as it seems the way we use docker might
-	# be affacet by default config changeing to "store" compression.
+        # force gzip compression as it seems the way we use docker might
+        # be affect by default config changing to "store" compression.
         run: >-
           docker buildx build
           --output "type=oci,dest=image-${{ matrix.arch }}.tar,compression=gzip,compression-level=9,force-compression=true,name=image:${{ matrix.arch }}"
