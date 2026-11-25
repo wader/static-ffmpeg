@@ -24,10 +24,13 @@ jobs:
     runs-on: ${{ matrix.runs_on }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-      - name: Docker build
-        run: docker build --tag image:${{ matrix.arch }} .
-      - name: Docker save
-        run: docker image save --output image-${{ matrix.arch }}.tar image:${{ matrix.arch }}
+      - name: Docker build and export
+	# force gzip compression as it seems the way we use docker might
+	# be affacet by default config changeing to "store" compression.
+        run: >-
+          docker buildx build
+          --output "type=oci,dest=image-${{ matrix.arch }}.tar,compression=gzip,compression-level=9,force-compression=true,name=image:${{ matrix.arch }}"
+          .
       - name: Upload Docker image-${{ matrix.arch }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
