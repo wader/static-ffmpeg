@@ -24,12 +24,17 @@ jobs:
     runs-on: ${{ matrix.runs_on }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Set up Docker Buildx
+        # default "docker" driver does not support exporting tarballs
+        uses: docker/setup-buildx-action@37fe631027851001ddb9b187196cc803df7f5f0e # v4.3.0
       - name: Docker build and export
         # force gzip compression as it seems the way we use docker might
         # be affect by default config changing to "store" compression.
+        # use type=docker so that the image can be loaded with "docker load"
+        # regardless of image store type
         run: >-
           docker buildx build
-          --output "type=oci,dest=image-${{ matrix.arch }}.tar,compression=gzip,compression-level=9,force-compression=true,name=image:${{ matrix.arch }}"
+          --output "type=docker,dest=image-${{ matrix.arch }}.tar,compression=gzip,compression-level=9,force-compression=true,name=image:${{ matrix.arch }}"
           .
       - name: Upload Docker image-${{ matrix.arch }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
