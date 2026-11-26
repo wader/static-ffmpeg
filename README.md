@@ -34,6 +34,7 @@ alias ffprobe='docker run -i --rm -u $UID:$GROUPS -v "$PWD:$PWD" -w "$PWD" --ent
 
 ### Libraries
 
+- [cairo](https://www.cairographics.org/)
 - [chromaprint](https://github.com/acoustid/chromaprint)
 - [fontconfig](https://www.freedesktop.org/wiki/Software/fontconfig/)
 - gray (full grayscale support)

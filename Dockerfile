@@ -1328,6 +1328,7 @@ RUN \
   --enable-gpl \
   --enable-version3 \
   $FDKAAC_FLAGS \
+  --enable-cairo \
   --enable-chromaprint \
   --enable-fontconfig \
   --enable-gray \
